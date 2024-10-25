@@ -1,0 +1,396 @@
+<project name="KBase Module Builder" default="compile_and_bin" basedir="." xmlns:jacoco="antlib:org.jacoco.ant">
+
+  <description>
+      Java Build file for the KBase Module Builder
+  </description>
+
+  <!-- set global properties that need to be overwritten by the Makefile or ant invoker -->
+  <!-- property name="BIN_TARGET" location="../../bin" / -->
+  <!-- property name="BIN_LIB_TARGET" location="dist"/ -->
+
+  <!-- set global properties for this build -->
+  <property name="src"	location="src/java"/>
+  <property name="dist" location="dist"/>
+  <property name="bin.local" location="bin"/>
+  <property name="classes"  location="classes"/>
+  <property name="lib"	location="lib"/>
+
+  <property name="test.dir" location="temp_test_files"/>
+  <property name="test.script.dir" location="test_scripts"/>
+  <property name="test.script"  value="test_module_builder.sh"/>
+
+  <property name="ee.dir"  value="${test.script.dir}/ee_mock_service"/>
+  <property name="ee.start.script"  value="start_service.sh"/>
+  <property name="ee.stop.script"  value="stop_service.sh"/>
+
+  <!-- define the output jar and shell script filenames -->
+  <property name="kidl.jar.file" value="kbase-kidl-parser.jar"/>
+  <property name="module_builder.jar.file"	value="kbase_module_builder2.jar"/>
+  <property name="module_builder.sh.old.file"	value="kb-mobu"/>
+  <property name="module_builder.sh.file"	value="kb-sdk"/>
+  <property name="ws_tools.sh.file"		value="ws-tools"/>
+
+
+
+  <!-- If the BIN_LIB_TARGET is defined, then use the jars from the target destination
+       when including the classpath for the bin -->
+  <condition property="jardir" value="${BIN_LIB_TARGET}/jars">
+    <isset property="BIN_LIB_TARGET"/>
+  </condition>
+
+  <property environment="env"/>
+  <condition property="jardir" value="../jars/lib/jars/">
+    <or>
+      <equals arg1="${env.JENKINS_JARS_MODULE_PATH}" arg2=""/>
+      <not>
+        <isset property="env.JENKINS_JARS_MODULE_PATH"/>
+      </not>
+    </or>
+  </condition>
+  <!-- Properties in ant are immutable, so the following assignment will only take place if jardir was not set above. -->
+  <property name="jardir" location="${env.JENKINS_JARS_MODULE_PATH}/lib/jars"/>
+  
+  <!-- KBASE_COMMON_JAR should come from Makefile because of "make bin" mode support -->
+  <condition property="commonjar" value="${KBASE_COMMON_JAR}">
+    <and>
+      <isset property="KBASE_COMMON_JAR"/>
+      <or>
+        <equals arg1="${env.JENKINS_JAVA_COMMON_JARFILE}" arg2=""/>
+        <not>
+          <isset property="env.JENKINS_JAVA_COMMON_JARFILE"/>
+        </not>
+      </or>
+    </and>
+  </condition>
+  <!-- Properties in ant are immutable, so the following assignment will only take place if jardir was not set above. -->
+  <condition property="commonjar" value="${env.JENKINS_JAVA_COMMON_JARFILE}">
+    <and>
+      <isset property="env.JENKINS_JAVA_COMMON_JARFILE"/>
+      <not>
+        <equals arg1="${env.JENKINS_JAVA_COMMON_JARFILE}" arg2=""/>
+      </not>
+    </and>
+  </condition>
+
+  <condition property="report.dir" value="${env.JENKINS_REPORT_DIR}">
+    <and>
+      <isset property="env.JENKINS_REPORT_DIR"/>
+      <not>
+        <equals arg1="${env.JENKINS_REPORT_DIR}" arg2=""/>
+      </not>
+    </and>
+  </condition>
+  <!-- Properties in ant are immutable, so the following assignment will only take place if report.dir was not set above. -->
+  <property name="report.dir" location="reports"/>
+
+
+  <path id="compile.classpath">
+    <fileset dir="${jardir}" includesfile="JAR_DEPS">
+      <include name="${commonjar}"/>
+    </fileset>
+  </path>
+
+
+
+  <target name="init">
+    <!-- Create the output directory structure-->
+    <mkdir dir="${classes}"/>
+    <mkdir dir="${dist}"/>
+    <mkdir dir="${bin.local}"/>
+    <mkdir dir="${test.dir}"/>
+    <mkdir dir="${ee.dir}"/>
+  </target>
+
+
+
+  <target name="compile" depends="init" description="compile the source">
+    <fail message="KBase common jar is not set">
+        <condition>
+            <not><isset property="commonjar" /></not>
+        </condition>
+    </fail>
+    <!-- Compile class files-->
+    <exec executable="git" outputproperty="git.url"><arg line="config --get remote.origin.url"/></exec>
+    <exec executable="git" outputproperty="git.branch"><arg line="rev-parse --abbrev-ref HEAD"/></exec>
+    <exec executable="git" outputproperty="git.commit"><arg line="rev-parse HEAD"/></exec>
+    <echo file="${src}/us/kbase/mobu/git.properties">### PLEASE DO NOT CHANGE THIS FILE MANUALLY! ###
+giturl=${git.url}
+branch=${git.branch}
+commit=${git.commit}</echo>
+    <echo>Compiling with jar directory: ${jardir}</echo>
+    <javac destdir="${classes}" srcdir="${src}" includeantruntime="false" debug="true" classpathref="compile.classpath" target="1.7" source="1.7" />
+    <!-- Copy resource files-->
+    <copy todir="${classes}">
+      <fileset dir="${src}">
+        <patternset>
+          <include name="**/*.properties"/>
+          <include name="**/*.py"/>
+          <include name="**/*.css"/>
+          <include name="**/*.spec"/>
+          <include name="**/*.html"/>
+        </patternset>
+      </fileset>
+    </copy>
+    <!-- Make main jar file-->
+    <jar destfile="${dist}/${module_builder.jar.file}" basedir="${classes}">
+      <manifest>
+        <attribute name="Main-Class" value="us.kbase.mobu.ModuleBuilder"/>
+      </manifest>
+    </jar>
+    <copy todir="${classes}">
+      <fileset dir="${src}">
+        <patternset>
+          <include name="us/kbase/kidl/**/*.java"/>
+          <include name="us/kbase/jkidl/**/*.java"/>
+        </patternset>
+      </fileset>
+    </copy>
+    <jar destfile="${dist}/${kidl.jar.file}">
+      <fileset dir="${classes}">
+        <include name="us/kbase/kidl/**"/>
+        <include name="us/kbase/jkidl/**"/>
+      </fileset>
+    </jar>
+    <!-- Remove uncompressed class files-->
+    <delete dir="${classes}"/>
+  </target>
+
+
+
+  <target name="copy_kidl_jar" if="EXT_KIDL_JAR">
+    <!-- copy the kidl jar to a versioned jar suitable for addition to the jars repo -->
+    <copy file="${dist}/${kidl.jar.file}" tofile="${dist}/${EXT_KIDL_JAR}"/>
+    <echo>Successfully created versioned library jar: ${EXT_KIDL_JAR}</echo>
+  </target>
+
+
+
+  <target name="sh_bin" description="create shell file wrappers">
+    <fail message="KBase common jar is not set">
+        <condition>
+            <not><isset property="commonjar" /></not>
+        </condition>
+    </fail>
+    <!-- Define absolute path to main jar file-->
+    <property name="jar.absolute.path" location="${dist}/${module_builder.jar.file}"/>
+    <!-- Define classpath string with : delimiter from list of lib-jar files-->
+    <pathconvert targetos="unix" property="lib.classpath" refid="compile.classpath"/>
+
+    <!-- Create main shell script-->
+    <echo file="${bin.local}/${module_builder.sh.file}">#!/bin/bash
+java -cp ${lib.classpath}:${jar.absolute.path} us.kbase.mobu.ModuleBuilder $@
+    </echo>
+    <chmod file="${bin.local}/${module_builder.sh.file}" perm="a+x"/>
+    <!-- Create old main shell script-->
+    <echo file="${bin.local}/${module_builder.sh.old.file}">#!/bin/bash
+java -cp ${lib.classpath}:${jar.absolute.path} us.kbase.mobu.ModuleBuilder $@
+    </echo>
+    <chmod file="${bin.local}/${module_builder.sh.old.file}" perm="a+x"/>
+    <echo>Successfully built: ${bin.local}/${module_builder.sh.file}</echo>
+    <!-- Create ws-tools shell script-->
+    <echo file="${bin.local}/${ws_tools.sh.file}">#!/bin/bash
+java -cp ${lib.classpath}:${jar.absolute.path} us.kbase.tools.WorkspaceTools $@
+    </echo>
+    <chmod file="${bin.local}/${ws_tools.sh.file}" perm="a+x"/>
+
+    <!-- Create start/stop scripts for the local mock Execution Engine-->
+    <echo file="${ee.dir}/${ee.start.script}">#!/bin/bash
+export JAVA_HOME=${env.JAVA_HOME}
+export PATH=$JAVA_HOME/bin:$PATH
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" &amp;&amp; pwd )
+PORT=8000
+if [ -z $1 ]; then echo "port is not set, listening on $PORT"; else PORT=$1; fi
+$JAVA_HOME/bin/java -cp ${lib.classpath}:${jar.absolute.path} us.kbase.kbasejobservice.KBaseJobServiceServer $PORT &gt; $DIR/out_$1.txt 2&gt; $DIR/err_$1.txt &amp; pid=$!
+echo $pid > $DIR/pid.txt
+    </echo>
+    <chmod file="${ee.dir}/${ee.start.script}" perm="a+x"/>
+    <echo>Successfully built: ${ee.dir}/${ee.start.script}</echo>
+    
+    <echo file="${ee.dir}/${ee.stop.script}">#!/bin/bash
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" &amp;&amp; pwd )
+kill $(&lt;"$DIR/pid.txt")
+    </echo>
+    <chmod file="${ee.dir}/${ee.stop.script}" perm="a+x"/>
+    <echo>Successfully built: ${ee.dir}/${ee.stop.script}</echo>
+  </target>
+
+
+
+  <target name="compile_and_bin" depends="compile, copy_kidl_jar, sh_bin" description="compile and create shell file in the local bin directory" >
+  </target>
+
+
+
+  <target name="copy_local_bin" description="copies the module_builder binary to the BIN_TARGET">
+    <fail message="file ${bin.local}/${module_builder.sh.file} is missing- did you forget to compile or run make first?">
+        <condition>
+            <not><available file="${bin.local}/${module_builder.sh.file}" /></not>
+        </condition>
+    </fail>
+    <fail message="BIN_TARGET ant property must be set to copy the local bin script">
+        <condition>
+            <not><isset property="BIN_TARGET" /></not>
+        </condition>
+    </fail>
+    <!-- Copy main shell script into the target bin folder-->
+    <copy todir="${BIN_TARGET}" flatten="true" verbose="true">
+      <fileset file="${bin.local}/${module_builder.sh.file}"/>
+    </copy>
+    <chmod file="${BIN_TARGET}/${module_builder.sh.file}" perm="a+x"/>
+    <!-- Copy old main shell script into the target bin folder-->
+    <copy todir="${BIN_TARGET}" flatten="true" verbose="true">
+      <fileset file="${bin.local}/${module_builder.sh.old.file}"/>
+    </copy>
+    <chmod file="${BIN_TARGET}/${module_builder.sh.old.file}" perm="a+x"/>
+    <!-- Copy ws-tools shell script into the target bin folder-->
+    <copy todir="${BIN_TARGET}" flatten="true" verbose="true">
+      <fileset file="${bin.local}/${ws_tools.sh.file}"/>
+    </copy>
+    <chmod file="${BIN_TARGET}/${ws_tools.sh.file}" perm="a+x"/>
+    <echo>Successfully deployed dev bin to: ${BIN_TARGET}/${module_builder.sh.file}</echo>
+  </target>
+
+
+
+  <target name="prepare_bin" depends="compile" description="prepares binary jar in lib folder and copies JAR_DEPS to JAR_DEPS_BIN">
+    <copy file="${dist}/${module_builder.jar.file}" tofile="${lib}/${module_builder.jar.file}"/>
+    <concat destfile="JAR_DEPS_BIN">
+      <header filtering="no" trimleading="yes">
+        # THIS FILE IS A COPY OF THE JAR_DEPS FILE USED FOR "MAKE BIN" MODE.
+        # PLEASE DO NOT CHANGE IT MANUALLY!
+
+      </header>
+      <path path="JAR_DEPS"/>
+    </concat>
+  </target>
+
+
+
+  <!-- deploy the module builder bin to the BIN_TARGET -->
+  <target name="deploy_bin" description="deploys the module builder shell script and libs if ">
+    <!-- fail if the jar file is missing -->
+    <fail message="file ${dist}/${module_builder.jar.file} is missing- did you forget to compile or run make first?">
+        <condition><not><available file="${dist}/${module_builder.jar.file}" /></not></condition>
+    </fail>
+    <!-- fail if the targets are not set -->
+    <fail message="BIN_TARGET and BIN_LIB_TARGET ant property must be set to deploy_bin">
+        <condition>
+          <or>
+            <not><isset property="BIN_TARGET" /></not>
+            <not><isset property="BIN_LIB_TARGET" /></not>
+          </or>
+        </condition>
+    </fail>
+    <!-- fail if the jars repo is not deployed to the BIN_TARGET location -->
+    <fail message="jars folder in ${BIN_LIB_TARGET} is missing- did you forget to deploy 'jars'?">
+        <condition><not><available file="${BIN_LIB_TARGET}/jars" /></not></condition>
+    </fail>
+    <fail message="KBase common jar is not set">
+        <condition>
+        	<or>
+        	    <not><isset property="commonjar" /></not>
+        	    <equals arg1="${commonjar}" arg2=""/>
+        	</or>
+        </condition>
+    </fail>
+    <!-- copy lib to target -->
+    <copy todir="${BIN_LIB_TARGET}" flatten="true">
+      <fileset file="${dist}/${module_builder.jar.file}"/>
+    </copy>
+    <echo>Successfully deployed lib to: ${BIN_LIB_TARGET}/${module_builder.jar.file}</echo>
+    <echo>Linking against jar directory: ${jardir}</echo>
+    <property name="jar.absolute.path" location="${BIN_LIB_TARGET}/${module_builder.jar.file}"/>
+    <!-- Define classpath string with : delimiter from list of lib-jar files-->
+    <pathconvert targetos="unix" property="lib.classpath" refid="compile.classpath"/>
+    <!-- Create main shell script-->
+    <echo file="${BIN_TARGET}/${module_builder.sh.file}">#!/bin/bash
+export JAVA_HOME=${env.JAVA_HOME}
+export PATH=$JAVA_HOME/bin:$PATH
+$JAVA_HOME/bin/java -cp ${lib.classpath}:${jar.absolute.path} us.kbase.mobu.ModuleBuilder $@
+    </echo>
+    <chmod file="${BIN_TARGET}/${module_builder.sh.file}" perm="a+x"/>
+    <!-- Create old main shell script-->
+    <echo file="${BIN_TARGET}/${module_builder.sh.old.file}">#!/bin/bash
+export JAVA_HOME=${env.JAVA_HOME}
+export PATH=$JAVA_HOME/bin:$PATH
+$JAVA_HOME/bin/java -cp ${lib.classpath}:${jar.absolute.path} us.kbase.mobu.ModuleBuilder $@
+    </echo>
+    <chmod file="${BIN_TARGET}/${module_builder.sh.old.file}" perm="a+x"/>
+    <!-- Create ws-tools shell script-->
+    <echo file="${BIN_TARGET}/${ws_tools.sh.file}">#!/bin/bash
+export JAVA_HOME=${env.JAVA_HOME}
+export PATH=$JAVA_HOME/bin:$PATH
+$JAVA_HOME/bin/java -cp ${lib.classpath}:${jar.absolute.path} us.kbase.tools.WorkspaceTools $@
+    </echo>
+    <chmod file="${BIN_TARGET}/${ws_tools.sh.file}" perm="a+x"/>
+  </target>
+
+
+
+  <path id="jacoco.classpath">
+	<fileset dir="${jardir}">
+	  <include name="jacoco/jacocoant.jar"/>
+	</fileset>
+  </path>
+
+  <taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml" classpathref="jacoco.classpath"/>
+
+  <target name="test" depends="compile" description="create test script">
+    <delete dir="${report.dir}"/>
+    <mkdir dir="${report.dir}"/>
+    <mkdir dir="${report.dir}/html"/>
+  	<unzip src="${dist}/${module_builder.jar.file}" dest="${report.dir}/classes"/>
+    <!-- Define absolute path to main jar file-->
+  	<jacoco:coverage destfile="${report.dir}/jacoco.exec" excludes="org/*:junit/*">
+     <junit printsummary="yes" failureproperty="test.failed" fork="true">
+      <classpath>
+        <pathelement location="${dist}/${module_builder.jar.file}"/>
+        <path refid="compile.classpath"/>
+      </classpath>
+      <formatter type="plain" usefile="false"/>
+      <formatter type="xml" usefile="true" if="env.JENKINS_REPORT_DIR"/>
+      <batchtest todir="${report.dir}">
+        <fileset dir="${report.dir}/classes">
+          <include name="us/kbase/**/test/**/**Test.class"/>
+        </fileset>
+      </batchtest>
+     </junit>
+  	</jacoco:coverage>
+    <fail message="Test failure detected, check test results." if="test.failed" />
+  	<jacoco:report>
+  	    <executiondata>
+  	       <file file="${report.dir}/jacoco.exec"/>
+  	    </executiondata>
+  	    <structure name="SDK">
+  	       <classfiles>
+  	          <fileset dir="${report.dir}/classes">
+                <exclude name="**/test/**/**Test.class" />
+  	          </fileset>
+  	       </classfiles>
+ 	       <sourcefiles encoding="UTF-8">
+  	          <fileset dir="${src}"/>
+  	       </sourcefiles>
+  	    </structure>
+  		<html destdir="${report.dir}/html"/>
+  		<csv destfile="${report.dir}/coverage-report.csv"/>
+  	</jacoco:report>
+    <delete dir="${report.dir}/classes"/>
+  	<exec executable="bash">
+  	  <arg value="./test_scripts/print_test_coverage.sh" />
+  	</exec>
+  </target>
+
+
+
+  <target name="clean" description="clean up" >
+    <!-- Clean up internal temporary files and folders-->
+    <delete dir="${classes}"/>
+    <delete dir="${dist}"/>
+    <delete dir="${test.dir}"/>
+    <delete dir="${bin.local}"/>
+    <delete dir="${ee.dir}"/>
+  </target>
+
+
+</project>
+
