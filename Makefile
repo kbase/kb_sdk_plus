@@ -46,19 +46,19 @@ else
 #### OUTSIDE DEV CONTAINER ####
 ###############################
 
-compile: jars-submodule-init
-	$(ANT) -Djardir=submodules/jars/lib/jars/ -DKBASE_COMMON_JAR=$(KBASE_COMMON_JAR)
+compile:
+	$(ANT) -Djardir=../jars/lib/jars/ -DKBASE_COMMON_JAR=$(KBASE_COMMON_JAR)
 
 prepare-bin:
-	$(ANT) prepare_bin -Djardir=submodules/jars/lib/jars/ -DKBASE_COMMON_JAR=$(KBASE_COMMON_JAR)
+	$(ANT) prepare_bin -Djardir=../jars/lib/jars/ -DKBASE_COMMON_JAR=$(KBASE_COMMON_JAR)
 
 endif
 
-bin: jars-submodule-init
+bin:
 	mkdir -p bin
 	echo '#!/bin/bash' > bin/kb-sdk
 	echo 'DIR=$(DIR)' >> bin/kb-sdk
-	echo 'KBASE_JARS_DIR=$$DIR/submodules/jars/lib/jars' >> bin/kb-sdk
+	echo 'KBASE_JARS_DIR=$$DIR/../jars/lib/jars' >> bin/kb-sdk
 	@# Next command processes links in JAR_DEPS_BIN file and has 5 parts (one on each line): 
 	@#  (1) removing comments
 	@#  (2) trimming each line (picking first word actually)
@@ -75,14 +75,6 @@ bin: jars-submodule-init
 	echo 'java -cp $$CLASS_PATH_PREFIX$$KBASE_JARS_DIR/$(KBASE_COMMON_JAR):$$DIR/lib/kbase_module_builder2.jar \
 	 us.kbase.mobu.ModuleBuilder $$@' >> bin/kb-sdk
 	chmod +x bin/kb-sdk
-
-submodule-init:
-	git submodule init
-	git submodule update
-	cp submodules_hacks/AuthConstants.pm submodules/auth/Bio-KBase-Auth/lib/Bio/KBase/
-
-jars-submodule-init:
-	git submodule update --init submodules/jars
 
 deploy: deploy-client deploy-service deploy-scripts
 
@@ -108,11 +100,11 @@ sdkbase:
 	cd sdkbase && ./makeconfig
 	docker build --no-cache -t kbase/kbase:sdkbase2.latest sdkbase
 
-test: submodule-init
+test:
 	@echo "Running unit tests"
 	make test-python
 	@# todo: remove perl typecomp tests and add it as a separate target
-	$(ANT) test -DKBASE_COMMON_JAR=$(KBASE_COMMON_JAR)
+	$(ANT) test -DKBASE_COMMON_JAR=$(KBASE_COMMON_JAR) -Djardir=../jars/lib/jars/
 
 test-python:
 	python -m nose2 -s test_scripts/py_module_tests -t src/java/us/kbase/templates

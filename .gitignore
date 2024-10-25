@@ -26,3 +26,9 @@
 
 /.pytest_cache/
 __pycache__
+src/java/us/kbase/mobu/git.properties
+/bin
+/dist
+/temp_test_files
+/test_scripts/ee_mock_service
+/lib/kbase_module_builder2.jar
