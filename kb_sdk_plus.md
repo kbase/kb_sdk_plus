@@ -85,7 +85,7 @@ and runnable while we make changes to the forked codebase.
 * Port over useful changes in the `kb_sdk` `develop` branch
 * Extract the KIDL parsing code into its own repo as it’s used in the workspace
   * But see https://github.com/kbase/java_kidl/blob/e569971cf0eab60c3702a2fe1fc181ce63a175c0/TODO.md
-* https://github.com/kbase/kb_sdk/issues
+* Assess and migrate issues from https://github.com/kbase/kb_sdk/issues
 * Check the KBase tech debt document appendices
 
 ## Code origin
