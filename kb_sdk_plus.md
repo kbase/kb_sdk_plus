@@ -21,7 +21,7 @@ and runnable while we make changes to the forked codebase.
 
 * Backwards incompatible changes are expected in some respects:
   * R code generation will be removed
-    * Unused in KBase or anywhere else as far as we know
+    * Unused in KBase or anywhere else as far as we know other than one test app
   * Perl code generation will almost certainly be removed
     * Perl apps can continue to be supported with the original SDK, or wrapped with
       Python / Java
