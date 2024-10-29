@@ -1,0 +1,28 @@
+##########################################
+# READ BEFORE ALTERING THIS FILE
+#
+# Only files specific to this repo or that will be generated as part of using this repo should
+# be ignored here. Files that are specific to particular development environments or users
+# should be ignored in the global gitignore to ignore for all repos, or in .git/info/exclude
+# to ignore for just this repo.
+# 
+# Examples of appropriate files for each location:
+# This file:
+#    python pyc files
+#    python cache files
+#    test configuration and output, including coverage data
+#
+# Global gitignore
+#    Eclipse .settings, .project, and .pyproject files
+#    Mac .DS_store files
+#    VSCode .vscode directory
+#
+# .git/info/exclude
+#    Temporary code / notes while exploring new repo features
+#    Personal variations of test.cfg files, e.g. my-test.cfg, etc.
+#    Personal data used for manual testing
+#
+##########################################
+
+/.pytest_cache/
+__pycache__
