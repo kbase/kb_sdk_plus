@@ -1,6 +1,0 @@
-[submodule "submodules/jars"]
-	path = submodules/jars
-	url = https://github.com/kbase/jars
-[submodule "submodules/auth"]
-	path = submodules/auth
-	url = https://github.com/kbase/auth

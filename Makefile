@@ -107,7 +107,11 @@ test:
 	$(ANT) test -DKBASE_COMMON_JAR=$(KBASE_COMMON_JAR) -Djardir=../jars/lib/jars/
 
 test-python:
-	python -m nose2 -s test_scripts/py_module_tests -t src/java/us/kbase/templates
+	PYTHONPATH=./src/java/us/kbase/templates pytest \
+		--cov=authclient \
+		--cov-report=xml \
+		--cov-report=html \
+		test_scripts/py_module_tests
 
 test-client:
 	@echo "No tests for client - this kbase module is not a service, and has no clients"

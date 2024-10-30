@@ -328,9 +328,16 @@ $JAVA_HOME/bin/java -cp ${lib.classpath}:${jar.absolute.path} us.kbase.tools.Wor
 
 
   <path id="jacoco.classpath">
-	<fileset dir="${jardir}">
-	  <include name="jacoco/jacocoant.jar"/>
-	</fileset>
+    <fileset dir="${jardir}">
+      <include name="jacoco/org.jacoco.ant-0.8.4.jar"/>
+      <include name="jacoco/org.jacoco.core-0.8.4.jar"/>
+      <include name="jacoco/org.jacoco.report-0.8.4.jar"/>
+      <include name="jacoco/org.jacoco.agent-0.8.4.jar"/>
+      <include name="asm/asm-7.1.jar"/>
+      <include name="asm/asm-commons-7.1.jar"/>
+      <include name="asm/asm-analysis-7.1.jar"/>
+      <include name="asm/asm-tree-7.1.jar"/>
+    </fileset>
   </path>
 
   <taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml" classpathref="jacoco.classpath"/>
