@@ -681,6 +681,7 @@ public class JavaTypeGenerator {
 					"    /** Deprecated. Use isInsecureHttpConnectionAllowed().",
 					"     * @deprecated",
 					"     */",
+					"    @Deprecated",
 					"    public boolean isAuthAllowedForHttp() {",
 					"        return caller.isAuthAllowedForHttp();",
 					"    }",
@@ -696,6 +697,7 @@ public class JavaTypeGenerator {
 					"    /** Deprecated. Use setIsInsecureHttpConnectionAllowed().",
 					"     * @deprecated",
 					"     */",
+					"    @Deprecated",
 					"    public void setAuthAllowedForHttp(boolean isAuthAllowedForHttp) {",
 					"        caller.setAuthAllowedForHttp(isAuthAllowedForHttp);",
 					"    }",
@@ -1306,26 +1308,31 @@ public class JavaTypeGenerator {
 		}
 	}
 
-	private static List<String> checkLibs(FileSaver libOutDir, boolean createServers,
-	        FileSaver buildXml) throws Exception {
+	private static List<String> checkLibs(
+			final FileSaver libOutDir,
+			final boolean createServers,
+			final FileSaver buildXml)
+			throws Exception {
+		// TODO CODECLEANUP remove this method and figure out some other way of handling test deps
 		if (libOutDir == null && buildXml == null)
 			return null;
 		List<String> jars = new ArrayList<String>();
 		jars.add(checkLib(libOutDir, "jackson-annotations-2.2.3"));
 		jars.add(checkLib(libOutDir, "jackson-core-2.2.3"));
 		jars.add(checkLib(libOutDir, "jackson-databind-2.2.3"));
-		jars.add(checkLib(libOutDir, "kbase-auth"));
+		jars.add(checkLib(libOutDir, "kbase-auth-0.4.4"));
 		jars.add(checkLib(libOutDir, "kbase-common"));
+		jars.add(checkLib(libOutDir, "javax.annotation-api-1.3.2"));
 		if (createServers) {
-		    jars.add(checkLib(libOutDir, "servlet-api-2.5"));
-		    jars.add(checkLib(libOutDir, "jetty-all-7.0.0"));
-		    jars.add(checkLib(libOutDir, "ini4j-0.5.2"));
-		    jars.add(checkLib(libOutDir, "syslog4j-0.9.46"));
-		    jars.add(checkLib(libOutDir, "jna-3.4.0"));
-		    jars.add(checkLib(libOutDir, "joda-time-2.2"));
-            jars.add(checkLib(libOutDir, "logback-core-1.1.2"));
-            jars.add(checkLib(libOutDir, "logback-classic-1.1.2"));
-            jars.add(checkLib(libOutDir, "slf4j-api-1.7.7"));
+			jars.add(checkLib(libOutDir, "servlet-api-2.5"));
+			jars.add(checkLib(libOutDir, "jetty-all-7.0.0"));
+			jars.add(checkLib(libOutDir, "ini4j-0.5.2"));
+			jars.add(checkLib(libOutDir, "syslog4j-0.9.46"));
+			jars.add(checkLib(libOutDir, "jna-3.4.0"));
+			jars.add(checkLib(libOutDir, "joda-time-2.2"));
+			jars.add(checkLib(libOutDir, "logback-core-1.1.2"));
+			jars.add(checkLib(libOutDir, "logback-classic-1.1.2"));
+			jars.add(checkLib(libOutDir, "slf4j-api-1.7.7"));
 		}
 		return jars;
 	}
@@ -1516,7 +1523,7 @@ public class JavaTypeGenerator {
 			throw new KidlParseException("Can't find lib-file for: " + libName);
 		if (libDir != null) {
 		    InputStream is = new FileInputStream(libFile);
-		    OutputStream os = libDir.openStream(libName + ".jar");
+		    OutputStream os = libDir.openStream(libFile.getName());
 		    TextUtils.copyStreams(is, os);
 		}
 		String ret = libFile.getCanonicalPath();
