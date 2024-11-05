@@ -12,7 +12,6 @@ import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -147,7 +146,7 @@ public class JavaTypeGenerator {
 		return processSpec(services, srcOutDir, packageParent, createServer, libOutDir, gwtPackage, url, null, null);
 	}
 	
-	public static JavaData processSpec(List<KbService> services, File srcOutDir, String packageParent, 
+	private static JavaData processSpec(List<KbService> services, File srcOutDir, String packageParent, 
 			boolean createServer, File libOutDir, String gwtPackage, URL url,
 			File buildXml, File makefile) throws Exception {		
         FileSaver libOut = libOutDir == null ? null : new DiskFileSaver(libOutDir);
@@ -157,7 +156,7 @@ public class JavaTypeGenerator {
 		        createServer, libOut, gwtPackage, url, buildXmlOut, makefileOut);
 	}
 
-	public static JavaData processSpec(List<KbService> services, FileSaver srcOut, String packageParent, 
+	private static JavaData processSpec(List<KbService> services, FileSaver srcOut, String packageParent, 
 	        boolean createServer, FileSaver libOut, String gwtPackage, URL url, 
 	        FileSaver buildXml, FileSaver makefile) throws Exception {
 	    return processSpec(services, srcOut, packageParent, createServer, libOut, gwtPackage, url, 
@@ -1500,9 +1499,15 @@ public class JavaTypeGenerator {
 	}
 	
 	public static String checkLib(FileSaver libDir, String libName) throws Exception {
+		// TODO CODECLEANUP try to eliminate this method entirely. It seems to be used to move
+		//                  urls to the lib directory which is never specified unless the
+		//                  --javalib argument is used with compile, which I wasn't even aware of
+		//                  and is never used in kbase AFAICT
 		File libFile = null;
-		for (URL url : ((URLClassLoader)(Thread.currentThread().getContextClassLoader())).getURLs()) {
-			File maybelibFile = new File(url.getPath());
+		final String classpath = System.getProperty("java.class.path");
+		final String sep = System.getProperty("path.separator");
+		for (final String cp: classpath.split(sep)) {
+			final File maybelibFile = new File(cp);
 			if (maybelibFile.isFile() && maybelibFile.getName().startsWith(libName) && 
 					maybelibFile.getName().endsWith(".jar"))
 				libFile = maybelibFile;
