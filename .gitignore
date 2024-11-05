@@ -32,3 +32,13 @@ src/java/us/kbase/mobu/git.properties
 /temp_test_files
 /test_scripts/ee_mock_service
 /lib/kbase_module_builder2.jar
+/test_scripts/test.cfg
+/.coverage
+/coverage.xml
+/htmlcov/
+/reports/
+/temp_test/
+/TestAsyncJava/
+/TestAsyncPerl/
+/TestAsyncPython/
+/temp_test_callback/
