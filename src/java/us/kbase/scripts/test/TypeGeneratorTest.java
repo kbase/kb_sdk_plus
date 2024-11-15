@@ -327,59 +327,64 @@ public class TypeGeneratorTest extends Assert {
 
 	@Test
 	public void testIncludsAndMultiModules2() throws Exception {
-	    startTest(11);
+		startTest(11);
 	}
 
-    @Test
-    public void testAsyncMethods() throws Exception {
-	    int testNum = 12;
-	    File workDir = prepareWorkDir(testNum);
-	    System.out.println();
-	    System.out.println("Test " + testNum + " (testAsyncMethods) is starting in directory: " + workDir.getName());
-	    Server jettyServer = startJobService(workDir, workDir);
-        int jobServicePort = jettyServer.getConnectors()[0].getLocalPort();
-	    try {
-	        String testPackage = rootPackageName + ".test" + testNum;
-	        File libDir = new File(workDir, "lib");
-	        File binDir = new File(workDir, "bin");
-	        JavaData parsingData = prepareJavaCode(testNum, workDir, testPackage, libDir, binDir, null, true);
-	        String moduleName = parsingData.getModules().get(0).getModuleName();
-	        String modulePackage = parsingData.getModules().get(0).getModulePackage();
-	        StringBuilder cp = new StringBuilder(binDir.getAbsolutePath());
-	        for (File f : libDir.listFiles())
-	            cp.append(":").append(f.getAbsolutePath());
-            File serverOutDir = preparePerlAndPyServerCode(testNum, workDir);
-	        List<String> lines = null;
-            System.setProperty("KB_JOB_CHECK_WAIT_TIME", "100");
-            File cfgFile = prepareDeployCfg(workDir, getModuleName(parsingData));
-            //////////////////////////////////////// Python server ///////////////////////////////////////////
-            lines = new ArrayList<String>(Arrays.asList("#!/bin/bash"));
-            lines.addAll(Arrays.asList(
-                    "export KB_DEPLOYMENT_CONFIG=" + cfgFile.getCanonicalPath(),
-                    "cd \"" + serverOutDir.getAbsolutePath() + "\"",
-                    "python " + findPythonServerScript(serverOutDir).getName() + " $1 $2 $3 > py_cli.out 2> py_cli.err"
-                    ));
-            TextUtils.writeFileLines(lines, new File(workDir, "run_" + moduleName + "_async_job.sh"));
-	        runPythonServerTest(testNum, true, workDir, testPackage, libDir, binDir, 
-	                parsingData, serverOutDir, jobServicePort, null, null);
-            //////////////////////////////////////// Java server ///////////////////////////////////////////
-            lines = new ArrayList<String>(Arrays.asList("#!/bin/bash"));
-            lines.addAll(Arrays.asList(
-                    "export KB_DEPLOYMENT_CONFIG=" + cfgFile.getCanonicalPath(),
-                    "java -cp \"" + cp + "\" " + testPackage + "." + modulePackage + "." + moduleName + "Server $1 $2 $3"
-                    ));
-            TextUtils.writeFileLines(lines, new File(workDir, "run_" + moduleName + "_async_job.sh"));
-            runJavaServerTest(testNum, true, workDir, testPackage, libDir, binDir, 
-                    parsingData, serverOutDir, jobServicePort, null);
-	    } finally {
-	        jettyServer.stop();
-	    }
+	@Test
+	public void testAsyncMethods() throws Exception {
+		// TODO PYTHONSERVER Revert the change that causes errors to be repr'd rather than
+		//                   str'd. Causes extra quotes around the string, which made this
+		//                   test fail. Fix Test12.java.properties when done.
+		// TODO TESTREINSTATEMENT see the comments in test12.spec.properties
+		int testNum = 12;
+		File workDir = prepareWorkDir(testNum);
+		System.out.println();
+		System.out.println("Test " + testNum + " (testAsyncMethods) is starting in directory: " + workDir.getName());
+		Server jettyServer = startJobService(workDir, workDir);
+		int jobServicePort = jettyServer.getConnectors()[0].getLocalPort();
+		try {
+			String testPackage = rootPackageName + ".test" + testNum;
+			File libDir = new File(workDir, "lib");
+			File binDir = new File(workDir, "bin");
+			JavaData parsingData = prepareJavaCode(testNum, workDir, testPackage, libDir, binDir, null, true);
+			String moduleName = parsingData.getModules().get(0).getModuleName();
+			String modulePackage = parsingData.getModules().get(0).getModulePackage();
+			StringBuilder cp = new StringBuilder(binDir.getAbsolutePath());
+			for (File f : libDir.listFiles()) {
+				cp.append(":").append(f.getAbsolutePath());
+			}
+			File serverOutDir = preparePerlAndPyServerCode(testNum, workDir);
+			List<String> lines = null;
+			System.setProperty("KB_JOB_CHECK_WAIT_TIME", "100");
+			File cfgFile = prepareDeployCfg(workDir, getModuleName(parsingData));
+			//////////////////////////////////////// Python server ///////////////////////////////////////////
+			lines = new ArrayList<String>(Arrays.asList("#!/bin/bash"));
+			lines.addAll(Arrays.asList(
+					"export KB_DEPLOYMENT_CONFIG=" + cfgFile.getCanonicalPath(),
+					"cd \"" + serverOutDir.getAbsolutePath() + "\"",
+					"python " + findPythonServerScript(serverOutDir).getName() + " $1 $2 $3 > py_cli.out 2> py_cli.err"
+					));
+			TextUtils.writeFileLines(lines, new File(workDir, "run_" + moduleName + "_async_job.sh"));
+			runPythonServerTest(testNum, true, workDir, testPackage, libDir, binDir, 
+					parsingData, serverOutDir, jobServicePort, null, null);
+			//////////////////////////////////////// Java server ///////////////////////////////////////////
+			lines = new ArrayList<String>(Arrays.asList("#!/bin/bash"));
+			lines.addAll(Arrays.asList(
+					"export KB_DEPLOYMENT_CONFIG=" + cfgFile.getCanonicalPath(),
+					"java -cp \"" + cp + "\" " + testPackage + "." + modulePackage + "." + moduleName + "Server $1 $2 $3"
+					));
+			TextUtils.writeFileLines(lines, new File(workDir, "run_" + moduleName + "_async_job.sh"));
+			runJavaServerTest(testNum, true, workDir, testPackage, libDir, binDir, 
+					parsingData, serverOutDir, jobServicePort, null);
+		} finally {
+			jettyServer.stop();
+		}
 	}
-    
-    @Test
-    public void testErrors() throws Exception {
-        startTest(13, true, true);
-    }
+
+	@Test
+	public void testErrors() throws Exception {
+		startTest(13, true, true);
+	}
 
     @Test
     public void testRpcContext() throws Exception {

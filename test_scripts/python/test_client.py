@@ -76,8 +76,7 @@ def main(argv):
             if error:
                 print('Unexpected error for method=' + method_name
                       + ", params=" + json.dumps(params) + ":")
-                print(getErrorMessage(error))
-                sys.exit(1)
+                raise error
             if expected_status == 'pass':
                 expected_ret = params
                 if len(expected_ret) == 1:
