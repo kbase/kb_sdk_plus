@@ -231,369 +231,310 @@ public class DockerClientServerTester {
             throw new IllegalStateException("Error building docker image");
         return imageName;
     }
-    
-    protected static void testClients(File moduleDir, String clientEndpointUrl,
-            boolean async, boolean dynamic, String serverType) throws Exception {
-        TypeGeneratorTest.ensureCasperJsInstalled();
-        String moduleName = moduleDir.getName();
-        File specFile = new File(moduleDir, moduleName + ".spec");
-        ClientInstaller clInst = new ClientInstaller(moduleDir, true);
-        String input = "Super-string";
-        // Java client
-        {
-            System.out.print("Java client -> " + serverType + " server ");
-            clInst.install("java", async, false, dynamic, "dev", false, 
-                    specFile.getCanonicalPath(), "lib2");
-            File binDir = new File(moduleDir, "bin");
-            if (!binDir.exists())
-                binDir.mkdir();
-            File srcDir = new File(moduleDir, "lib2/src");
-            File clientJavaFile = new File(srcDir, moduleName.toLowerCase() + "/" +
-                    moduleName + "Client.java");
-            String classPath = System.getProperty("java.class.path");
-            ProcessHelper.cmd("javac", "-g:source,lines", "-d", binDir.getCanonicalPath(), 
-                    "-sourcepath", srcDir.getCanonicalPath(), "-cp", classPath, 
-                    "-Xlint:deprecation").add(clientJavaFile.getCanonicalPath())
-                    .exec(moduleDir);
-            List<URL> cpUrls = new ArrayList<URL>();
-            cpUrls.add(binDir.toURI().toURL());
-            URLClassLoader urlcl = URLClassLoader.newInstance(cpUrls.toArray(
-                    new URL[cpUrls.size()]));
-            String clientClassName = moduleName.toLowerCase() + "." + moduleName + "Client";
-            Class<?> clientClass = urlcl.loadClass(clientClassName);
-            Object client = clientClass.getConstructor(URL.class, AuthToken.class)
-                    .newInstance(new URL(clientEndpointUrl), token);
-            clientClass.getMethod("setIsInsecureHttpConnectionAllowed", Boolean.TYPE).invoke(client, true);
-            Method method = null;
-            for (Method m : client.getClass().getMethods())
-                if (m.getName().equals("runTest"))
-                    method = m;
-            Object obj = null;
-            Exception error = null;
-            int javaAttempts = dynamic ? 10 : 1;
-            long time = -1;
-            long startTime = -1;
-            for (int i = 0; i < javaAttempts; i++) {
-                try {
-                    startTime = System.currentTimeMillis();
-                    obj = method.invoke(client, input, null);
-                    error = null;
-                    break;
-                } catch (Exception ex) {
-                    error = ex;
-                }
-                Thread.sleep(100);
-            }
-            method = null;
-            for (Method m : client.getClass().getMethods())
-                if (m.getName().equals("throwError"))
-                    method = m;
-            try {
-                method.invoke(client, input, null);
-                error = new Exception("Method throwError should fail");
-            } catch (Exception ex) {
-                if (ex instanceof InvocationTargetException) {
-                    ex = (Exception)ex.getCause();
-                }
-                if (ex instanceof ServerException) {
-                    String data = ((ServerException) ex).getData();
-                    if (!data.contains(input)) {
-                        error = new Exception("Server error doesn't include expected text: " + data);
-                    }
-                    // input string is found in server error data
-                } else {
-                    error = new Exception("Unexpected error type: " + ex.getClass().getName());
-                }
-            }
-            time = System.currentTimeMillis() - startTime;
-            System.out.println("(" + time + " ms)");
-            if (error != null)
-                throw error;
-            Assert.assertNotNull(obj);
-            Assert.assertTrue(obj instanceof String);
-            Assert.assertEquals(input, obj);
-        }
-        // Common non-java preparation
-        Map<String, Object> config = new LinkedHashMap<String, Object>();
-        config.put("package", moduleName + "Client");
-        config.put("class", moduleName);
-        Map<String, Object> test1 = new LinkedHashMap<String, Object>();
-        test1.put("method", "run_test");
-        test1.put("auth", true);
-        test1.put("params", Arrays.asList(input));
-        test1.put("outcome", UObject.getMapper().readValue("{\"status\":\"pass\"}", Map.class));
-        Map<String, Object> test2 = new LinkedHashMap<String, Object>();
-        test2.put("method", "throw_error");
-        test2.put("auth", true);
-        test2.put("params", Arrays.asList(input));
-        test2.put("outcome", UObject.getMapper().readValue("{\"status\":\"fail\", " +
-        		"\"error\": [\"" + input + "\"]}", Map.class));
-        config.put("tests", Arrays.asList(test1, test2));
-        File configFile = new File(moduleDir, "tests.json");
-        UObject.getMapper().writeValue(configFile, config);
-        File lib2 = new File(moduleDir, "lib2");
-        // Python client
-        System.out.print("Python client -> " + serverType + " server ");
-        clInst.install("python", async, false, dynamic, "dev", false, 
-                specFile.getCanonicalPath(), "lib2");
-        File shellFile = new File(moduleDir, "test_python_client.sh");
-        List<String> lines = new ArrayList<String>(Arrays.asList("#!/bin/bash"));
-        lines.add("python " + new File("test_scripts/python/test_client.py").getAbsolutePath() + 
-                " -t " + configFile.getAbsolutePath() + " -o " + token.getToken() +
-                " -e " + clientEndpointUrl);
-        TextUtils.writeFileLines(lines, shellFile);
-        {
-            long startTime = System.currentTimeMillis();
-            ProcessHelper ph = ProcessHelper.cmd("bash", shellFile.getCanonicalPath()).exec(
-                    new File(lib2, moduleName).getCanonicalFile(), null, true, true);
-            System.out.println("(" + (System.currentTimeMillis() - startTime) + " ms)");
-            int exitCode = ph.getExitCode();
-            if (exitCode != 0) {
-                String out = ph.getSavedOutput();
-                if (!out.isEmpty())
-                    System.out.println("Python client output:\n" + out);
-                String err = ph.getSavedErrors();
-                if (!err.isEmpty())
-                    System.err.println("Python client errors:\n" + err);
-            }
-            Assert.assertEquals("Python client exit code should be 0", 0, exitCode);
-        }
-        // Perl client
-        System.out.print("Perl client -> " + serverType + " server ");
-        Map<String, Object> config2 = new LinkedHashMap<String, Object>(config);
-        config2.put("package", moduleName + "::" + moduleName + "Client");
-        File configFilePerl = new File(moduleDir, "tests_perl.json");
-        UObject.getMapper().writeValue(configFilePerl, config2);
-        clInst.install("perl", async, false, dynamic, "dev", false, 
-                specFile.getCanonicalPath(), "lib2");
-        shellFile = new File(moduleDir, "test_perl_client.sh");
-        lines = new ArrayList<String>(Arrays.asList("#!/bin/bash"));
-        String pathToSdk = new File(".").getCanonicalPath();
-        lines.add("export PERL5LIB=" + pathToSdk + "/lib/:" +
-                pathToSdk + "/submodules/auth/Bio-KBase-Auth/lib:$PERL5LIB");
-        lines.add("perl " + new File("test_scripts/perl/test-client.pl").getAbsolutePath() + 
-                " -tests " + configFilePerl.getAbsolutePath() + " -token " + token.getToken() + 
-                " -endpoint " + clientEndpointUrl
-                );
-        TextUtils.writeFileLines(lines, shellFile);
-        {
-            long startTime = System.currentTimeMillis();
-            ProcessHelper ph = ProcessHelper.cmd("bash", shellFile.getCanonicalPath()).exec(
-                    lib2.getCanonicalFile(), null, true, true);
-            System.out.println("(" + (System.currentTimeMillis() - startTime) + " ms)");
-            int exitCode = ph.getExitCode();
-            if (exitCode != 0) {
-                String out = ph.getSavedOutput();  //outSw.toString();
-                if (!out.isEmpty())
-                    System.out.println("Perl client output:\n" + out);
-                String err = ph.getSavedErrors();  //errSw.toString();
-                if (!err.isEmpty())
-                    System.err.println("Perl client errors:\n" + err);
-            }
-            Assert.assertEquals("Perl client exit code should be 0", 0, exitCode);
-        }
-        // JavaScript
-        System.out.print("JavaScript client -> " + serverType + " server ");
-        clInst.install("javascript", async, false, dynamic, "dev", false, 
-                specFile.getCanonicalPath(), "lib2");
-        shellFile = new File(moduleDir, "test_js_client.sh");
-        lines = new ArrayList<String>(Arrays.asList("#!/bin/bash"));
-        lines.addAll(Arrays.asList(
-                "casperjs test " + new File("test_scripts/js/test-client.js").getAbsolutePath() +
-                " --jq=" + new File("test_scripts/js/jquery-1.10.2.min.js")
-                .getAbsolutePath() + " --tests=" + configFile.getAbsolutePath() + 
-                " --endpoint=" + clientEndpointUrl + " --token=\"" + token.getToken() + "\""
-                ));
-        TextUtils.writeFileLines(lines, shellFile);
-        {
-            long startTime = System.currentTimeMillis();
-            ProcessHelper ph = ProcessHelper.cmd("bash", shellFile.getCanonicalPath()).exec(
-                    new File(lib2, moduleName), null, true, true);
-            System.out.println("(" + (System.currentTimeMillis() - startTime) + " ms)");
-            int exitCode = ph.getExitCode();
-            if (exitCode != 0) {
-                String out = ph.getSavedOutput();
-                if (!out.isEmpty())
-                    System.out.println("JavaScript client output:\n" + out);
-                String err = ph.getSavedErrors();
-                if (!err.isEmpty())
-                    System.err.println("JavaScript client errors:\n" + err);
-            }
-            Assert.assertEquals("JavaScript client exit code should be 0", 0, exitCode);
-        }
-    }
+	
+	protected static void testClients(
+			final File moduleDir,
+			final String clientEndpointUrl,
+			final boolean async,
+			final boolean dynamic,
+			final String serverType)
+					throws Exception {
+		String moduleName = moduleDir.getName();
+		File specFile = new File(moduleDir, moduleName + ".spec");
+		ClientInstaller clInst = new ClientInstaller(moduleDir, true);
+		String input = "Super-string";
+		// Java client
+		{
+			System.out.print("Java client -> " + serverType + " server ");
+			clInst.install("java", async, false, dynamic, "dev", false, 
+					specFile.getCanonicalPath(), "lib2");
+			File binDir = new File(moduleDir, "bin");
+			if (!binDir.exists())
+				binDir.mkdir();
+			File srcDir = new File(moduleDir, "lib2/src");
+			File clientJavaFile = new File(srcDir, moduleName.toLowerCase() + "/" +
+					moduleName + "Client.java");
+			String classPath = System.getProperty("java.class.path");
+			ProcessHelper.cmd("javac", "-g:source,lines", "-d", binDir.getCanonicalPath(), 
+					"-sourcepath", srcDir.getCanonicalPath(), "-cp", classPath, 
+					"-Xlint:deprecation").add(clientJavaFile.getCanonicalPath())
+			.exec(moduleDir);
+			List<URL> cpUrls = new ArrayList<URL>();
+			cpUrls.add(binDir.toURI().toURL());
+			URLClassLoader urlcl = URLClassLoader.newInstance(cpUrls.toArray(
+					new URL[cpUrls.size()]));
+			String clientClassName = moduleName.toLowerCase() + "." + moduleName + "Client";
+			Class<?> clientClass = urlcl.loadClass(clientClassName);
+			Object client = clientClass.getConstructor(URL.class, AuthToken.class)
+					.newInstance(new URL(clientEndpointUrl), token);
+			clientClass.getMethod("setIsInsecureHttpConnectionAllowed", Boolean.TYPE).invoke(client, true);
+			Method method = null;
+			for (Method m : client.getClass().getMethods())
+				if (m.getName().equals("runTest"))
+					method = m;
+			Object obj = null;
+			Exception error = null;
+			int javaAttempts = dynamic ? 10 : 1;
+			long time = -1;
+			long startTime = -1;
+			for (int i = 0; i < javaAttempts; i++) {
+				try {
+					startTime = System.currentTimeMillis();
+					obj = method.invoke(client, input, null);
+					error = null;
+					break;
+				} catch (Exception ex) {
+					error = ex;
+				}
+				Thread.sleep(100);
+			}
+			method = null;
+			for (Method m : client.getClass().getMethods())
+				if (m.getName().equals("throwError"))
+					method = m;
+			try {
+				method.invoke(client, input, null);
+				error = new Exception("Method throwError should fail");
+			} catch (Exception ex) {
+				if (ex instanceof InvocationTargetException) {
+					ex = (Exception)ex.getCause();
+				}
+				if (ex instanceof ServerException) {
+					String data = ((ServerException) ex).getData();
+					if (!data.contains(input)) {
+						error = new Exception("Server error doesn't include expected text: " + data);
+					}
+					// input string is found in server error data
+				} else {
+					error = new Exception("Unexpected error type: " + ex.getClass().getName());
+				}
+			}
+			time = System.currentTimeMillis() - startTime;
+			System.out.println("(" + time + " ms)");
+			if (error != null)
+				throw error;
+			Assert.assertNotNull(obj);
+			Assert.assertTrue(obj instanceof String);
+			Assert.assertEquals(input, obj);
+		}
+		// Common non-java preparation
+		Map<String, Object> config = new LinkedHashMap<String, Object>();
+		config.put("package", moduleName + "Client");
+		config.put("class", moduleName);
+		Map<String, Object> test1 = new LinkedHashMap<String, Object>();
+		test1.put("method", "run_test");
+		test1.put("auth", true);
+		test1.put("params", Arrays.asList(input));
+		test1.put("outcome", UObject.getMapper().readValue("{\"status\":\"pass\"}", Map.class));
+		Map<String, Object> test2 = new LinkedHashMap<String, Object>();
+		test2.put("method", "throw_error");
+		test2.put("auth", true);
+		test2.put("params", Arrays.asList(input));
+		test2.put("outcome", UObject.getMapper().readValue("{\"status\":\"fail\", " +
+				"\"error\": [\"" + input + "\"]}", Map.class));
+		config.put("tests", Arrays.asList(test1, test2));
+		File configFile = new File(moduleDir, "tests.json");
+		UObject.getMapper().writeValue(configFile, config);
+		File lib2 = new File(moduleDir, "lib2");
+		// Python client
+		System.out.print("Python client -> " + serverType + " server ");
+		clInst.install("python", async, false, dynamic, "dev", false, 
+				specFile.getCanonicalPath(), "lib2");
+		File shellFile = new File(moduleDir, "test_python_client.sh");
+		List<String> lines = new ArrayList<String>(Arrays.asList("#!/bin/bash"));
+		lines.add("python " + new File("test_scripts/python/test_client.py").getAbsolutePath() + 
+				" -t " + configFile.getAbsolutePath() + " -o " + token.getToken() +
+				" -e " + clientEndpointUrl);
+		TextUtils.writeFileLines(lines, shellFile);
+		{
+			long startTime = System.currentTimeMillis();
+			ProcessHelper ph = ProcessHelper.cmd("bash", shellFile.getCanonicalPath()).exec(
+					new File(lib2, moduleName).getCanonicalFile(), null, true, true);
+			System.out.println("(" + (System.currentTimeMillis() - startTime) + " ms)");
+			int exitCode = ph.getExitCode();
+			if (exitCode != 0) {
+				String out = ph.getSavedOutput();
+				if (!out.isEmpty())
+					System.out.println("Python client output:\n" + out);
+				String err = ph.getSavedErrors();
+				if (!err.isEmpty())
+					System.err.println("Python client errors:\n" + err);
+			}
+			Assert.assertEquals("Python client exit code should be 0", 0, exitCode);
+		}
+		// Perl client
+		System.out.print("Perl client -> " + serverType + " server ");
+		Map<String, Object> config2 = new LinkedHashMap<String, Object>(config);
+		config2.put("package", moduleName + "::" + moduleName + "Client");
+		File configFilePerl = new File(moduleDir, "tests_perl.json");
+		UObject.getMapper().writeValue(configFilePerl, config2);
+		clInst.install("perl", async, false, dynamic, "dev", false, 
+				specFile.getCanonicalPath(), "lib2");
+		shellFile = new File(moduleDir, "test_perl_client.sh");
+		lines = new ArrayList<String>(Arrays.asList("#!/bin/bash"));
+		String pathToSdk = new File(".").getCanonicalPath();
+		lines.add("export PERL5LIB=" + pathToSdk + "/lib/:" +
+				pathToSdk + "/submodules/auth/Bio-KBase-Auth/lib:$PERL5LIB");
+		lines.add("perl " + new File("test_scripts/perl/test-client.pl").getAbsolutePath() + 
+				" -tests " + configFilePerl.getAbsolutePath() + " -token " + token.getToken() + 
+				" -endpoint " + clientEndpointUrl
+				);
+		TextUtils.writeFileLines(lines, shellFile);
+		{
+			long startTime = System.currentTimeMillis();
+			ProcessHelper ph = ProcessHelper.cmd("bash", shellFile.getCanonicalPath()).exec(
+					lib2.getCanonicalFile(), null, true, true);
+			System.out.println("(" + (System.currentTimeMillis() - startTime) + " ms)");
+			int exitCode = ph.getExitCode();
+			if (exitCode != 0) {
+				String out = ph.getSavedOutput();  //outSw.toString();
+				if (!out.isEmpty())
+					System.out.println("Perl client output:\n" + out);
+				String err = ph.getSavedErrors();  //errSw.toString();
+				if (!err.isEmpty())
+					System.err.println("Perl client errors:\n" + err);
+			}
+			Assert.assertEquals("Perl client exit code should be 0", 0, exitCode);
+		}
+	}
 
-    protected static void testStatus(File moduleDir, String clientEndpointUrl,
-            boolean async, boolean dynamic, String serverType) throws Exception {
-        TypeGeneratorTest.ensureCasperJsInstalled();
-        String moduleName = moduleDir.getName();
-        File specFile = new File(moduleDir, moduleName + ".spec");
-        // Java client
-        System.out.println("Java client (status) -> " + serverType + " server");
-        ClientInstaller clInst = new ClientInstaller(moduleDir, true);
-        clInst.install("java", async, false, dynamic, "dev", false, 
-                specFile.getCanonicalPath(), "lib2");
-        File binDir = new File(moduleDir, "bin");
-        if (!binDir.exists())
-            binDir.mkdir();
-        File srcDir = new File(moduleDir, "lib2/src");
-        File clientJavaFile = new File(srcDir, moduleName.toLowerCase() + "/" +
-                moduleName + "Client.java");
-        String classPath = System.getProperty("java.class.path");
-        ProcessHelper.cmd("javac", "-g:source,lines", "-d", binDir.getCanonicalPath(), 
-                "-sourcepath", srcDir.getCanonicalPath(), "-cp", classPath, 
-                "-Xlint:deprecation").add(clientJavaFile.getCanonicalPath())
-                .exec(moduleDir);
-        List<URL> cpUrls = new ArrayList<URL>();
-        cpUrls.add(binDir.toURI().toURL());
-        URLClassLoader urlcl = URLClassLoader.newInstance(cpUrls.toArray(
-                new URL[cpUrls.size()]));
-        String clientClassName = moduleName.toLowerCase() + "." + moduleName + "Client";
-        Object client;
-        if (async) {
-            Class<?> clientClass = urlcl.loadClass(clientClassName);
-            client = clientClass.getConstructor(URL.class, AuthToken.class)
-                    .newInstance(new URL(clientEndpointUrl), token);
-            clientClass.getMethod("setIsInsecureHttpConnectionAllowed", Boolean.TYPE).invoke(client, true);
+	protected static void testStatus(
+			final File moduleDir,
+			final String clientEndpointUrl,
+			final boolean async,
+			final boolean dynamic,
+			final String serverType)
+			throws Exception {
+		String moduleName = moduleDir.getName();
+		File specFile = new File(moduleDir, moduleName + ".spec");
+		// Java client
+		System.out.println("Java client (status) -> " + serverType + " server");
+		ClientInstaller clInst = new ClientInstaller(moduleDir, true);
+		clInst.install("java", async, false, dynamic, "dev", false, 
+				specFile.getCanonicalPath(), "lib2");
+		File binDir = new File(moduleDir, "bin");
+		if (!binDir.exists())
+			binDir.mkdir();
+		File srcDir = new File(moduleDir, "lib2/src");
+		File clientJavaFile = new File(srcDir, moduleName.toLowerCase() + "/" +
+				moduleName + "Client.java");
+		String classPath = System.getProperty("java.class.path");
+		ProcessHelper.cmd("javac", "-g:source,lines", "-d", binDir.getCanonicalPath(), 
+				"-sourcepath", srcDir.getCanonicalPath(), "-cp", classPath, 
+				"-Xlint:deprecation").add(clientJavaFile.getCanonicalPath())
+		.exec(moduleDir);
+		List<URL> cpUrls = new ArrayList<URL>();
+		cpUrls.add(binDir.toURI().toURL());
+		URLClassLoader urlcl = URLClassLoader.newInstance(cpUrls.toArray(
+				new URL[cpUrls.size()]));
+		String clientClassName = moduleName.toLowerCase() + "." + moduleName + "Client";
+		Object client;
+		if (async) {
+			Class<?> clientClass = urlcl.loadClass(clientClassName);
+			client = clientClass.getConstructor(URL.class, AuthToken.class)
+					.newInstance(new URL(clientEndpointUrl), token);
+			clientClass.getMethod("setIsInsecureHttpConnectionAllowed", Boolean.TYPE).invoke(client, true);
 
-        } else {
-            Class<?> clientClass = urlcl.loadClass(clientClassName);
-            client = clientClass.getConstructor(URL.class)
-                    .newInstance(new URL(clientEndpointUrl));
-        }
-        Method method = null;
-        for (Method m : client.getClass().getMethods())
-            if (m.getName().equals("status"))
-                method = m;
-        Object obj = null;
-        Exception error = null;
-        int javaAttempts = dynamic ? 10 : 1;
-        for (int i = 0; i < javaAttempts; i++) {
-            try {
-                obj = method.invoke(client, (Object)null);
-                error = null;
-                break;
-            } catch (Exception ex) {
-                error = ex;
-            }
-            Thread.sleep(100);
-        }
-        if (error != null)
-            throw error;
-        checkStatusResponse(obj);
-        // Common non-java preparation
-        String pcg = moduleName + "Client";
-        String cls = moduleName;
-        String mtd = "status";
-        File inputFile = new File(moduleDir, "status_input.json");
-        FileUtils.writeStringToFile(inputFile, "[]");
-        File outputFile = new File(moduleDir, "status_output.json");
-        File errorFile = new File(moduleDir, "status_error.json");
-        File lib2 = new File(moduleDir, "lib2");
-        // Python
-        System.out.println("Python client (status) -> " + serverType + " server");
-        clInst.install("python", async, false, dynamic, "dev", false, 
-                specFile.getCanonicalPath(), "lib2");
-        {
-            File shellFile = new File(moduleDir, "test_python_client.sh");
-            List<String> lines = new ArrayList<String>(Arrays.asList("#!/bin/bash"));
-            lines.add("python " + new File("test_scripts/python/run_client.py").getAbsolutePath() +
-                    " -e " + clientEndpointUrl + " -g " + pcg + " -c " + cls + " -m " + mtd + 
-                    " -i " + inputFile.getAbsolutePath() + " -o " + outputFile.getAbsolutePath() + 
-                    " -r " + errorFile.getAbsolutePath() + 
-                    (async ? (" -t " + token.getToken()) : ""));
-            TextUtils.writeFileLines(lines, shellFile);
-            ProcessHelper ph = ProcessHelper.cmd("bash", shellFile.getCanonicalPath()).exec(
-                    new File(lib2, moduleName).getCanonicalFile(), null, true, true);
-            int exitCode = ph.getExitCode();
-            if (exitCode != 0) {
-                String out = ph.getSavedOutput();
-                if (!out.isEmpty())
-                    System.out.println("Python client runner output:\n" + out);
-                String err = ph.getSavedErrors();
-                if (!err.isEmpty())
-                    System.err.println("Python client runner errors:\n" + err);
-                Assert.assertEquals("Python client runner exit code should be 0", 0, exitCode);
-            } else {
-                checkStatusResponse(outputFile, errorFile);
-            }
-        }
-        // Perl client
-        if (outputFile.exists())
-            outputFile.delete();
-        if (errorFile.exists())
-            errorFile.delete();
-        System.out.println("Perl client (status) -> " + serverType + " server");
-        clInst.install("perl", async, false, dynamic, "dev", false, 
-                specFile.getCanonicalPath(), "lib2");
-        {
-            File shellFile = new File(moduleDir, "test_perl_client.sh");
-            List<String> lines = new ArrayList<String>(Arrays.asList("#!/bin/bash"));
-            String pathToSdk = new File(".").getCanonicalPath();
-            lines.add("export PERL5LIB=" + pathToSdk + "/lib/:" +
-                    pathToSdk + "/submodules/auth/Bio-KBase-Auth/lib:$PERL5LIB");
-            lines.add("perl " + new File("test_scripts/perl/run-client.pl").getAbsolutePath() + 
-                    " -package " + moduleName + "::" + moduleName + "Client" + 
-                    " -method " + mtd + " -input " + inputFile.getAbsolutePath() + 
-                    " -output " + outputFile.getAbsolutePath() + 
-                    " -error " + errorFile.getAbsolutePath() +
-                    " -endpoint " + clientEndpointUrl +
-                    (async ? (" -token " + token.getToken()) : ""));
-            TextUtils.writeFileLines(lines, shellFile);
-            ProcessHelper ph = ProcessHelper.cmd("bash", shellFile.getCanonicalPath()).exec(
-                    lib2.getCanonicalFile(), null, true, true);
-            int exitCode = ph.getExitCode();
-            if (exitCode != 0) {
-                String out = ph.getSavedOutput();  //outSw.toString();
-                if (!out.isEmpty())
-                    System.out.println("Perl client runner output:\n" + out);
-                String err = ph.getSavedErrors();  //errSw.toString();
-                if (!err.isEmpty())
-                    System.err.println("Perl client runner errors:\n" + err);
-                Assert.assertEquals("Perl client runner exit code should be 0", 0, exitCode);
-            } else {
-                checkStatusResponse(outputFile, errorFile);
-            }
-        }
-        // JavaScript
-        if (outputFile.exists()) {
-            outputFile.delete();
-        }
-        if (errorFile.exists()) {
-            errorFile.delete();
-        }
-        System.out.println("JavaScript client (status) -> " + serverType + " server");
-        clInst.install("javascript", async, false, dynamic, "dev", false, 
-                specFile.getCanonicalPath(), "lib2");
-        {
-            File shellFile = new File(moduleDir, "test_js_client.sh");
-            List<String> lines = new ArrayList<String>(Arrays.asList("#!/bin/bash"));
-            lines.addAll(Arrays.asList(
-                    "phantomjs " + new File("test_scripts/js/run-client.js").getAbsolutePath() +
-                    " --jq=" + new File("test_scripts/js/jquery-1.10.2.min.js")
-                    .getAbsolutePath() + " --input=" + inputFile.getAbsolutePath() + 
-                    " --output=" + outputFile.getAbsolutePath() + 
-                    " --error=" + errorFile.getAbsolutePath() + " --package=" + pcg + 
-                    " --class=" + cls + " --method=" + mtd + " --endpoint=" + clientEndpointUrl +
-                    (async ? (" --token=\"" + token.getToken() + "\"") : "")
-                    ));
-            TextUtils.writeFileLines(lines, shellFile);
-            ProcessHelper ph = ProcessHelper.cmd("bash", shellFile.getCanonicalPath()).exec(
-                    new File(lib2, moduleName), null, true, true);
-            int exitCode = ph.getExitCode();
-            if (exitCode != 0) {
-                String out = ph.getSavedOutput();
-                if (!out.isEmpty())
-                    System.out.println("JavaScript client runner output:\n" + out);
-                String err = ph.getSavedErrors();
-                if (!err.isEmpty())
-                    System.err.println("JavaScript client runner errors:\n" + err);
-                Assert.assertEquals("JavaScript client runner exit code should be 0", 0, exitCode);
-            } else {
-                checkStatusResponse(outputFile, errorFile);
-            }
-        }
-    }
+		} else {
+			Class<?> clientClass = urlcl.loadClass(clientClassName);
+			client = clientClass.getConstructor(URL.class)
+					.newInstance(new URL(clientEndpointUrl));
+		}
+		Method method = null;
+		for (Method m : client.getClass().getMethods())
+			if (m.getName().equals("status"))
+				method = m;
+		Object obj = null;
+		Exception error = null;
+		int javaAttempts = dynamic ? 10 : 1;
+		for (int i = 0; i < javaAttempts; i++) {
+			try {
+				obj = method.invoke(client, (Object)null);
+				error = null;
+				break;
+			} catch (Exception ex) {
+				error = ex;
+			}
+			Thread.sleep(100);
+		}
+		if (error != null)
+			throw error;
+		checkStatusResponse(obj);
+		// Common non-java preparation
+		String pcg = moduleName + "Client";
+		String cls = moduleName;
+		String mtd = "status";
+		File inputFile = new File(moduleDir, "status_input.json");
+		FileUtils.writeStringToFile(inputFile, "[]");
+		File outputFile = new File(moduleDir, "status_output.json");
+		File errorFile = new File(moduleDir, "status_error.json");
+		File lib2 = new File(moduleDir, "lib2");
+		// Python
+		System.out.println("Python client (status) -> " + serverType + " server");
+		clInst.install("python", async, false, dynamic, "dev", false, 
+				specFile.getCanonicalPath(), "lib2");
+		{
+			File shellFile = new File(moduleDir, "test_python_client.sh");
+			List<String> lines = new ArrayList<String>(Arrays.asList("#!/bin/bash"));
+			lines.add("python " + new File("test_scripts/python/run_client.py").getAbsolutePath() +
+					" -e " + clientEndpointUrl + " -g " + pcg + " -c " + cls + " -m " + mtd + 
+					" -i " + inputFile.getAbsolutePath() + " -o " + outputFile.getAbsolutePath() + 
+					" -r " + errorFile.getAbsolutePath() + 
+					(async ? (" -t " + token.getToken()) : ""));
+			TextUtils.writeFileLines(lines, shellFile);
+			ProcessHelper ph = ProcessHelper.cmd("bash", shellFile.getCanonicalPath()).exec(
+					new File(lib2, moduleName).getCanonicalFile(), null, true, true);
+			int exitCode = ph.getExitCode();
+			if (exitCode != 0) {
+				String out = ph.getSavedOutput();
+				if (!out.isEmpty())
+					System.out.println("Python client runner output:\n" + out);
+				String err = ph.getSavedErrors();
+				if (!err.isEmpty())
+					System.err.println("Python client runner errors:\n" + err);
+				Assert.assertEquals("Python client runner exit code should be 0", 0, exitCode);
+			} else {
+				checkStatusResponse(outputFile, errorFile);
+			}
+		}
+		// Perl client
+		if (outputFile.exists())
+			outputFile.delete();
+		if (errorFile.exists())
+			errorFile.delete();
+		System.out.println("Perl client (status) -> " + serverType + " server");
+		clInst.install("perl", async, false, dynamic, "dev", false, 
+				specFile.getCanonicalPath(), "lib2");
+		{
+			File shellFile = new File(moduleDir, "test_perl_client.sh");
+			List<String> lines = new ArrayList<String>(Arrays.asList("#!/bin/bash"));
+			String pathToSdk = new File(".").getCanonicalPath();
+			lines.add("export PERL5LIB=" + pathToSdk + "/lib/:" +
+					pathToSdk + "/submodules/auth/Bio-KBase-Auth/lib:$PERL5LIB");
+			lines.add("perl " + new File("test_scripts/perl/run-client.pl").getAbsolutePath() + 
+					" -package " + moduleName + "::" + moduleName + "Client" + 
+					" -method " + mtd + " -input " + inputFile.getAbsolutePath() + 
+					" -output " + outputFile.getAbsolutePath() + 
+					" -error " + errorFile.getAbsolutePath() +
+					" -endpoint " + clientEndpointUrl +
+					(async ? (" -token " + token.getToken()) : ""));
+			TextUtils.writeFileLines(lines, shellFile);
+			ProcessHelper ph = ProcessHelper.cmd("bash", shellFile.getCanonicalPath()).exec(
+					lib2.getCanonicalFile(), null, true, true);
+			int exitCode = ph.getExitCode();
+			if (exitCode != 0) {
+				String out = ph.getSavedOutput();  //outSw.toString();
+				if (!out.isEmpty())
+					System.out.println("Perl client runner output:\n" + out);
+				String err = ph.getSavedErrors();  //errSw.toString();
+				if (!err.isEmpty())
+					System.err.println("Perl client runner errors:\n" + err);
+				Assert.assertEquals("Perl client runner exit code should be 0", 0, exitCode);
+			} else {
+				checkStatusResponse(outputFile, errorFile);
+			}
+		}
+	}
 
     protected static void checkStatusResponse(File output, File error) throws Exception {
         if (!output.exists()) {

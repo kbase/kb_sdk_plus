@@ -3,7 +3,6 @@ package us.kbase.mobu.compiler;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
 import java.io.Writer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -15,32 +14,13 @@ import java.util.Map;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 
-import us.kbase.jkidl.FileIncludeProvider;
 import us.kbase.jkidl.IncludeProvider;
 import us.kbase.kidl.KbService;
-import us.kbase.kidl.KidlParser;
 import us.kbase.mobu.util.FileSaver;
 import us.kbase.templates.TemplateFormatter;
 
 public class TemplateBasedGenerator {
 
-    public static void generate(Reader specReader, String defaultUrl, 
-            boolean genJs, String jsClientName,
-            boolean genPerl, String perlClientName, boolean genPerlServer, 
-            String perlServerName, String perlImplName, String perlPsgiName, 
-            boolean genPython, String pythonClientName, boolean genPythonServer,
-            String pythonServerName, String pythonImplName, boolean enableRetries, 
-            IncludeProvider ip, FileSaver output) throws Exception {
-        if (ip == null)
-            ip = new FileIncludeProvider(new File("."));
-        List<KbService> srvs = KidlParser.parseSpec(KidlParser.parseSpecInt(specReader, null, ip));
-        generate(srvs, defaultUrl, genJs, jsClientName, genPerl, perlClientName, genPerlServer, 
-                perlServerName, perlImplName, perlPsgiName, genPython, pythonClientName, 
-                genPythonServer, pythonServerName, pythonImplName, false, null, false, null, null, 
-                enableRetries, ip, output, null, null, false, null,
-                null, null, null, null);
-    }
-    
     public static boolean genPerlServer(boolean genPerlServer, 
             String perlServerName, String perlImplName, String perlPsgiName) {
         return genPerlServer || perlServerName != null || perlImplName != null || perlPsgiName != null;
@@ -110,6 +90,8 @@ public class TemplateBasedGenerator {
             if (pythonServerName == null)
                 pythonServerName = service.getName() + "Server";
         }
+        if (genPython && pythonClientName == null)
+            pythonClientName = service.getName() + "Client";
         genRServer = genPythonServer(genRServer, rServerName, rImplName);
         if (genRServer) {
             System.out.println(
@@ -334,8 +316,8 @@ public class TemplateBasedGenerator {
             }
         }
 
+        copyResourceFile(relativePyPath, output, "authclient.py");
         if (client) {
-            copyResourceFile(relativePyPath, output, "authclient.py");
             copyResourceFile(relativePyPath, output, "baseclient.py");
         }
     }
