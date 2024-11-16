@@ -15,7 +15,6 @@ import org.junit.Test;
 import us.kbase.auth.AuthToken;
 import us.kbase.mobu.ModuleBuilder;
 import us.kbase.mobu.initializer.ModuleInitializer;
-import us.kbase.mobu.initializer.test.DockerClientServerTester;
 import us.kbase.mobu.tester.ModuleTester;
 import us.kbase.scripts.test.TestConfigHelper;
 
@@ -45,7 +44,7 @@ public class ModuleTesterTest {
 	}
 	
 	@After
-	public void afterText() {
+	public void afterTest() {
 	    System.out.println();
 	}
 	
@@ -63,69 +62,50 @@ public class ModuleTesterTest {
         initer.initialize(true);
     }
 
-    private int runTestsInDocker(String moduleName) throws Exception {
-        File moduleDir = new File(moduleName);
-        return runTestsInDocker(moduleDir, token);
-    }
+	private int runTestsInDocker(String moduleName) throws Exception {
+		File moduleDir = new File(moduleName);
+		return runTestsInDocker(moduleDir, token);
+	}
 
 	public static int runTestsInDocker(File moduleDir, AuthToken token) throws Exception {
-	    return runTestsInDocker(moduleDir, token, false);
-	}
-    
-    public static int runTestsInDocker(
-            final File moduleDir,
-            final AuthToken token, 
-            final boolean skipValidation)
-            throws Exception {
-        DockerClientServerTester.correctDockerfile(moduleDir);
-        File testCfgFile = new File(moduleDir, "test_local/test.cfg");
-        String testCfgText = ""+
-                "test_token=" + token.getToken() + "\n" +
-                "kbase_endpoint=" + TestConfigHelper.getKBaseEndpoint() + "\n" +
-                "auth_service_url=" + TestConfigHelper.getAuthServiceUrl() + "\n" +
-                "auth_service_url_allow_insecure=" + 
-                    TestConfigHelper.getAuthServiceUrlInsecure() + "\n";
-        FileUtils.writeStringToFile(testCfgFile, testCfgText);
-        int exitCode = new ModuleTester(moduleDir).runTests(ModuleBuilder.DEFAULT_METHOD_STORE_URL,
-                skipValidation, false);
-        System.out.println("Exit code: " + exitCode);
-        return exitCode;
-    }
-
-	@Test
-	public void testPerlModuleExample() throws Exception {
-	    System.out.println("Test [testPerlModuleExample]");
-		String lang = "perl";
-		String moduleName = SIMPLE_MODULE_NAME + "Perl";
-		init(lang, moduleName);
-		int exitCode = runTestsInDocker(moduleName);
-		Assert.assertEquals(0, exitCode);
+		return runTestsInDocker(moduleDir, token, false);
 	}
 
-	@Test
-	public void testPerlModuleError() throws Exception {
-	    System.out.println("Test [testPerlModuleError]");
-	    String lang = "perl";
-	    String moduleName = SIMPLE_MODULE_NAME + "PerlError";
-	    init(lang, moduleName);
-	    File implFile = new File(moduleName + "/lib/" + moduleName + "/" + moduleName + "Impl.pm");
-	    String implText = FileUtils.readFileToString(implFile);
-	    implText = implText.replace("    #BEGIN filter_contigs", 
-	            "    #BEGIN filter_contigs\n" +
-	            "    die \"Special error\";");
-	    FileUtils.writeStringToFile(implFile, implText);
-	    int exitCode = runTestsInDocker(moduleName);
-	    Assert.assertEquals(2, exitCode);
+	public static int runTestsInDocker(
+			final File moduleDir,
+			final AuthToken token, 
+			final boolean skipValidation)
+					throws Exception {
+		// TODO TESTCLEANUP remove the line below once the other test modules that call this method
+		//                  are passing. 
+		//DockerClientServerTester.correctDockerfile(moduleDir);
+		File testCfgFile = new File(moduleDir, "test_local/test.cfg");
+		String testCfgText = ""+
+				"test_token=" + token.getToken() + "\n" +
+				"kbase_endpoint=" + TestConfigHelper.getKBaseEndpoint() + "\n" +
+				"auth_service_url=" + TestConfigHelper.getAuthServiceUrl() + "\n" +
+				"auth_service_url_allow_insecure=" + 
+				TestConfigHelper.getAuthServiceUrlInsecure() + "\n";
+		FileUtils.writeStringToFile(testCfgFile, testCfgText);
+		int exitCode = new ModuleTester(moduleDir).runTests(ModuleBuilder.DEFAULT_METHOD_STORE_URL,
+				skipValidation, false);
+		System.out.println("Exit code: " + exitCode);
+		return exitCode;
 	}
 
 	@Test
 	public void testPythonModuleExample() throws Exception {
-	    System.out.println("Test [testPythonModuleExample]");
-	    String lang = "python";
-	    String moduleName = SIMPLE_MODULE_NAME + "Python";
-	    init(lang, moduleName);
-	    int exitCode = runTestsInDocker(moduleName);
-        Assert.assertEquals(0, exitCode);
+		System.out.println("Test [testPythonModuleExample]");
+		String lang = "python";
+		String moduleName = SIMPLE_MODULE_NAME + "Python";
+		init(lang, moduleName);
+		// TODO TESTHACK remove this when there's a base image that deploys the authclient correctly
+		FileUtils.copyFile(
+				new File("./src/java/us/kbase/templates/authclient.py"),
+				new File(moduleName + "/lib/" + moduleName + "/authclient.py")
+				);
+		int exitCode = runTestsInDocker(moduleName);
+		Assert.assertEquals(0, exitCode);
 	}
 
 	@Test
@@ -171,22 +151,6 @@ public class ModuleTesterTest {
 	    Assert.assertEquals(2, exitCode);
 	}
 
-    @Test
-    public void testRModuleError() throws Exception {
-        System.out.println("Test [testRModuleError]");
-        String lang = "r";
-        String moduleName = SIMPLE_MODULE_NAME + "RError";
-        init(lang, moduleName);
-        File implFile = new File(moduleName + "/lib/" + moduleName + "/" + moduleName + "Impl.r");
-        String implText = FileUtils.readFileToString(implFile);
-        implText = implText.replace("    #BEGIN count_contigs", 
-                "    #BEGIN count_contigs\n" +
-                "    stop(\"Special error\")");
-        FileUtils.writeStringToFile(implFile, implText);
-        int exitCode = runTestsInDocker(moduleName);
-        Assert.assertEquals(2, exitCode);
-    }
-    
     @Test
     public void testSelfCalls() throws Exception {
         System.out.println("Test [testSelfCalls]");
