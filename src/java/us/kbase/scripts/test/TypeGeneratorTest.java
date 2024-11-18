@@ -64,20 +64,23 @@ import us.kbase.mobu.util.TextUtils;
  * @author rsutormin
  */
 public class TypeGeneratorTest extends Assert {
-    
-    //TODO TESTING test client with python3.
-    // might be as simple as running the client test script with python3 vs
-    // python.
-    //TODO TESTING test python client with dynamic services
-    // probably best way is with a mock service wizard that returns a url to
-    // the running service
-    //TODO TESTING pep8 test? Not really sure about this.
-    
+
+	// TODO TEST seems like the 2 TODOs below are done, but not entirely sure
+	//           the tests work correctly. Verify then remove
+	//TODO TESTING test client with python3.
+	// might be as simple as running the client test script with python3 vs
+	// python.
+	//TODO TESTING test python client with dynamic services
+	// probably best way is with a mock service wizard that returns a url to
+	// the running service
+	//TODO TESTING pep8 test? Not really sure about this.
+
 	public static final String rootPackageName = "us.kbase";
-    public static final String tempDirName = "temp_test";
-    
-    public static boolean debugClientTimes = false;
-	
+	public static final String tempDirName = "temp_test";
+	public static final String SERVICE_WIZARD = "ServiceWizard";
+
+	public static boolean debugClientTimes = false;
+
 	public static void main(String[] args) throws Exception{
 		int testNum = Integer.parseInt(args[0]);
 		if (testNum == 5) {
@@ -514,32 +517,36 @@ public class TypeGeneratorTest extends Assert {
                 binDir, parsingData, serverOutDir, findFreePort());
     }
 
-    @Test
-    public void testDynamicClients() throws Exception {
-        int testNum = 21;
-        File workDir = prepareWorkDir(testNum);
-        System.out.println();
-        System.out.println("Test " + testNum + " (testDynamicClients) is starting in directory: " + workDir.getName());
-        String testPackage = rootPackageName + ".test" + testNum;
-        File libDir = new File(workDir, "lib");
-        File binDir = new File(workDir, "bin");
-        JavaData parsingData = prepareJavaCode(testNum, workDir, testPackage, libDir, binDir, null, true, true);
-        File serverOutDir = preparePerlAndPyServerCode(testNum, workDir, true);
-        final int[] serverPortHolder = new int[] {-1};  // Servers should startup on this port
-        // Starting up service wizard
-        Server jettyServer = startServiceWizard(serverPortHolder);
-        try {
-            int serviceWizardPort = jettyServer.getConnectors()[0].getLocalPort();  // Clients should use it for URL lookup
-            serverPortHolder[0] = findFreePort();
-            runPythonServerTest(testNum, true, workDir, testPackage, libDir, binDir, parsingData, 
-                    serverOutDir, serviceWizardPort, serverPortHolder[0], null);
-            serverPortHolder[0] = findFreePort();
-            runJavaServerTest(testNum, true, workDir, testPackage, libDir,
-                    binDir, parsingData, serverOutDir, serviceWizardPort, serverPortHolder[0]);
-        } finally {
-            jettyServer.stop();
-        }
-    }
+	@Test
+	public void testDynamicClients() throws Exception {
+		int testNum = 21;
+		File workDir = prepareWorkDir(testNum);
+		System.out.println();
+		System.out.println("Test " + testNum + " (testDynamicClients) is starting in directory: " + workDir.getName());
+		String testPackage = rootPackageName + ".test" + testNum;
+		File libDir = new File(workDir, "lib");
+		File binDir = new File(workDir, "bin");
+		JavaData parsingData = prepareJavaCode(testNum, workDir, testPackage, libDir, binDir, null, true, true);
+		File serverOutDir = preparePerlAndPyServerCode(testNum, workDir, true);
+		// TODO TESTSIMPLICITY not sure why serverPortHolder is needed
+		final int[] serverPortHolder = new int[] {-1};  // Servers should startup on this port
+		// Starting up service wizard
+		final File cfgFile = prepareDeployCfg(workDir, SERVICE_WIZARD, "servwiz");
+		// needed for the service wizard mock to start up correctly
+		System.setProperty("KB_DEPLOYMENT_CONFIG", cfgFile.getCanonicalPath());
+		Server jettyServer = startServiceWizard(serverPortHolder);
+		try {
+			int serviceWizardPort = jettyServer.getConnectors()[0].getLocalPort();  // Clients should use it for URL lookup
+			serverPortHolder[0] = findFreePort();
+			runPythonServerTest(testNum, true, workDir, testPackage, libDir, binDir, parsingData, 
+					serverOutDir, serviceWizardPort, serverPortHolder[0], null);
+			serverPortHolder[0] = findFreePort();
+			runJavaServerTest(testNum, true, workDir, testPackage, libDir,
+					binDir, parsingData, serverOutDir, serviceWizardPort, serverPortHolder[0]);
+		} finally {
+			jettyServer.stop();
+		}
+	}
 
     private Server startJobService(File binDir, File tempDir) throws Exception {
         Server jettyServer = new Server(findFreePort());
@@ -551,15 +558,17 @@ public class TypeGeneratorTest extends Assert {
         return jettyServer;
     }
 
-    private Server startServiceWizard(int[] serverPortHolder) throws Exception {
-        Server jettyServer = new Server(findFreePort());
-        ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
-        context.setContextPath("/");
-        jettyServer.setHandler(context);
-        context.addServlet(new ServletHolder(new ServiceWizardMock(serverPortHolder)), "/*");
-        jettyServer.start();
-        return jettyServer;
-    }
+	private Server startServiceWizard(int[] serverPortHolder) throws Exception {
+		// TODO TESTLOGGING this service wizard doesn't appear to log at all which makes debugging
+		// really suck
+		Server jettyServer = new Server(findFreePort());
+		ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
+		context.setContextPath("/");
+		jettyServer.setHandler(context);
+		context.addServlet(new ServletHolder(new ServiceWizardMock(serverPortHolder)), "/*");
+		jettyServer.start();
+		return jettyServer;
+	}
 
 	private static void startTest(int testNum) throws Exception {
 		startTest(testNum, true);
@@ -651,6 +660,7 @@ public class TypeGeneratorTest extends Assert {
 					));
 			if (serverPortNum != null) {
 				lines.addAll(Arrays.asList(
+						"which python",
 						"python " + serverFile.getName() + " --host localhost --port " + serverPortNum + 
 						" >py_server.out 2>py_server.err & pid=$!",
 						"echo $pid > " + pidFile.getName()
@@ -733,19 +743,29 @@ public class TypeGeneratorTest extends Assert {
 	    throw new IllegalStateException("Can not find available port in system");
 	}
 
-	private static File prepareDeployCfg(File dir, String moduleName) throws Exception {
-	    File cfgFile = new File(dir, "deploy.cfg");
-	    if (!cfgFile.exists()) {
-            List<String> lines = new ArrayList<String>(Arrays.asList(
-                    "[" + moduleName + "]",
-                    "auth-service-url = " + TestConfigHelper.getAuthServiceUrl(),
-                    "auth-service-url-allow-insecure = " + TestConfigHelper.getAuthServiceUrlInsecure()
-                    ));
-            TextUtils.writeFileLines(lines, cfgFile);
-	    }
-	    return cfgFile;
+	private static File prepareDeployCfg(final File dir, final String moduleName
+			) throws Exception {
+		return prepareDeployCfg(dir, moduleName, "");
 	}
-	
+
+	private static File prepareDeployCfg(
+			final File dir,
+			final String moduleName,
+			final String suffix)
+			throws Exception {
+		File cfgFile = new File(dir, "deploy" + suffix + ".cfg");
+		if (!cfgFile.exists()) {
+			List<String> lines = new ArrayList<String>(Arrays.asList(
+					"[" + moduleName + "]",
+					"auth-service-url = " + TestConfigHelper.getAuthServiceUrl(),
+					"auth-service-url-allow-insecure = "
+							+ TestConfigHelper.getAuthServiceUrlInsecure()
+			));
+			TextUtils.writeFileLines(lines, cfgFile);
+		}
+		return cfgFile;
+	}
+
 	protected static File preparePerlAndPyServerCode(int testNum, File workDir) throws Exception {
 	    return preparePerlAndPyServerCode(testNum, workDir, false);
 	}
@@ -1310,7 +1330,7 @@ public class TypeGeneratorTest extends Assert {
         private final int[] serverPortHolder;
 
         public ServiceWizardMock(int[] serverPortHolder) {
-            super("ServiceWizard");
+            super(SERVICE_WIZARD);
             this.serverPortHolder = serverPortHolder;
         }
 
