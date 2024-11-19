@@ -318,7 +318,7 @@ public class ModuleTester {
         String scriptPath = DirUtils.getFilePath(runDockerSh);
         String repoPath = DirUtils.getFilePath(repoDir);
         Process p = Runtime.getRuntime().exec(new String[] {"bash", 
-                scriptPath, "build", "--rm", "-t", 
+                scriptPath, "build", "--rm", "--load", "-t",
                 targetImageName, repoPath});
         List<Thread> workers = new ArrayList<Thread>();
         InputStream[] inputStreams = new InputStream[] {p.getInputStream(), p.getErrorStream()};
