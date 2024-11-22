@@ -66,6 +66,8 @@ import us.kbase.workspace.ProvenanceAction;
 import us.kbase.workspace.SubAction;
 
 public class CallbackServerTest {
+	
+	// TODO TEST replace the java callback server with the python one
 
     private static final Path TEST_DIR = Paths.get("temp_test_callback");
     
@@ -493,29 +495,30 @@ public class CallbackServerTest {
         // note that dev and beta releases can only have one version each,
         // version tracking only happens for prod
         
+        // Re stupid quotes: https://github.com/kbase/catalog/issues/139
         failJob(res, "njs_sdk_test_1foo.run", "beta",
                 "Error looking up module njs_sdk_test_1foo with version " +
-                "beta: Module cannot be found based on module_name or " +
-                "git_url parameters.");
+                "beta: 'Module cannot be found based on module_name or " +
+                "git_url parameters.'");
         failJob(res, "njs_sdk_test_1.run", "beta",
                 "Error looking up module njs_sdk_test_1 with version " +
-                "beta: No module version found that matches your criteria!");
+                "beta: 'No module version found that matches your criteria!'");
         failJob(res, "njs_sdk_test_1.run", "release",
                 "Error looking up module njs_sdk_test_1 with version " +
-                "release: No module version found that matches your criteria!");
+                "release: 'No module version found that matches your criteria!'");
         failJob(res, "njs_sdk_test_1.run", null,
                 "Error looking up module njs_sdk_test_1 with version " +
-                 "release: No module version found that matches your criteria!");
+                 "release: 'No module version found that matches your criteria!'");
 
         //this is the newest git commit and was registered in dev but 
         //then the previous git commit was registered in dev
         String git = "b0d487271c22f793b381da29e266faa9bb0b2d1b";
         failJob(res, "njs_sdk_test_1.run", git,
                 "Error looking up module njs_sdk_test_1 with version " +
-                git + ": No module version found that matches your criteria!");
+                git + ": 'No module version found that matches your criteria!'");
         failJob(res, "njs_sdk_test_1.run", "foo",
                 "Error looking up module njs_sdk_test_1 with version foo: " +
-                "No module version found that matches your criteria!");
+                "'No module version found that matches your criteria!'");
         
         res.server.stop();
     }
