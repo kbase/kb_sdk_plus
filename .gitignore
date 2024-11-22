@@ -43,3 +43,4 @@ src/java/us/kbase/mobu/git.properties
 /TestAsyncPython/
 /temp_test_callback/
 /ASimpleModule_for_unit_testingPython/
+/ASimpleModule_for_unit_testingJava/
