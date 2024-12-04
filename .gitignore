@@ -36,10 +36,17 @@ src/java/us/kbase/mobu/git.properties
 /.coverage
 /coverage.xml
 /htmlcov/
+/classes/
 /reports/
 /temp_test/
 /TestAsyncJava/
 /TestAsyncPerl/
 /TestAsyncPython/
 /temp_test_callback/
+/junit*.properties
 /ASimpleModule_for_unit_testingPython/
+/ASimpleModule_for_unit_testingJava/
+/ASimpleModule_for_unit_testingSelf/
+/a_SimpleModule_for_unit_testing_java/
+/a_SimpleModule_for_unit_testing_python/
+/a_SimpleModule_for_unit_testing_perl/

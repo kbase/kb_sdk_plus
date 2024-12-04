@@ -19,11 +19,14 @@ import us.kbase.mobu.tester.ModuleTester;
 import us.kbase.scripts.test.TestConfigHelper;
 
 public class ModuleTesterTest {
+	
+	// TODO TEST move the modules into a single test directory for easy deletion
+	// TODO TEST fix tests leaving root owned files on disk
 
 	private static final String SIMPLE_MODULE_NAME = "ASimpleModule_for_unit_testing";
-	private static final boolean cleanupAfterTests = true;
+	private static final boolean CLEANUP_AFTER_TESTS = true;
 	
-	private static List<String> createdModuleNames = new ArrayList<String>();
+	private static final List<String> CREATED_MODULE_NAMES = new ArrayList<String>();
 	private static AuthToken token;
 	
     @BeforeClass
@@ -33,14 +36,15 @@ public class ModuleTesterTest {
 
 	@AfterClass
 	public static void tearDownModule() throws Exception {
-	    if (cleanupAfterTests)
-	        for (String moduleName : createdModuleNames)
-	            try {
-	                deleteDir(moduleName);
-	            } catch (Exception ex) {
-	                System.err.println("Error cleaning up module [" + 
-	                        moduleName + "]: " + ex.getMessage());
-	            }
+		if (CLEANUP_AFTER_TESTS)
+			for (String moduleName : CREATED_MODULE_NAMES)
+				try {
+					System.out.println("Deleting " + moduleName);
+					deleteDir(moduleName);
+				} catch (Exception ex) {
+					System.err.println("Error cleaning up module [" + 
+							moduleName + "]: " + ex.getMessage());
+				}
 	}
 	
 	@After
@@ -56,7 +60,7 @@ public class ModuleTesterTest {
 	
     private void init(String lang, String moduleName) throws Exception {
         deleteDir(moduleName);
-        createdModuleNames.add(moduleName);
+        CREATED_MODULE_NAMES.add(moduleName);
         ModuleInitializer initer = new ModuleInitializer(moduleName, token.getUserName(), 
                 lang, false);
         initer.initialize(true);
@@ -157,7 +161,7 @@ public class ModuleTesterTest {
         String lang = "python";
         String moduleName = SIMPLE_MODULE_NAME + "Self";
         deleteDir(moduleName);
-        createdModuleNames.add(moduleName);
+        CREATED_MODULE_NAMES.add(moduleName);
         String implInit = "" +
                 "#BEGIN_HEADER\n" +
                 "import os\n"+
