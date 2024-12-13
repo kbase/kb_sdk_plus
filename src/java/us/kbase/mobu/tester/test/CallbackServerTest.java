@@ -67,7 +67,7 @@ import us.kbase.workspace.SubAction;
 
 public class CallbackServerTest {
 	
-	// TODO TEST replace the java callback server with the python one
+	// TODO TEST replace java CBS with the python ver. Should get these tests to pass against it
 
     private static final Path TEST_DIR = Paths.get("temp_test_callback");
     
@@ -384,7 +384,7 @@ public class CallbackServerTest {
             res.callMethod("njs_sdk_test_1.run", errparam, "dev");
         } catch (ServerException se) {
             assertThat("incorrect error message", se.getLocalizedMessage(),
-                    is("planned exception errjob"));
+                    is("'planned exception errjob'"));  // stupid sdk error quoting, arrrg
         }
         
         // run again to ensure the job counter is back to 0
@@ -405,7 +405,8 @@ public class CallbackServerTest {
             res.callMethod("njs_sdk_test_1.run", params, "dev");
         } catch (ServerException se) {
             assertThat("incorrect error message", se.getLocalizedMessage(),
-                    is("No more than 10 concurrently running methods are allowed"));
+                    // you've got to be shitting me right now with this quoting shit wtf
+                    is("\"'No more than 10 concurrently running methods are allowed'\""));
         }
         
         res.server.stop();
@@ -510,8 +511,12 @@ public class CallbackServerTest {
                 "Error looking up module njs_sdk_test_1 with version " +
                  "release: 'No module version found that matches your criteria!'");
 
-        //this is the newest git commit and was registered in dev but 
-        //then the previous git commit was registered in dev
+        // this git commit was registered to dev but 
+        // then the previous git commit was registered to dev
+        // Note 7 years later - I don't understand what the above comment means.
+        // Dev versions aren't deleted if you register a new dev version AFAICT
+        // That being said, the test passes.
+        // Maybe the catalog used to replace dev versions?
         String git = "b0d487271c22f793b381da29e266faa9bb0b2d1b";
         failJob(res, "njs_sdk_test_1.run", git,
                 "Error looking up module njs_sdk_test_1 with version " +
@@ -573,7 +578,7 @@ public class CallbackServerTest {
         String moduleName = "njs_sdk_test_2";
         String methodName = "run";
         String release = "dev";
-        String ver = "0.0.9";
+        String ver = "0.0.10";
         Map<String, Object> methparams = new HashMap<String, Object>();
         methparams.put("id", "myid");
         Map<String, Object> results = res.callMethod(
@@ -608,11 +613,12 @@ public class CallbackServerTest {
         String methodName = "run";
         String release = "dev";
         String ver = "0.0.3";
-        String commit1 = "03b9210ac825858c1ae6339786686cea5dac5929";
+        String nst1latest = "dbea6819e06d37a7f7f08f49673555edaf7f96a6";
+        String nst1dev = "366eb8cead445aa3e842cbc619082a075b0da322";
         final ModuleRunVersion runver = new ModuleRunVersion(
                 new URL("https://github.com/kbasetest/njs_sdk_test_1"),
                 new ModuleMethod(moduleName + "." + methodName),
-                commit1, ver, release);
+                nst1dev, ver, release);
         List<String> wsobjs = Arrays.asList("foo", "bar", "baz");
         List<UObject> params = new ArrayList<UObject>();
         params.add(new UObject(Arrays.asList("foo", "bar")));
@@ -621,7 +627,7 @@ public class CallbackServerTest {
         final CallbackStuff res = startCallBackServer(runver, params, wsobjs);
         System.out.println("Running multiCallProvenance in dir " + res.tempdir);
         String moduleName2 = "njs_sdk_test_2";
-        String commit2 = "284948a93524ba51e48b1c71693b269647c125c3";
+        String commit2 = "9d6b868bc0bfdb61c79cf2569ff7b9abffd4c67f";
         @SuppressWarnings("unchecked")
         Map<String, Object> methparams = UObject.transformStringToObject(
                 String.format(
@@ -641,13 +647,14 @@ public class CallbackServerTest {
              "\"id\": \"myid\"" + 
              "}",
              moduleName2 + "." + methodName,
-             // dev is on this commit
+             // beta is on this commit
              commit2,
              moduleName + "." + methodName,
-             // this is the latest commit, but a prior commit is registered
-             //for dev
-             commit1,
+             // this is the latest commit, but a prior commit is registered to dev
+             nst1latest,
              moduleName2 + "." + methodName,
+             // this should get ignored when pulling images since this module has already been
+             // run and is cached
              "dev"), Map.class);
         List<SubActionSpec> expsas = new LinkedList<SubActionSpec>();
         expsas.add(new SubActionSpec()
@@ -657,7 +664,7 @@ public class CallbackServerTest {
         );
         expsas.add(new SubActionSpec()
             .withMod(moduleName2)
-            .withVer("0.0.8")
+            .withVer("0.0.9")
             .withCommit(commit2)
         );
         Map<String, Object> results = res.callMethod(
