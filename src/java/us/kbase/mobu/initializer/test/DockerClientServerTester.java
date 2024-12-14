@@ -8,7 +8,6 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,12 +32,12 @@ import us.kbase.scripts.test.TypeGeneratorTest;
 public class DockerClientServerTester {
 
     protected static final boolean cleanupAfterTests = true;
+    
+    private static final String INSTALLED_CLIENTS = "installed_clients";
 
     protected static List<String> createdModuleNames = new ArrayList<String>();
     protected static AuthToken token;
     
-    private static final long startingTime = System.currentTimeMillis();
-
     @BeforeClass
     public static void beforeTesterClass() throws Exception {
         token = TestConfigHelper.getToken();
@@ -175,36 +174,9 @@ public class DockerClientServerTester {
         return moduleDir;
     }
     
-    public static void correctDockerfile(File moduleDir) throws Exception {
-        File buildXmlFile = new File("build.xml");
-        File sdkSubFolder = new File(moduleDir, "kb_sdk");
-        File sdkDistSubFolder = new File(sdkSubFolder, "dist");
-        FileUtils.copyFile(buildXmlFile, new File(sdkSubFolder, buildXmlFile.getName()));
-        File sdkJarFile = new File("dist/kbase_module_builder2.jar");
-        FileUtils.copyFile(sdkJarFile, new File(sdkDistSubFolder, sdkJarFile.getName()));
-        File jarDepsFile = new File("JAR_DEPS");
-        FileUtils.copyFile(jarDepsFile, new File(sdkSubFolder, jarDepsFile.getName()));
-        File makeFile = new File("Makefile");
-        FileUtils.copyFile(makeFile, new File(sdkSubFolder, makeFile.getName()));
-        File dockerFile = new File(moduleDir, "Dockerfile");
-        String dockerText = FileUtils.readFileToString(dockerFile);
-        dockerText = dockerText.replace("COPY ./ /kb/module", "" +
-                "COPY ./ /kb/module\n" +
-                "RUN . /kb/dev_container/user-env.sh && \\\n" +
-                "    cd /kb/dev_container/modules/jars && \\\n" +
-                "    git pull && make && make deploy && \\\n" +
-                "    rm /kb/dev_container/bin/kb-sdk && \\\n" + 
-                "    rm /kb/deployment/bin/kb-sdk && \\\n" + 
-                "    cd /kb/dev_container/modules/kb_sdk && \\\n" +
-                "    cp -r /kb/module/kb_sdk/* ./ && \\\n" +
-                "    make deploy && echo \"" + new Date(startingTime) + "\"");
-        FileUtils.writeStringToFile(dockerFile, dockerText);
-    }
-    
     protected static String prepareDockerImage(File moduleDir, 
             AuthToken token) throws Exception {
         String moduleName = moduleDir.getName();
-        correctDockerfile(moduleDir);
         File testCfgFile = new File(moduleDir, "test_local/test.cfg");
         String testCfgText = ""+
                 "test_token=" + token.getToken() + "\n" +
@@ -251,7 +223,7 @@ public class DockerClientServerTester {
 			File binDir = new File(moduleDir, "bin");
 			if (!binDir.exists())
 				binDir.mkdir();
-			File srcDir = new File(moduleDir, "lib2/src");
+			File srcDir = new File(moduleDir, "lib2/src/" + INSTALLED_CLIENTS);
 			File clientJavaFile = new File(srcDir, moduleName.toLowerCase() + "/" +
 					moduleName + "Client.java");
 			String classPath = System.getProperty("java.class.path");
@@ -300,8 +272,12 @@ public class DockerClientServerTester {
 					ex = (Exception)ex.getCause();
 				}
 				if (ex instanceof ServerException) {
-					String data = ((ServerException) ex).getData();
-					if (!data.contains(input)) {
+					final String data = ((ServerException) ex).getData();
+					if (data == null) {
+						error = new Exception("ServerException has no data field. Message: "
+								+ ex.getMessage(), ex);
+					}
+					else if (!data.contains(input)) {
 						error = new Exception("Server error doesn't include expected text: " + data);
 					}
 					// input string is found in server error data
@@ -318,6 +294,7 @@ public class DockerClientServerTester {
 			Assert.assertEquals(input, obj);
 		}
 		// Common non-java preparation
+		// Note 24/12/13: No longer common, just python
 		Map<String, Object> config = new LinkedHashMap<String, Object>();
 		config.put("package", moduleName + "Client");
 		config.put("class", moduleName);
@@ -349,7 +326,7 @@ public class DockerClientServerTester {
 		{
 			long startTime = System.currentTimeMillis();
 			ProcessHelper ph = ProcessHelper.cmd("bash", shellFile.getCanonicalPath()).exec(
-					new File(lib2, moduleName).getCanonicalFile(), null, true, true);
+					new File(lib2, INSTALLED_CLIENTS).getCanonicalFile(), null, true, true);
 			System.out.println("(" + (System.currentTimeMillis() - startTime) + " ms)");
 			int exitCode = ph.getExitCode();
 			if (exitCode != 0) {
@@ -361,40 +338,6 @@ public class DockerClientServerTester {
 					System.err.println("Python client errors:\n" + err);
 			}
 			Assert.assertEquals("Python client exit code should be 0", 0, exitCode);
-		}
-		// Perl client
-		System.out.print("Perl client -> " + serverType + " server ");
-		Map<String, Object> config2 = new LinkedHashMap<String, Object>(config);
-		config2.put("package", moduleName + "::" + moduleName + "Client");
-		File configFilePerl = new File(moduleDir, "tests_perl.json");
-		UObject.getMapper().writeValue(configFilePerl, config2);
-		clInst.install("perl", async, false, dynamic, "dev", false, 
-				specFile.getCanonicalPath(), "lib2");
-		shellFile = new File(moduleDir, "test_perl_client.sh");
-		lines = new ArrayList<String>(Arrays.asList("#!/bin/bash"));
-		String pathToSdk = new File(".").getCanonicalPath();
-		lines.add("export PERL5LIB=" + pathToSdk + "/lib/:" +
-				pathToSdk + "/submodules/auth/Bio-KBase-Auth/lib:$PERL5LIB");
-		lines.add("perl " + new File("test_scripts/perl/test-client.pl").getAbsolutePath() + 
-				" -tests " + configFilePerl.getAbsolutePath() + " -token " + token.getToken() + 
-				" -endpoint " + clientEndpointUrl
-				);
-		TextUtils.writeFileLines(lines, shellFile);
-		{
-			long startTime = System.currentTimeMillis();
-			ProcessHelper ph = ProcessHelper.cmd("bash", shellFile.getCanonicalPath()).exec(
-					lib2.getCanonicalFile(), null, true, true);
-			System.out.println("(" + (System.currentTimeMillis() - startTime) + " ms)");
-			int exitCode = ph.getExitCode();
-			if (exitCode != 0) {
-				String out = ph.getSavedOutput();  //outSw.toString();
-				if (!out.isEmpty())
-					System.out.println("Perl client output:\n" + out);
-				String err = ph.getSavedErrors();  //errSw.toString();
-				if (!err.isEmpty())
-					System.err.println("Perl client errors:\n" + err);
-			}
-			Assert.assertEquals("Perl client exit code should be 0", 0, exitCode);
 		}
 	}
 
@@ -415,7 +358,7 @@ public class DockerClientServerTester {
 		File binDir = new File(moduleDir, "bin");
 		if (!binDir.exists())
 			binDir.mkdir();
-		File srcDir = new File(moduleDir, "lib2/src");
+		File srcDir = new File(moduleDir, "lib2/src/" + INSTALLED_CLIENTS);
 		File clientJavaFile = new File(srcDir, moduleName.toLowerCase() + "/" +
 				moduleName + "Client.java");
 		String classPath = System.getProperty("java.class.path");
@@ -461,6 +404,7 @@ public class DockerClientServerTester {
 			throw error;
 		checkStatusResponse(obj);
 		// Common non-java preparation
+		// Note 24/12/13: No longer common, python only
 		String pcg = moduleName + "Client";
 		String cls = moduleName;
 		String mtd = "status";
@@ -483,7 +427,7 @@ public class DockerClientServerTester {
 					(async ? (" -t " + token.getToken()) : ""));
 			TextUtils.writeFileLines(lines, shellFile);
 			ProcessHelper ph = ProcessHelper.cmd("bash", shellFile.getCanonicalPath()).exec(
-					new File(lib2, moduleName).getCanonicalFile(), null, true, true);
+					new File(lib2, INSTALLED_CLIENTS).getCanonicalFile(), null, true, true);
 			int exitCode = ph.getExitCode();
 			if (exitCode != 0) {
 				String out = ph.getSavedOutput();
@@ -493,43 +437,6 @@ public class DockerClientServerTester {
 				if (!err.isEmpty())
 					System.err.println("Python client runner errors:\n" + err);
 				Assert.assertEquals("Python client runner exit code should be 0", 0, exitCode);
-			} else {
-				checkStatusResponse(outputFile, errorFile);
-			}
-		}
-		// Perl client
-		if (outputFile.exists())
-			outputFile.delete();
-		if (errorFile.exists())
-			errorFile.delete();
-		System.out.println("Perl client (status) -> " + serverType + " server");
-		clInst.install("perl", async, false, dynamic, "dev", false, 
-				specFile.getCanonicalPath(), "lib2");
-		{
-			File shellFile = new File(moduleDir, "test_perl_client.sh");
-			List<String> lines = new ArrayList<String>(Arrays.asList("#!/bin/bash"));
-			String pathToSdk = new File(".").getCanonicalPath();
-			lines.add("export PERL5LIB=" + pathToSdk + "/lib/:" +
-					pathToSdk + "/submodules/auth/Bio-KBase-Auth/lib:$PERL5LIB");
-			lines.add("perl " + new File("test_scripts/perl/run-client.pl").getAbsolutePath() + 
-					" -package " + moduleName + "::" + moduleName + "Client" + 
-					" -method " + mtd + " -input " + inputFile.getAbsolutePath() + 
-					" -output " + outputFile.getAbsolutePath() + 
-					" -error " + errorFile.getAbsolutePath() +
-					" -endpoint " + clientEndpointUrl +
-					(async ? (" -token " + token.getToken()) : ""));
-			TextUtils.writeFileLines(lines, shellFile);
-			ProcessHelper ph = ProcessHelper.cmd("bash", shellFile.getCanonicalPath()).exec(
-					lib2.getCanonicalFile(), null, true, true);
-			int exitCode = ph.getExitCode();
-			if (exitCode != 0) {
-				String out = ph.getSavedOutput();  //outSw.toString();
-				if (!out.isEmpty())
-					System.out.println("Perl client runner output:\n" + out);
-				String err = ph.getSavedErrors();  //errSw.toString();
-				if (!err.isEmpty())
-					System.err.println("Perl client runner errors:\n" + err);
-				Assert.assertEquals("Perl client runner exit code should be 0", 0, exitCode);
 			} else {
 				checkStatusResponse(outputFile, errorFile);
 			}
