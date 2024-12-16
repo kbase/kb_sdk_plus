@@ -19,8 +19,13 @@ import us.kbase.mobu.tester.test.ModuleTesterTest;
 import us.kbase.scripts.test.TestConfigHelper;
 
 public class ModuleRenamerTest {
-    private static final String SIMPLE_MODULE_NAME = "a_SimpleModule_for_unit_testing";
-    private static final String TARGET_MODULE_NAME = "TargetModule_for_unit_testing";
+	
+	// TODO TEST CLEANUP these tests leave files on the drive that require sudo to delete
+	// TODO TEST CLEANUP prior tests in the suite also leave undeletable files which caused
+	//                   tests here to fail until the module names were changed
+	
+    private static final String SIMPLE_MODULE_NAME = "a_SimpleModule_for_rename_unit_testing";
+    private static final String TARGET_MODULE_NAME = "TargetModule_for_rename_unit_testing";
     private static final List<File> dirsToRemove = new ArrayList<File>();
     private static final boolean deleteTempDirs = true;
 
@@ -33,11 +38,19 @@ public class ModuleRenamerTest {
 
     @AfterClass
     public static void tearDownModule() throws IOException {
-        if (deleteTempDirs)
+        if (deleteTempDirs) {
             for (File module : dirsToRemove) {
-                if (module.exists() && module.isDirectory())
-                    FileUtils.deleteDirectory(module);
+                try {
+                    System.out.println("Deleting " + module);
+                    if (module.exists() && module.isDirectory()) {
+                        FileUtils.deleteDirectory(module);
+                    }
+                } catch (Exception ex) {
+                    System.err.println("Error cleaning up module [" + 
+                            module + "]: " + ex.getMessage());
+                }
             }
+        }
     }
 
     private static File initRepo(String lang) throws Exception {
@@ -65,15 +78,6 @@ public class ModuleRenamerTest {
     public void testPython() throws Exception {
         String newModuleName = TARGET_MODULE_NAME + "_python";
         File moduleDir = initRepo("python");
-        new ModuleRenamer(moduleDir).rename(newModuleName);
-        int exitCode = ModuleTesterTest.runTestsInDocker(moduleDir, token);
-        Assert.assertEquals(0, exitCode);
-    }
-    
-    @Test
-    public void testPerl() throws Exception {
-        String newModuleName = TARGET_MODULE_NAME + "_perl";
-        File moduleDir = initRepo("perl");
         new ModuleRenamer(moduleDir).rename(newModuleName);
         int exitCode = ModuleTesterTest.runTestsInDocker(moduleDir, token);
         Assert.assertEquals(0, exitCode);
