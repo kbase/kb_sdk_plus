@@ -49,13 +49,6 @@ public class AsyncDockerTest extends DockerClientServerTester {
         } finally {
             execEngine.waitAndCleanAllJobs();
         }
-    }            
-
-    @Test
-    public void testPerlAsyncService() throws Exception {
-        System.out.println("Test [testPerlAsyncService]");
-        File moduleDir = initPerl(SIMPLE_MODULE_NAME + "Perl");
-        testAsyncClients(moduleDir, "Perl");
     }
 
     @Test

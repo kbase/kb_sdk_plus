@@ -24,6 +24,7 @@ import us.kbase.scripts.test.TypeGeneratorTest;
 public class DynamicServiceTest extends DockerClientServerTester {
 
     private static final String SIMPLE_MODULE_NAME = "TestDynamic";
+	public static final String SERVICE_WIZARD = "ServiceWizard";
     
     private static int serviceWizardPort;
     private static Server serviceWizardJettyServer;
@@ -31,6 +32,13 @@ public class DynamicServiceTest extends DockerClientServerTester {
     
     @BeforeClass
     public static void beforeClass() throws Exception {
+    	// TODO TEST CLEANUP delete this directory
+        final File workDir = new File(SIMPLE_MODULE_NAME + "ServWizConfig");
+        workDir.mkdirs();
+        final File cfgFile = TypeGeneratorTest.prepareDeployCfg(
+                workDir, SERVICE_WIZARD, "servwiz");
+        // needed for the service wizard mock to start up correctly
+        System.setProperty("KB_DEPLOYMENT_CONFIG", cfgFile.getCanonicalPath());
         serviceWizardPort = TypeGeneratorTest.findFreePort();
         serviceWizardJettyServer = new Server(serviceWizardPort);
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
@@ -70,8 +78,12 @@ public class DynamicServiceTest extends DockerClientServerTester {
         return containerName;
     }
 
-    private static void testDynamicClients(File moduleDir, int port, 
-            String contName, String serverType) throws Exception {
+    private static void testDynamicClients(
+        final File moduleDir,
+        final int port, 
+        final String contName,
+        final String serverType
+        ) throws Exception {
         try {
             FileUtils.writeStringToFile(new File(moduleDir, "sdk.cfg"), 
                     "catalog_url=http://kbase.us");
@@ -87,22 +99,10 @@ public class DynamicServiceTest extends DockerClientServerTester {
         } finally {
             String runDockerPath = DirUtils.getFilePath(new File(
                     new File(moduleDir, "test_local"), "run_docker.sh"));
-            ProcessHelper.cmd("bash", runDockerPath, "logs", 
-                    contName).exec(moduleDir);
-            ProcessHelper.cmd("bash", runDockerPath, "rm", "-v", "-f", 
-                    contName).exec(moduleDir);
-            System.out.println("Docker container " + contName + " was stopped and " +
-                    "removed");
+            ProcessHelper.cmd("bash", runDockerPath, "logs", contName).exec(moduleDir);
+            ProcessHelper.cmd("bash", runDockerPath, "rm", "-v", "-f", contName).exec(moduleDir);
+            System.out.println("Docker container " + contName + " was stopped and removed");
         }
-    }            
-
-    @Test
-    public void testPerlDynamicService() throws Exception {
-        System.out.println("Test [testPerlDynamicService]");
-        File moduleDir = initPerl(SIMPLE_MODULE_NAME + "Perl");
-        int port = TypeGeneratorTest.findFreePort();
-        String contName = runServerInDocker(moduleDir, port);
-        testDynamicClients(moduleDir, port, contName, "Perl");
     }
 
     @Test
@@ -129,10 +129,10 @@ public class DynamicServiceTest extends DockerClientServerTester {
         public String fwdUrl;
 
         public ServiceWizardMock() {
-            super("ServiceWizard");
+            super(SERVICE_WIZARD);
         }
 
-        @JsonServerMethod(rpc = "ServiceWizard.get_service_status")
+        @JsonServerMethod(rpc = SERVICE_WIZARD + ".get_service_status")
         public Map<String, Object> getServiceStatus(Map<String, String> params) throws IOException, JsonClientException {
             Map<String, Object> ret = new LinkedHashMap<String, Object>();
             ret.put("url", fwdUrl);

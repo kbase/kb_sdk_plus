@@ -753,7 +753,8 @@ public class TypeGeneratorTest extends Assert {
 		return prepareDeployCfg(dir, moduleName, "");
 	}
 
-	private static File prepareDeployCfg(
+	// TODO TEST CLEANUP move to a test utility file
+	public static File prepareDeployCfg(
 			final File dir,
 			final String moduleName,
 			final String suffix)
@@ -1329,7 +1330,8 @@ public class TypeGeneratorTest extends Assert {
         libUrls.add(libFile.toURI().toURL());
     }
 	
-	public static class ServiceWizardMock extends JsonServerServlet {
+    // TODO TEST CLEANUP The service wizard in used in at least two places, move to test utils
+    public static class ServiceWizardMock extends JsonServerServlet {
         private static final long serialVersionUID = 1L;
         
         private final int[] serverPortHolder;
@@ -1339,7 +1341,7 @@ public class TypeGeneratorTest extends Assert {
             this.serverPortHolder = serverPortHolder;
         }
 
-        @JsonServerMethod(rpc = "ServiceWizard.get_service_status")
+        @JsonServerMethod(rpc = SERVICE_WIZARD + ".get_service_status")
         public Map<String, Object> getServiceStatus(Map<String, String> params) throws IOException, JsonClientException {
             Map<String, Object> ret = new LinkedHashMap<String, Object>();
             ret.put("url", "http://localhost:" + serverPortHolder[0]);

@@ -80,9 +80,6 @@ public class ModuleTesterTest {
 			final AuthToken token, 
 			final boolean skipValidation)
 					throws Exception {
-		// TODO TESTCLEANUP remove the line below once the other test modules that call this method
-		//                  are passing. 
-		//DockerClientServerTester.correctDockerfile(moduleDir);
 		File testCfgFile = new File(moduleDir, "test_local/test.cfg");
 		String testCfgText = ""+
 				"test_token=" + token.getToken() + "\n" +
