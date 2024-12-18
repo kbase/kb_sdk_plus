@@ -68,6 +68,7 @@ and runnable while we make changes to the forked codebase.
 * Get `kb_sdk_plus` image build running in GHA
   * Or we could just call it `kb_sdk` since the original container is on Dockerhub
 * Add tests that run `kb-sdk` from the command line vs. just testing java classes
+  * See examples in .travis.yml but do much more than that
   * Many issues crop up here
 * Get the SDK running on docker03
   * Not sure what the issues are here, need to investigate
