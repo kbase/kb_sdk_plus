@@ -1,4 +1,4 @@
-FROM ubuntu:14.04
+FROM ubuntu:24.04
 MAINTAINER Shane Canon <scanon@lbl.gov>
 
 # Update apt and install jdk and docker engine to get docker clients
