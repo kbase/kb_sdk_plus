@@ -1,27 +1,41 @@
-FROM ubuntu:14.04
-MAINTAINER Shane Canon <scanon@lbl.gov>
+FROM eclipse-temurin:11.0.25_9-jdk-noble
 
-# Update apt and install jdk and docker engine to get docker clients
-RUN apt-get -y update && \
-    apt-get -y install openjdk-7-jdk make git ant && \
-    apt-get -y install apt-transport-https ca-certificates && \
-    apt-key adv \
-               --keyserver hkp://ha.pool.sks-keyservers.net:80 \
-               --recv-keys 58118E89F3A912897C070ADBF76221572C52609D && \
-    echo "deb https://apt.dockerproject.org/repo ubuntu-trusty main" > /etc/apt/sources.list.d/docker.list && \
-    apt-get -y update && apt-get -y install docker-engine=1.11.2-0~trusty 
+# Note if you update ubuntu the install lines below will need to be changed
+ENV CONTAINERD_VER=1.7.24-1
+ENV DOCKER_VER=27.4.1-1
+ENV DOCKER_BX_VER=0.19.3-1
+ENV DOCKER_COMPOSE_VER=2.32.1-1
 
-ADD . /src
+RUN apt update && apt install -y wget ant make git iptables
 
-# Add kb_sdk src and fix CallbackServer interface
-RUN \
-   cd /src && \
-   sed -i 's/en0/eth0/' src/java/us/kbase/common/executionengine/CallbackServer.java && \
-   make && \
-   /src/entrypoint prune && rm -rf /src/.git
+# install jars
+# TODO GRADLE remove when switching to Gradle
+RUN cd /opt && git clone https://github.com/kbase/jars.git
 
-ENV PATH=$PATH:/src/bin
+# install docker
 
-ENTRYPOINT [ "/src/entrypoint" ]
+RUN DL=https://download.docker.com/linux/ubuntu/dists/noble/pool/stable/amd64 \
+    && CD=containerd.io_${CONTAINERD_VER}_amd64.deb \
+    && DCE=docker-ce_${DOCKER_VER}~ubuntu.24.04~noble_amd64.deb \
+    && DCEC=docker-ce-cli_${DOCKER_VER}~ubuntu.24.04~noble_amd64.deb \
+    && BX=docker-buildx-plugin_${DOCKER_BX_VER}~ubuntu.24.04~noble_amd64.deb \
+    && DCM=docker-compose-plugin_${DOCKER_COMPOSE_VER}~ubuntu.24.04~noble_amd64.deb \
+    && wget -q $DL/$CD \
+    && wget -q $DL/$DCE \
+    && wget -q $DL/$DCEC \
+    && wget -q $DL/$BX \
+    && wget -q $DL/$DCM \
+    && dpkg -i $CD $DCE $DCEC $BX $DCM \
+    && rm $CD $DCE $DCEC $BX $DCM
 
-CMD [ ]
+ADD . /opt/kb_sdk
+
+# Fix CallbackServer interface
+RUN cd /opt/kb_sdk \
+   && sed -i 's/en0/eth0/' src/java/us/kbase/common/executionengine/CallbackServer.java \
+   && make \
+   && rm -rf /src/.git
+
+ENV PATH=$PATH:/opt/kb_sdk/bin
+
+ENTRYPOINT [ "/opt/kb_sdk/entrypoint" ]
