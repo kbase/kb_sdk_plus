@@ -22,6 +22,7 @@ public class ModuleTesterTest {
 	
 	// TODO TEST move the modules into a single test directory for easy deletion
 	// TODO TEST fix tests leaving root owned files on disk
+	// TODO TEST fix tests leaving images and containers lying around
 
 	private static final String SIMPLE_MODULE_NAME = "ASimpleModule_for_unit_testing";
 	private static final boolean CLEANUP_AFTER_TESTS = true;
