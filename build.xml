@@ -378,8 +378,9 @@ $JAVA_HOME/bin/java -cp ${lib.classpath}:${jar.absolute.path} us.kbase.tools.Wor
   	          <fileset dir="${src}"/>
   	       </sourcefiles>
   	    </structure>
-  		<html destdir="${report.dir}/html"/>
-  		<csv destfile="${report.dir}/coverage-report.csv"/>
+        <html destdir="${report.dir}/html"/>
+        <csv destfile="${report.dir}/coverage-report.csv"/>
+        <xml destfile="${report.dir}/coverage-report.xml"/>
   	</jacoco:report>
     <delete dir="${report.dir}/classes"/>
   	<exec executable="bash">

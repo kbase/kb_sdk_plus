@@ -1,0 +1,76 @@
+name: KBase SDK Plus tests
+
+on:
+  pull_request:
+    types:
+    - opened
+    - reopened
+    - synchronize
+    - ready_for_review
+  push:
+    # run workflow when merging to main or develop
+    branches:
+      - main
+      - master
+      - develop
+
+jobs:
+
+  kb_sdk_plus_tests:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        include:
+          - python-version: "3.8"
+            java-version: "11"
+
+    steps:
+    
+    - name: Repo checkout
+      uses: actions/checkout@v4
+      
+    - name: Set up java
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: ${{matrix.java-version}}
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies and set up test config
+      shell: bash
+      env:
+        KBASE_CI_TOKEN: ${{ secrets.KBASE_CI_TOKEN }}
+        KBASE_CI_TOKEN2: ${{ secrets.KBASE_CI_TOKEN2 }}
+      run: |
+        export HOMEDIR=`pwd`
+        
+        # set up python dependencies
+        pip install pipenv
+        pipenv sync --system --dev
+
+        # move to parent dir of homedir to install binaries etc
+        cd ..
+
+        # set up jars
+        git clone https://github.com/kbase/jars
+        
+        # set up test config
+        cd $HOMEDIR
+        # TODO TEST move to root dir
+        cp test_scripts/test.cfg.example test_scripts/test.cfg
+        sed -i "s#^test.token=.*#test.token=$KBASE_CI_TOKEN#" test_scripts/test.cfg
+        sed -i "s#^test.token2=.*#test.token2=$KBASE_CI_TOKEN2#" test_scripts/test.cfg
+
+    - name: Run tests
+      shell: bash
+      run: make test
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        fail_ci_if_error: true
