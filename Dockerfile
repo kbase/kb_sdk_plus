@@ -1,4 +1,4 @@
-FROM eclipse-temurin:11.0.25_9-jdk-noble
+FROM eclipse-temurin:17.0.13_11-jdk-noble
 # Ubuntu 24.04 LTS noble ^^
 
 # Note if you update ubuntu the install lines below will need to be changed
