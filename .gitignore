@@ -32,6 +32,8 @@ src/java/us/kbase/mobu/git.properties
 /temp_test_files
 /test_scripts/ee_mock_service
 /lib/kbase_module_builder2.jar
+/test.cfg
+# old location of test.cfg
 /test_scripts/test.cfg
 /.coverage
 /coverage.xml
