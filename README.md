@@ -8,14 +8,10 @@ Documentation in this readme is for developing the SDK codebase itself. If you w
 
 ## Running the tests
 
-#### Python tests
-
-Copy `test_scripts/test.cfg.example` to `test.cfg` and fill it in appropriately, then
-
-```
-pipenv sync  --dev  # only needed on the first run or when the Pipfile.lock changes
-pipenv run make test-python
-```
+* Copy `test.cfg.example` to `test.cfg` and fill it in appropriately.
+* `pipenv sync  --dev`
+    * This only needs to be run prior to the first test run or when the Pipfile contents change.
+* `pipenv run make test`
 
 ## Notes and references
 

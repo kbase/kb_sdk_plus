@@ -29,7 +29,7 @@ class TestAuth(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         configfile = os.path.abspath(os.path.dirname(
-            os.path.abspath(__file__)) + '/../test.cfg')
+            os.path.abspath(__file__)) + '/../../test.cfg')
         print('Loading test config from ' + configfile)
         cfg = _ConfigParser()
         cfg.read(configfile)

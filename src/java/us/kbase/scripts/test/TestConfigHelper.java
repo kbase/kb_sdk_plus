@@ -17,7 +17,7 @@ public class TestConfigHelper {
     private static AuthToken token2 = null;
     
     public static void init() throws Exception {
-        final Ini testini = new Ini(new File("test_scripts/test.cfg"));
+        final Ini testini = new Ini(new File("test.cfg"));
         for (Object key: testini.get(TEST_CFG).keySet()) {
             String prop = key.toString();
             String value = testini.get(TEST_CFG, key);
