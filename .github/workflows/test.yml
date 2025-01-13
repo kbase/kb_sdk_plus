@@ -60,10 +60,9 @@ jobs:
         
         # set up test config
         cd $HOMEDIR
-        # TODO TEST move to root dir
-        cp test_scripts/test.cfg.example test_scripts/test.cfg
-        sed -i "s#^test.token=.*#test.token=$KBASE_CI_TOKEN#" test_scripts/test.cfg
-        sed -i "s#^test.token2=.*#test.token2=$KBASE_CI_TOKEN2#" test_scripts/test.cfg
+        cp test.cfg.example test.cfg
+        sed -i "s#^test.token=.*#test.token=$KBASE_CI_TOKEN#" test.cfg
+        sed -i "s#^test.token2=.*#test.token2=$KBASE_CI_TOKEN2#" test.cfg
 
     - name: Run tests
       shell: bash
