@@ -150,13 +150,13 @@ public class KbAnnotationRange {
 		if(isMinSet()) {
 			rangeMap.put("minimum", minValue);
 			if(isExclusiveMin) {
-				rangeMap.put("exclusiveMinimum",new Boolean(true));
+				rangeMap.put("exclusiveMinimum", true);
 			}
 		}
 		if(isMaxSet()) {
 			rangeMap.put("maximum", maxValue);
 			if(isExclusiveMax) {
-				rangeMap.put("exclusiveMaximum",new Boolean(true));
+				rangeMap.put("exclusiveMaximum", true);
 			}
 		}
 		return rangeMap;
@@ -169,7 +169,7 @@ public class KbAnnotationRange {
 			rangeMap.put("minimum", rounded );
 			if(rounded.compareTo(minValue)==0) {
 				if(isExclusiveMin) {
-					rangeMap.put("exclusiveMinimum",new Boolean(true));
+					rangeMap.put("exclusiveMinimum", true);
 				}
 			}
 		}
@@ -180,7 +180,7 @@ public class KbAnnotationRange {
 			rangeMap.put("maximum", rounded);
 			if(rounded.compareTo(maxValue)==0) {
 				if(isExclusiveMax) {
-					rangeMap.put("exclusiveMaximum",new Boolean(true));
+					rangeMap.put("exclusiveMaximum", true);
 				}
 			}
 		}
