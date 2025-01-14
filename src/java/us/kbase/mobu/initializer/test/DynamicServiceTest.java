@@ -2,6 +2,9 @@ package us.kbase.mobu.initializer.test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -32,11 +35,13 @@ public class DynamicServiceTest extends DockerClientServerTester {
     
     @BeforeClass
     public static void beforeClass() throws Exception {
-    	// TODO TEST CLEANUP delete this directory
-        final File workDir = new File(SIMPLE_MODULE_NAME + "ServWizConfig");
-        workDir.mkdirs();
+        // TODO TEST CLEANUP delete this directory
+        final Path workDir = Paths.get(
+                TestConfigHelper.getTempTestDir(), SIMPLE_MODULE_NAME + "ServWizConfig"
+        );
+        Files.createDirectories(workDir);
         final File cfgFile = TypeGeneratorTest.prepareDeployCfg(
-                workDir, SERVICE_WIZARD, "servwiz");
+                workDir.toFile(), SERVICE_WIZARD, "servwiz");
         // needed for the service wizard mock to start up correctly
         System.setProperty("KB_DEPLOYMENT_CONFIG", cfgFile.getCanonicalPath());
         serviceWizardPort = TypeGeneratorTest.findFreePort();

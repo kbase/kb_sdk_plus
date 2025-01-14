@@ -2,6 +2,8 @@ package us.kbase.mobu.installer.test;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 
 import junit.framework.Assert;
@@ -20,8 +22,11 @@ public class ClientInstallerTest {
     
     @BeforeClass
     public static void prepareClass() throws Exception {
-        File rootTemp = new File("temp_test");
-        tempDir = Files.createTempDirectory(rootTemp.toPath(), "test_install_").toFile();
+        final Path rootTemp = Paths.get(
+                TestConfigHelper.getTempTestDir(), ClientInstallerTest.class.getSimpleName()
+        );
+        Files.createDirectories(rootTemp);
+        tempDir = Files.createTempDirectory(rootTemp, "test_install_").toFile();
     }
     
     @AfterClass

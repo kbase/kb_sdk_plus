@@ -69,8 +69,17 @@ public class CallbackServerTest {
 	
 	// TODO TEST replace java CBS with the python ver. Should get these tests to pass against it
 
-    private static final Path TEST_DIR = Paths.get("temp_test_callback");
-    
+    private static final Path TEST_DIR;
+    static {
+        try {
+            TEST_DIR = Paths.get(
+                    TestConfigHelper.getTempTestDir(), CallbackServerTest.class.getSimpleName()
+            );
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+   
     private static AuthToken token;
     private static CatalogClient CAT_CLI;
     

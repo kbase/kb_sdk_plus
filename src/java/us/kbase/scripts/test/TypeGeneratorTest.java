@@ -12,6 +12,9 @@ import java.net.MalformedURLException;
 import java.net.ServerSocket;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -75,11 +78,10 @@ public class TypeGeneratorTest extends Assert {
 	// the running service
 	//TODO TESTING pep8 test? Not really sure about this.
 
-	public static final String rootPackageName = "us.kbase";
-	public static final String tempDirName = "temp_test";
-	public static final String SERVICE_WIZARD = "ServiceWizard";
+	private static final String rootPackageName = "us.kbase";
+	private static final String SERVICE_WIZARD = "ServiceWizard";
 
-	public static boolean debugClientTimes = false;
+	private static boolean debugClientTimes = false;
 
 	public static void main(String[] args) throws Exception{
 		int testNum = Integer.parseInt(args[0]);
@@ -660,7 +662,8 @@ public class TypeGeneratorTest extends Assert {
 					"cd \"" + serverOutDir.getAbsolutePath() + "\"",
 					"if [ ! -d biokbase ]; then",
 					"  mkdir -p ./biokbase",
-					"  cp -r ../../../src/java/us/kbase/templates/log.py ./biokbase/",
+					// TODO TESTCODE this is bonkers, need a better way of reffing files
+					"  cp -r ../../../../src/java/us/kbase/templates/log.py ./biokbase/",
 					"fi"
 					));
 			if (serverPortNum != null) {
@@ -993,22 +996,24 @@ public class TypeGeneratorTest extends Assert {
 		return urlcl;
 	}
 	
-	private static File prepareWorkDir(int testNum) throws IOException {
-		File tempDir = new File(".").getCanonicalFile();
-		if (!tempDir.getName().equals(tempDirName)) {
-			tempDir = new File(tempDir, tempDirName);
-			if (!tempDir.exists())
-				tempDir.mkdir();
-		}
-		for (File dir : tempDir.listFiles()) {
+	private static File prepareWorkDir(int testNum) throws Exception {
+		final Path tempDir = Paths.get(
+				TestConfigHelper.getTempTestDir(), TypeGeneratorTest.class.getSimpleName()
+		);
+		Files.createDirectories(tempDir);
+		for (File dir : tempDir.toFile().listFiles()) {
 			if (dir.isDirectory() && dir.getName().startsWith("test" + testNum + "_"))
 				try {
 					TextUtils.deleteRecursively(dir);
 				} catch (Exception e) {
-					System.out.println("Can not delete directory [" + dir.getName() + "]: " + e.getMessage());
+					System.out.println(
+							"Can not delete directory [" + dir.getName() + "]: " + e.getMessage()
+					);
 				}
 		}
-		File workDir = new File(tempDir, "test" + testNum + "_" + System.currentTimeMillis());
+		final File workDir = new File(
+				tempDir.toFile(), "test" + testNum + "_" + System.currentTimeMillis()
+		);
 		if (!workDir.exists())
 			workDir.mkdir();
 		return workDir;
@@ -1067,7 +1072,7 @@ public class TypeGeneratorTest extends Assert {
 						try {
 							testClass.getConstructor(clientClass).newInstance(client);
 						} catch (NoSuchMethodException e) {
-							testClass.getConstructor(clientClass, Integer.class).newInstance(client, portNum);							
+							testClass.getConstructor(clientClass, Integer.class).newInstance(client, portNum);
 						}
 					} else {
 						try {
@@ -1145,7 +1150,8 @@ public class TypeGeneratorTest extends Assert {
         if (ver3)
             lines.add("export PYTHONPATH=");
         lines.addAll(Arrays.asList(
-                pyCmd + " ../../../test_scripts/python/test_client.py -t " + configFile.getName() + 
+                // TODO TESTCODE need a better way of referencing the test code, this is dumb
+                pyCmd + " ../../../../test_scripts/python/test_client.py -t " + configFile.getName() + 
                 " -e http://localhost:" + portNum +
                 " -o \"" + System.getProperty("test.token") + "\"" +
                 (System.getProperty("KB_JOB_CHECK_WAIT_TIME") == null ? "" :
