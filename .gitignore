@@ -40,11 +40,9 @@ src/java/us/kbase/mobu/git.properties
 /htmlcov/
 /classes/
 /reports/
-/temp_test/
 /TestAsyncJava/
 /TestAsyncPerl/
 /TestAsyncPython/
-/temp_test_callback/
 /junit*.properties
 /ASimpleModule_for_unit_testingPython/
 /ASimpleModule_for_unit_testingJava/
@@ -54,4 +52,4 @@ src/java/us/kbase/mobu/git.properties
 /a_SimpleModule_for_unit_testing_perl/
 /ASimpleModule_for_unit_testingPythonError/
 /a_SimpleModule_for_rename_unit_testing_python/
-/TestDynamicServWizConfig/
+/temp_kbsdkplus_test/

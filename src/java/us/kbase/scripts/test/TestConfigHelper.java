@@ -26,19 +26,19 @@ public class TestConfigHelper {
         initialized = true;
     }
     
-    public static String getTestConfigParam(String param, boolean required) throws Exception {
+    private static String getTestConfigParam(String param, boolean required) throws Exception {
         if (!initialized) {
             init();
         }
         String ret = System.getProperty(param);
         if (required && ret == null) {
             throw new IllegalStateException("Parameter [" + param + "] is not set " +
-            		"in test configuraion. Please check test_scripts/test.cfg file");
+                   "in test configuration. Please check test.cfg file");
         }
         return ret;
     }
 
-    public static String getTestConfigParam(String param, String defaultValue) throws Exception {
+    private static String getTestConfigParam(String param, String defaultValue) throws Exception {
         String ret = getTestConfigParam(param, false);
         return ret == null ? defaultValue : ret;
     }
@@ -51,7 +51,7 @@ public class TestConfigHelper {
         return getTestConfigParam("test.auth-service-url-allow-insecure", "false");
     }
     
-    public static ConfigurableAuthService getAuthService() throws Exception {
+    private static ConfigurableAuthService getAuthService() throws Exception {
         return new ConfigurableAuthService(
                 new AuthConfig().withKBaseAuthServerURL(new URL(getAuthServiceUrl()))
                 .withAllowInsecureURLs("true".equals(getAuthServiceUrlInsecure())));
@@ -77,5 +77,9 @@ public class TestConfigHelper {
     
     public static String getKBaseEndpoint() throws Exception {
         return getTestConfigParam("test.kbase.endpoint", true);
+    }
+    
+    public static String getTempTestDir() throws Exception {
+        return getTestConfigParam("test.temp.dir", true);
     }
 }

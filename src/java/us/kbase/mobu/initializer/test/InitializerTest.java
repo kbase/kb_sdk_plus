@@ -3,6 +3,7 @@ package us.kbase.mobu.initializer.test;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,6 +17,7 @@ import org.junit.Test;
 
 import junit.framework.Assert;
 import us.kbase.mobu.initializer.ModuleInitializer;
+import us.kbase.scripts.test.TestConfigHelper;
 
 public class InitializerTest {
     private static File tempDir = null;
@@ -115,7 +117,7 @@ public class InitializerTest {
 	}
 	
 	@BeforeClass
-	public static void prepPathsToCheck() throws IOException {
+	public static void prepPathsToCheck() throws Exception {
 		allExpectedDefaultPaths = new ArrayList<String>(Arrays.asList(EXPECTED_PATHS));
 		allExpectedDefaultPaths.addAll(Arrays.asList(EXPECTED_DEFAULT_PATHS));
 		allExpectedDefaultPaths.add(SIMPLE_MODULE_NAME + ".spec");
@@ -153,11 +155,9 @@ public class InitializerTest {
 		rPaths.add("ui/narrative/methods/" + EXAMPLE_OLD_METHOD_NAME + "/spec.json");
 		rPaths.add("ui/narrative/methods/" + EXAMPLE_OLD_METHOD_NAME + "/display.yaml");
 
-		File rootTemp = new File("temp_test");
-		if (!rootTemp.exists()) {
-		    rootTemp.mkdir();
-		}
-		tempDir = Files.createTempDirectory(rootTemp.toPath(), "init_test_").toFile();
+		final Path rootTemp = Paths.get(TestConfigHelper.getTempTestDir());
+		Files.createDirectories(rootTemp);
+		tempDir = Files.createTempDirectory(rootTemp, "init_test_").toFile();
 	}
 	
 	@Test

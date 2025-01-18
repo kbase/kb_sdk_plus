@@ -13,6 +13,9 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -46,21 +49,15 @@ import us.kbase.kidl.KbTuple;
 import us.kbase.kidl.KbTypedef;
 import us.kbase.kidl.KidlParseException;
 import us.kbase.kidl.KidlParser;
+import us.kbase.scripts.test.TestConfigHelper;
 
 public class KidlTest {
     public static final String tempDirName = "temp_test";
 
-	private static File prepareWorkDir() throws IOException {
-		File tempDir = new File(".").getCanonicalFile();
-		if (!tempDir.getName().equals(tempDirName)) {
-			tempDir = new File(tempDir, tempDirName);
-			if (!tempDir.exists())
-				tempDir.mkdir();
-		}
-		File workDir = new File(tempDir, "test_kidl");
-		if (!workDir.exists())
-			workDir.mkdir();
-		return workDir;
+	private static File prepareWorkDir() throws Exception {
+		final Path workDir = Paths.get(TestConfigHelper.getTempTestDir(), "test_kidl");
+		Files.createDirectories(workDir);
+		return workDir.toFile();
 	}
 
 	private static List<String> getLines(String text) throws Exception {

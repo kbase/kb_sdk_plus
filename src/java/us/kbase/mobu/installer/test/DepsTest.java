@@ -2,6 +2,7 @@ package us.kbase.mobu.installer.test;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
@@ -19,6 +20,7 @@ import us.kbase.common.service.UObject;
 import us.kbase.mobu.installer.ClientInstaller;
 import us.kbase.mobu.installer.Dependency;
 import us.kbase.mobu.util.DiskFileSaver;
+import us.kbase.scripts.test.TestConfigHelper;
 
 public class DepsTest {
     private static File tempDir = null;
@@ -26,8 +28,9 @@ public class DepsTest {
     
     @BeforeClass
     public static void prepareClass() throws Exception {
-        File rootTemp = new File("temp_test");
-        tempDir = Files.createTempDirectory(rootTemp.toPath(), "test_deps_").toFile();
+        tempDir = Files.createTempDirectory(
+                Paths.get(TestConfigHelper.getTempTestDir()), "test_deps_"
+        ).toFile();
         depsFile = new File(tempDir, "dependencies.json");
     }
     
