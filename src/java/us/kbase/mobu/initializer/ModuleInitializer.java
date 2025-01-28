@@ -33,10 +33,6 @@ public class ModuleInitializer {
 										"ui/narrative",
 										"ui/narrative/methods"};
 	
-	public ModuleInitializer(String moduleName, String userName, boolean verbose) {
-		this(moduleName, userName, DEFAULT_LANGUAGE, verbose);
-	}
-	
 	public ModuleInitializer(String moduleName, String userName, String language, boolean verbose) {
 	    this(moduleName, userName, language, verbose, null);
 	}
