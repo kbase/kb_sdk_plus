@@ -44,10 +44,4 @@ src/java/us/kbase/mobu/git.properties
 /TestAsyncPerl/
 /TestAsyncPython/
 /junit*.properties
-/ASimpleModule_for_unit_testingPython/
-/ASimpleModule_for_unit_testingJava/
-/ASimpleModule_for_unit_testingSelf/
-/a_SimpleModule_for_unit_testing_java/
-/a_SimpleModule_for_unit_testing_python/
-/ASimpleModule_for_unit_testingPythonError/
 /temp_kbsdkplus_test/
