@@ -26,14 +26,14 @@ public class ModuleTesterTest {
 
 	private static final String SIMPLE_MODULE_NAME = "ASimpleModule_for_unit_testing";
 	private static final boolean CLEANUP_AFTER_TESTS = true;
-	
+
 	private static final List<String> CREATED_MODULE_NAMES = new ArrayList<String>();
 	private static AuthToken token;
-	
-    @BeforeClass
-    public static void beforeClass() throws Exception {
-        token = TestConfigHelper.getToken();
-    }
+
+	@BeforeClass
+	public static void beforeClass() throws Exception {
+		token = TestConfigHelper.getToken();
+	}
 
 	@AfterClass
 	public static void tearDownModule() throws Exception {
@@ -47,25 +47,25 @@ public class ModuleTesterTest {
 							moduleName + "]: " + ex.getMessage());
 				}
 	}
-	
+
 	@After
 	public void afterTest() {
-	    System.out.println();
+		System.out.println();
 	}
-	
+
 	private static void deleteDir(String moduleName) throws Exception {
 		File module = new File(moduleName);
 		if (module.exists() && module.isDirectory())
 			FileUtils.deleteDirectory(module);
 	}
-	
-    private void init(String lang, String moduleName) throws Exception {
-        deleteDir(moduleName);
-        CREATED_MODULE_NAMES.add(moduleName);
-        ModuleInitializer initer = new ModuleInitializer(moduleName, token.getUserName(), 
-                lang, false);
-        initer.initialize(true);
-    }
+
+	private void init(String lang, String moduleName) throws Exception {
+		deleteDir(moduleName);
+		CREATED_MODULE_NAMES.add(moduleName);
+		ModuleInitializer initer = new ModuleInitializer(moduleName, token.getUserName(), 
+				lang, false);
+		initer.initialize(true);
+	}
 
 	private int runTestsInDocker(String moduleName) throws Exception {
 		File moduleDir = new File(moduleName);
@@ -112,92 +112,92 @@ public class ModuleTesterTest {
 
 	@Test
 	public void testPythonModuleError() throws Exception {
-        System.out.println("Test [testPythonModuleError]");
+		System.out.println("Test [testPythonModuleError]");
 		String lang = "python";
-        String moduleName = SIMPLE_MODULE_NAME + "PythonError";
-        init(lang, moduleName);
-        File implFile = new File(moduleName + "/lib/" + moduleName + "/" + moduleName + "Impl.py");
-        String implText = FileUtils.readFileToString(implFile);
-        implText = implText.replace("    #BEGIN filter_contigs", 
-                "        #BEGIN filter_contigs\n" +
-                "        raise ValueError('Special error')");
-        FileUtils.writeStringToFile(implFile, implText);
-        int exitCode = runTestsInDocker(moduleName);
-        Assert.assertEquals(2, exitCode);
+		String moduleName = SIMPLE_MODULE_NAME + "PythonError";
+		init(lang, moduleName);
+		File implFile = new File(moduleName + "/lib/" + moduleName + "/" + moduleName + "Impl.py");
+		String implText = FileUtils.readFileToString(implFile);
+		implText = implText.replace("    #BEGIN filter_contigs", 
+				"        #BEGIN filter_contigs\n" +
+				"        raise ValueError('Special error')");
+		FileUtils.writeStringToFile(implFile, implText);
+		int exitCode = runTestsInDocker(moduleName);
+		Assert.assertEquals(2, exitCode);
 	}
 
 	@Test
 	public void testJavaModuleExample() throws Exception {
-        System.out.println("Test [testJavaModuleExample]");
+		System.out.println("Test [testJavaModuleExample]");
 		String lang = "java";
-        String moduleName = SIMPLE_MODULE_NAME + "Java";
-        init(lang, moduleName);
-        int exitCode = runTestsInDocker(moduleName);
-        Assert.assertEquals(0, exitCode);
+		String moduleName = SIMPLE_MODULE_NAME + "Java";
+		init(lang, moduleName);
+		int exitCode = runTestsInDocker(moduleName);
+		Assert.assertEquals(0, exitCode);
 	}
 
 	@Test
 	public void testJavaModuleError() throws Exception {
-	    System.out.println("Test [testJavaModuleError]");
-	    String lang = "java";
-	    String moduleName = SIMPLE_MODULE_NAME + "JavaError";
-	    init(lang, moduleName);
-        File implFile = new File(moduleName + "/lib/src/" +
-        		"asimplemoduleforunittestingjavaerror/ASimpleModuleForUnitTestingJavaErrorServer.java");
-        String implText = FileUtils.readFileToString(implFile);
-        implText = implText.replace("        //BEGIN filter_contigs", 
-                "        //BEGIN filter_contigs\n" +
-                "        if (true) throw new IllegalStateException(\"Special error\");");
-        FileUtils.writeStringToFile(implFile, implText);
-	    int exitCode = runTestsInDocker(moduleName);
-	    Assert.assertEquals(2, exitCode);
+		System.out.println("Test [testJavaModuleError]");
+		String lang = "java";
+		String moduleName = SIMPLE_MODULE_NAME + "JavaError";
+		init(lang, moduleName);
+		File implFile = new File(moduleName + "/lib/src/" +
+				"asimplemoduleforunittestingjavaerror/ASimpleModuleForUnitTestingJavaErrorServer.java");
+		String implText = FileUtils.readFileToString(implFile);
+		implText = implText.replace("        //BEGIN filter_contigs", 
+				"        //BEGIN filter_contigs\n" +
+				"        if (true) throw new IllegalStateException(\"Special error\");");
+		FileUtils.writeStringToFile(implFile, implText);
+		int exitCode = runTestsInDocker(moduleName);
+		Assert.assertEquals(2, exitCode);
 	}
 
-    @Test
-    public void testSelfCalls() throws Exception {
-        System.out.println("Test [testSelfCalls]");
-        String lang = "python";
-        String moduleName = SIMPLE_MODULE_NAME + "Self";
-        deleteDir(moduleName);
-        CREATED_MODULE_NAMES.add(moduleName);
-        String implInit = "" +
-                "#BEGIN_HEADER\n" +
-                "import os\n"+
-                "from " + moduleName + "." + moduleName + "Client import " + moduleName + " as local_client\n" +
-                "#END_HEADER\n" +
-                "\n" +
-                "    #BEGIN_CLASS_HEADER\n" +
-                "    #END_CLASS_HEADER\n" +
-                "\n" +
-                "        #BEGIN_CONSTRUCTOR\n" +
-                "        #END_CONSTRUCTOR\n" +
-                "\n" +
-                "        #BEGIN run_local\n" +
-                "        returnVal = local_client(os.environ['SDK_CALLBACK_URL']).calc_square(input)\n" +
-                "        #END run_local\n" +
-                "\n" +
-                "        #BEGIN calc_square\n" +
-                "        returnVal = input * input\n" +
-                "        #END calc_square\n";
-        File moduleDir = new File(moduleName);
-        File implFile = new File(moduleDir, "lib/" + moduleName + "/" + 
-                moduleName + "Impl.py");
-        ModuleInitializer initer = new ModuleInitializer(moduleName, token.getUserName(), lang, false);
-        initer.initialize(false);
-        File specFile = new File(moduleDir, moduleName + ".spec");
-        String specText = FileUtils.readFileToString(specFile).replace("};", 
-                "funcdef run_local(int input) returns (int) authentication required;\n" +
-                "funcdef calc_square(int input) returns (int) authentication required;\n" +
-                "};");
-        File testFile = new File(moduleDir, "test/" + moduleName + "_server_test.py");
-        String testCode = FileUtils.readFileToString(testFile).replace("    def test_your_method(self):", 
-                "    def test_your_method(self):\n" +
-                "        self.assertEqual(25, self.getImpl().run_local(self.getContext(), 5)[0])"
-        );
-        FileUtils.writeStringToFile(specFile, specText);
-        FileUtils.writeStringToFile(implFile, implInit);
-        FileUtils.writeStringToFile(testFile, testCode);
-        int exitCode = runTestsInDocker(moduleDir, token, true);
-        Assert.assertEquals(0, exitCode);
-   }
+	@Test
+	public void testSelfCalls() throws Exception {
+		System.out.println("Test [testSelfCalls]");
+		String lang = "python";
+		String moduleName = SIMPLE_MODULE_NAME + "Self";
+		deleteDir(moduleName);
+		CREATED_MODULE_NAMES.add(moduleName);
+		String implInit = "" +
+				"#BEGIN_HEADER\n" +
+				"import os\n"+
+				"from " + moduleName + "." + moduleName + "Client import " + moduleName + " as local_client\n" +
+				"#END_HEADER\n" +
+				"\n" +
+				"    #BEGIN_CLASS_HEADER\n" +
+				"    #END_CLASS_HEADER\n" +
+				"\n" +
+				"        #BEGIN_CONSTRUCTOR\n" +
+				"        #END_CONSTRUCTOR\n" +
+				"\n" +
+				"        #BEGIN run_local\n" +
+				"        returnVal = local_client(os.environ['SDK_CALLBACK_URL']).calc_square(input)\n" +
+				"        #END run_local\n" +
+				"\n" +
+				"        #BEGIN calc_square\n" +
+				"        returnVal = input * input\n" +
+				"        #END calc_square\n";
+		File moduleDir = new File(moduleName);
+		File implFile = new File(moduleDir, "lib/" + moduleName + "/" + 
+				moduleName + "Impl.py");
+		ModuleInitializer initer = new ModuleInitializer(moduleName, token.getUserName(), lang, false);
+		initer.initialize(false);
+		File specFile = new File(moduleDir, moduleName + ".spec");
+		String specText = FileUtils.readFileToString(specFile).replace("};", 
+				"funcdef run_local(int input) returns (int) authentication required;\n" +
+				"funcdef calc_square(int input) returns (int) authentication required;\n" +
+				"};");
+		File testFile = new File(moduleDir, "test/" + moduleName + "_server_test.py");
+		String testCode = FileUtils.readFileToString(testFile).replace("    def test_your_method(self):", 
+				"    def test_your_method(self):\n" +
+				"        self.assertEqual(25, self.getImpl().run_local(self.getContext(), 5)[0])"
+				);
+		FileUtils.writeStringToFile(specFile, specText);
+		FileUtils.writeStringToFile(implFile, implInit);
+		FileUtils.writeStringToFile(testFile, testCode);
+		int exitCode = runTestsInDocker(moduleDir, token, true);
+		Assert.assertEquals(0, exitCode);
+	}
 }
