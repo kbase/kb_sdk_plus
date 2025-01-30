@@ -29,7 +29,6 @@ __pycache__
 src/java/us/kbase/mobu/git.properties
 /bin
 /dist
-/temp_test_files
 /test_scripts/ee_mock_service
 /lib/kbase_module_builder2.jar
 /test.cfg
@@ -40,8 +39,5 @@ src/java/us/kbase/mobu/git.properties
 /htmlcov/
 /classes/
 /reports/
-/TestAsyncJava/
-/TestAsyncPerl/
-/TestAsyncPython/
 /junit*.properties
 /temp_kbsdkplus_test/

@@ -6,6 +6,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -35,7 +37,7 @@ public class DockerClientServerTester {
     
     private static final String INSTALLED_CLIENTS = "installed_clients";
 
-    protected static List<String> createdModuleNames = new ArrayList<String>();
+    protected static List<Path> CREATED_MODULES = new ArrayList<Path>();
     protected static AuthToken token;
     
     @BeforeClass
@@ -44,12 +46,14 @@ public class DockerClientServerTester {
         TypeGeneratorTest.suppressJettyLogging();
     }
     
+    // TODO TEST CODE pretty sure a lot of this stuff is duplicated in multiple places elsewhere
+    //                also needs to be updated to more modern code
     @AfterClass
     public static void afterTesterClass() throws Exception {
         if (cleanupAfterTests)
-            for (String moduleName : createdModuleNames)
+            for (final Path moduleName: CREATED_MODULES)
                 try {
-                    deleteDir(moduleName);
+                    deleteDir(moduleName.toFile());
                 } catch (Exception ex) {
                     System.err.println("Error cleaning up module [" + 
                             moduleName + "]: " + ex.getMessage());
@@ -61,32 +65,43 @@ public class DockerClientServerTester {
         System.out.println();
     }
     
-    protected static void deleteDir(String moduleName) throws Exception {
-        File module = new File(moduleName);
+    private static void deleteDir(File module) throws Exception {
         if (module.exists() && module.isDirectory())
             FileUtils.deleteDirectory(module);
     }
     
-    protected File init(String lang, String moduleName, File implFile, 
-            String implInitText) throws Exception {
-        deleteDir(moduleName);
-        createdModuleNames.add(moduleName);
-        ModuleInitializer initer = new ModuleInitializer(moduleName, token.getUserName(), 
-                lang, false);
-        initer.initialize(false);
-        File specFile = new File(moduleName, moduleName + ".spec");
+    private File init(
+            final String lang,
+            final String moduleName,
+            final String implFileRelative,
+            final String implInitText
+        ) throws Exception {
+        final Path moduleDir = Paths.get(TestConfigHelper.getTempTestDir(), moduleName);
+        deleteDir(moduleDir.toFile());
+        CREATED_MODULES.add(moduleDir);
+        new ModuleInitializer(
+                moduleName,
+                token.getUserName(),
+                lang,
+                false,
+                new File(TestConfigHelper.getTempTestDir())
+        ).initialize(false);
+        File specFile = new File(moduleDir.toFile(), moduleName + ".spec");
         String specText = FileUtils.readFileToString(specFile).replace("};", 
                 "funcdef run_test(string input) returns (string) authentication required;\n" +
                 "funcdef throw_error(string input) returns () authentication optional;\n};");
         FileUtils.writeStringToFile(specFile, specText);
-        if (implFile != null && implInitText != null)
+        if (implFileRelative != null && implInitText != null) {
+            final File implFile = moduleDir.resolve(implFileRelative).toFile();
             FileUtils.writeStringToFile(implFile, implInitText);
-        File moduleDir = new File(moduleName);
+        }
         // Making <kb_sdk>/bin/kb-sdk executable
+        // TODO TEST this seems bizarre. Why are we running make in the kb_sdk repo root?
+        //           looks like this should just recompile kb_sdk
         if (ProcessHelper.cmd("make").exec(new File(".")).getExitCode() != 0)
             throw new IllegalStateException("Error making kb-sdk");
         // Running make for repo with adding <kb_sdk>/bin/kb-sdk into PATH
-        File shellFile = new File(moduleDir, "run_make.sh");
+        File shellFile = new File(moduleDir.toFile(), "run_make.sh");
         String pathToSdk = new File(".").getCanonicalPath();
         List<String> lines = new ArrayList<String>(Arrays.asList("#!/bin/bash"));
         lines.add("export PATH=" + pathToSdk + "/bin:$PATH");
@@ -94,38 +109,15 @@ public class DockerClientServerTester {
         lines.add("make");
         TextUtils.writeFileLines(lines, shellFile);
         if(ProcessHelper.cmd("bash", shellFile.getCanonicalPath()).exec(
-                moduleDir).getExitCode() != 0)
+                moduleDir.toFile()).getExitCode() != 0)
             throw new IllegalStateException("Error making " + moduleName + " repo");
         //ProcessHelper.cmd("make").exec(moduleDir);
-        FileUtils.writeStringToFile(new File(moduleDir, "sdk.cfg"), 
+        FileUtils.writeStringToFile(new File(moduleDir.toFile(), "sdk.cfg"), 
                 "catalog_url=http://kbase.us");
-        return moduleDir;
-    }
-    
-    protected File initPerl(String moduleName) throws Exception {
-        File moduleDir = new File(moduleName);
-        String implInit = "" +
-                "#BEGIN_HEADER\n" +
-                "#END_HEADER\n" +
-                "\n" +
-                "    #BEGIN_CONSTRUCTOR\n" +
-                "    #END_CONSTRUCTOR\n" +
-                "\n" +
-                "    #BEGIN run_test\n" +
-                "    $return = $input;\n" +
-                "    #END run_test\n" +
-                "\n" +
-                "    #BEGIN throw_error\n" +
-                "    die $input;\n" +
-                "    #END throw_error\n";
-        File implFile = new File(moduleDir, "lib/" + moduleName + "/" + 
-                moduleName + "Impl.pm");
-        init("perl", moduleName, implFile, implInit);
-        return moduleDir;
+        return moduleDir.toFile();
     }
 
     protected File initJava(String moduleName) throws Exception {
-        File moduleDir = new File(moduleName);
         String implInit = "" +
                 "//BEGIN_HEADER\n" +
                 "//END_HEADER\n" +
@@ -143,14 +135,12 @@ public class DockerClientServerTester {
                 "        //BEGIN throw_error\n" +
                 "        throw new Exception(input);\n" +
                 "        //END throw_error\n";
-        File implFile = new File(moduleDir, "lib/src/" + moduleName.toLowerCase() + "/" + 
-                moduleName + "Server.java");
-        init("java", moduleName, implFile, implInit);
-        return moduleDir;
+        final String implFile = "lib/src/" + moduleName.toLowerCase() + "/" + 
+                moduleName + "Server.java";
+        return init("java", moduleName, implFile, implInit);
     }
     
     protected File initPython(String moduleName) throws Exception {
-        File moduleDir = new File(moduleName);
         String implInit = "" +
                 "#BEGIN_HEADER\n" +
                 "#END_HEADER\n" +
@@ -168,10 +158,8 @@ public class DockerClientServerTester {
                 "        #BEGIN throw_error\n" +
                 "        raise ValueError(input)\n" +
                 "        #END throw_error\n";
-        File implFile = new File(moduleDir, "lib/" + moduleName + "/" + 
-                moduleName + "Impl.py");
-        init("python", moduleName, implFile, implInit);
-        return moduleDir;
+        final String implFile = "lib/" + moduleName + "/" + moduleName + "Impl.py";
+        return init("python", moduleName, implFile, implInit);
     }
     
     protected static String prepareDockerImage(File moduleDir, 
@@ -443,7 +431,7 @@ public class DockerClientServerTester {
 		}
 	}
 
-    protected static void checkStatusResponse(File output, File error) throws Exception {
+    private static void checkStatusResponse(File output, File error) throws Exception {
         if (!output.exists()) {
             String msg = error.exists() ? FileUtils.readFileToString(error) :
                 "Unknown error (error file wasn't created)";
@@ -452,7 +440,7 @@ public class DockerClientServerTester {
         checkStatusResponse(UObject.getMapper().readValue(output, Object.class));
     }
 
-    protected static void checkStatusResponse(Object obj) throws Exception {
+    private static void checkStatusResponse(Object obj) throws Exception {
         Assert.assertNotNull(obj);
         String errMsg = "Unexpected response: " + UObject.transformObjectToString(obj);
         if (obj instanceof List) {

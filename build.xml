@@ -15,7 +15,6 @@
   <property name="classes"  location="classes"/>
   <property name="lib"	location="lib"/>
 
-  <property name="test.dir" location="temp_test_files"/>
   <property name="test.script.dir" location="test_scripts"/>
   <property name="test.script"  value="test_module_builder.sh"/>
 
@@ -97,7 +96,6 @@
     <mkdir dir="${classes}"/>
     <mkdir dir="${dist}"/>
     <mkdir dir="${bin.local}"/>
-    <mkdir dir="${test.dir}"/>
     <mkdir dir="${ee.dir}"/>
   </target>
 
@@ -394,7 +392,6 @@ $JAVA_HOME/bin/java -cp ${lib.classpath}:${jar.absolute.path} us.kbase.tools.Wor
     <!-- Clean up internal temporary files and folders-->
     <delete dir="${classes}"/>
     <delete dir="${dist}"/>
-    <delete dir="${test.dir}"/>
     <delete dir="${bin.local}"/>
     <delete dir="${ee.dir}"/>
   </target>
