@@ -2,7 +2,6 @@ package us.kbase.mobu.renamer.test;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -59,7 +58,6 @@ public class ModuleRenamerTest {
     private static File initRepo(String lang) throws Exception {
         final String moduleName = SIMPLE_MODULE_NAME + "_" + lang;
         final Path workDir = Paths.get(TestConfigHelper.getTempTestDir(), moduleName);
-        Files.createDirectories(workDir);
         final File ret = workDir.toFile();
         if (ret.exists()) {
             FileUtils.deleteDirectory(ret);

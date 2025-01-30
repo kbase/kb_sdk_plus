@@ -1,6 +1,8 @@
 package us.kbase.mobu.tester.test;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +29,7 @@ public class ModuleTesterTest {
 	private static final String SIMPLE_MODULE_NAME = "ASimpleModule_for_unit_testing";
 	private static final boolean CLEANUP_AFTER_TESTS = true;
 
-	private static final List<String> CREATED_MODULE_NAMES = new ArrayList<String>();
+	private static final List<Path> CREATED_MODULES = new ArrayList<Path>();
 	private static AuthToken token;
 
 	@BeforeClass
@@ -38,13 +40,13 @@ public class ModuleTesterTest {
 	@AfterClass
 	public static void tearDownModule() throws Exception {
 		if (CLEANUP_AFTER_TESTS)
-			for (String moduleName : CREATED_MODULE_NAMES)
+			for (final Path moduleDir: CREATED_MODULES)
 				try {
-					System.out.println("Deleting " + moduleName);
-					deleteDir(moduleName);
+					System.out.println("Deleting " + moduleDir);
+					deleteDir(moduleDir.toFile());
 				} catch (Exception ex) {
 					System.err.println("Error cleaning up module [" + 
-							moduleName + "]: " + ex.getMessage());
+							moduleDir + "]: " + ex.getMessage());
 				}
 	}
 
@@ -53,26 +55,30 @@ public class ModuleTesterTest {
 		System.out.println();
 	}
 
-	private static void deleteDir(String moduleName) throws Exception {
-		File module = new File(moduleName);
-		if (module.exists() && module.isDirectory())
-			FileUtils.deleteDirectory(module);
+	private static void deleteDir(final File moduleDir) throws Exception {
+		if (moduleDir.exists() && moduleDir.isDirectory())
+			FileUtils.deleteDirectory(moduleDir);
 	}
 
-	private void init(String lang, String moduleName) throws Exception {
-		deleteDir(moduleName);
-		CREATED_MODULE_NAMES.add(moduleName);
-		ModuleInitializer initer = new ModuleInitializer(moduleName, token.getUserName(), 
-				lang, false);
-		initer.initialize(true);
+	private Path init(String lang, String moduleName) throws Exception {
+		final Path workDir = Paths.get(TestConfigHelper.getTempTestDir(), moduleName);
+		deleteDir(workDir.toFile());
+		CREATED_MODULES.add(workDir);
+		new ModuleInitializer(
+				moduleName,
+				token.getUserName(),
+				lang,
+				false,
+				new File(TestConfigHelper.getTempTestDir())
+		).initialize(true);
+		return workDir;
 	}
 
-	private int runTestsInDocker(String moduleName) throws Exception {
-		File moduleDir = new File(moduleName);
+	private int runTestsInDocker(final File moduleDir) throws Exception {
 		return runTestsInDocker(moduleDir, token);
 	}
 
-	public static int runTestsInDocker(File moduleDir, AuthToken token) throws Exception {
+	public static int runTestsInDocker(final File moduleDir, AuthToken token) throws Exception {
 		return runTestsInDocker(moduleDir, token, false);
 	}
 
@@ -100,13 +106,13 @@ public class ModuleTesterTest {
 		System.out.println("Test [testPythonModuleExample]");
 		String lang = "python";
 		String moduleName = SIMPLE_MODULE_NAME + "Python";
-		init(lang, moduleName);
+		final Path moduleDir = init(lang, moduleName);
 		// TODO TESTHACK remove this when there's a base image that deploys the authclient correctly
 		FileUtils.copyFile(
 				new File("./src/java/us/kbase/templates/authclient.py"),
-				new File(moduleName + "/lib/" + moduleName + "/authclient.py")
+				moduleDir.resolve(Paths.get("lib", moduleName, "/authclient.py")).toFile()
 				);
-		int exitCode = runTestsInDocker(moduleName);
+		int exitCode = runTestsInDocker(moduleDir.toFile());
 		Assert.assertEquals(0, exitCode);
 	}
 
@@ -115,14 +121,16 @@ public class ModuleTesterTest {
 		System.out.println("Test [testPythonModuleError]");
 		String lang = "python";
 		String moduleName = SIMPLE_MODULE_NAME + "PythonError";
-		init(lang, moduleName);
-		File implFile = new File(moduleName + "/lib/" + moduleName + "/" + moduleName + "Impl.py");
-		String implText = FileUtils.readFileToString(implFile);
+		final Path moduleDir = init(lang, moduleName);
+		final Path implFile = moduleDir.resolve(
+				Paths.get("lib", moduleName, moduleName + "Impl.py")
+		);
+		String implText = FileUtils.readFileToString(implFile.toFile());
 		implText = implText.replace("    #BEGIN filter_contigs", 
 				"        #BEGIN filter_contigs\n" +
 				"        raise ValueError('Special error')");
-		FileUtils.writeStringToFile(implFile, implText);
-		int exitCode = runTestsInDocker(moduleName);
+		FileUtils.writeStringToFile(implFile.toFile(), implText);
+		int exitCode = runTestsInDocker(moduleDir.toFile());
 		Assert.assertEquals(2, exitCode);
 	}
 
@@ -131,8 +139,8 @@ public class ModuleTesterTest {
 		System.out.println("Test [testJavaModuleExample]");
 		String lang = "java";
 		String moduleName = SIMPLE_MODULE_NAME + "Java";
-		init(lang, moduleName);
-		int exitCode = runTestsInDocker(moduleName);
+		final Path moduleDir = init(lang, moduleName);
+		int exitCode = runTestsInDocker(moduleDir.toFile());
 		Assert.assertEquals(0, exitCode);
 	}
 
@@ -141,15 +149,17 @@ public class ModuleTesterTest {
 		System.out.println("Test [testJavaModuleError]");
 		String lang = "java";
 		String moduleName = SIMPLE_MODULE_NAME + "JavaError";
-		init(lang, moduleName);
-		File implFile = new File(moduleName + "/lib/src/" +
-				"asimplemoduleforunittestingjavaerror/ASimpleModuleForUnitTestingJavaErrorServer.java");
-		String implText = FileUtils.readFileToString(implFile);
+		final Path moduleDir = init(lang, moduleName);
+		final Path implFile = moduleDir.resolve(Paths.get(
+				"lib/src/asimplemoduleforunittestingjavaerror/"
+				+ "ASimpleModuleForUnitTestingJavaErrorServer.java"
+		));
+		String implText = FileUtils.readFileToString(implFile.toFile());
 		implText = implText.replace("        //BEGIN filter_contigs", 
 				"        //BEGIN filter_contigs\n" +
 				"        if (true) throw new IllegalStateException(\"Special error\");");
-		FileUtils.writeStringToFile(implFile, implText);
-		int exitCode = runTestsInDocker(moduleName);
+		FileUtils.writeStringToFile(implFile.toFile(), implText);
+		int exitCode = runTestsInDocker(moduleDir.toFile());
 		Assert.assertEquals(2, exitCode);
 	}
 
@@ -158,8 +168,9 @@ public class ModuleTesterTest {
 		System.out.println("Test [testSelfCalls]");
 		String lang = "python";
 		String moduleName = SIMPLE_MODULE_NAME + "Self";
-		deleteDir(moduleName);
-		CREATED_MODULE_NAMES.add(moduleName);
+		final Path workDir = Paths.get(TestConfigHelper.getTempTestDir(), moduleName);
+		deleteDir(workDir.toFile());
+		CREATED_MODULES.add(workDir);
 		String implInit = "" +
 				"#BEGIN_HEADER\n" +
 				"import os\n"+
@@ -179,11 +190,16 @@ public class ModuleTesterTest {
 				"        #BEGIN calc_square\n" +
 				"        returnVal = input * input\n" +
 				"        #END calc_square\n";
-		File moduleDir = new File(moduleName);
-		File implFile = new File(moduleDir, "lib/" + moduleName + "/" + 
-				moduleName + "Impl.py");
-		ModuleInitializer initer = new ModuleInitializer(moduleName, token.getUserName(), lang, false);
-		initer.initialize(false);
+		File moduleDir = workDir.toFile();
+		File implFile = new File(moduleDir, "lib/" + moduleName + "/" + moduleName + "Impl.py");
+		new ModuleInitializer(
+				moduleName,
+				token.getUserName(),
+				lang,
+				false,
+				new File(TestConfigHelper.getTempTestDir()
+		)
+		).initialize(false);
 		File specFile = new File(moduleDir, moduleName + ".spec");
 		String specText = FileUtils.readFileToString(specFile).replace("};", 
 				"funcdef run_local(int input) returns (int) authentication required;\n" +
