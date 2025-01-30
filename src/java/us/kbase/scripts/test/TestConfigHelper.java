@@ -82,4 +82,8 @@ public class TestConfigHelper {
     public static String getTempTestDir() throws Exception {
         return getTestConfigParam("test.temp.dir", true);
     }
+    
+    public static boolean getMakeRootOwnedFilesWriteable() throws Exception {
+        return getTestConfigParam("test.make-root-owned-files-writeable", "true").equals("true");
+    }
 }

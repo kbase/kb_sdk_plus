@@ -8,3 +8,11 @@ test.auth-service-url-allow-insecure=false
 
 # A temporary directory for storing test files
 test.temp.dir=temp_kbsdkplus_test
+
+# If 'true' (the default), set files generated during tests to world writable if the're root owned.
+# Currently some tests produce files in the test docker containers which cannot be deleted
+# by a regular user. Set to 'false' to preserve the standard behavior of the containers,
+# which is how containers will behave in SDK apps. Any other values are treated as 'false'.
+# If false, the user must manually sudo delete test files or subsequent runs of the tests
+# will fail.
+test.make-root-owned-files-writeable=true

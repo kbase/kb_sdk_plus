@@ -3,8 +3,9 @@ package us.kbase.mobu.tester.test;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import junit.framework.Assert;
 
@@ -19,17 +20,16 @@ import us.kbase.mobu.ModuleBuilder;
 import us.kbase.mobu.initializer.ModuleInitializer;
 import us.kbase.mobu.tester.ModuleTester;
 import us.kbase.scripts.test.TestConfigHelper;
+import us.kbase.test.sdk.TestUtils;
 
 public class ModuleTesterTest {
 	
-	// TODO TEST move the modules into a single test directory for easy deletion
-	// TODO TEST fix tests leaving root owned files on disk
 	// TODO TEST fix tests leaving images and containers lying around
 
 	private static final String SIMPLE_MODULE_NAME = "ASimpleModule_for_unit_testing";
-	private static final boolean CLEANUP_AFTER_TESTS = true;
+	private static final boolean DELETE_TEST_MODULES = true;
 
-	private static final List<Path> CREATED_MODULES = new ArrayList<Path>();
+	private static final Map<Path, Boolean> CREATED_MODULES = new HashMap<>();
 	private static AuthToken token;
 
 	@BeforeClass
@@ -39,15 +39,10 @@ public class ModuleTesterTest {
 
 	@AfterClass
 	public static void tearDownModule() throws Exception {
-		if (CLEANUP_AFTER_TESTS)
-			for (final Path moduleDir: CREATED_MODULES)
-				try {
-					System.out.println("Deleting " + moduleDir);
-					deleteDir(moduleDir.toFile());
-				} catch (Exception ex) {
-					System.err.println("Error cleaning up module [" + 
-							moduleDir + "]: " + ex.getMessage());
-				}
+		for (final Entry<Path, Boolean> dirAndCov : CREATED_MODULES.entrySet()) {
+			TestUtils.deleteTestModule(
+					dirAndCov.getKey(), dirAndCov.getValue(), DELETE_TEST_MODULES);
+		}
 	}
 
 	@After
@@ -55,15 +50,15 @@ public class ModuleTesterTest {
 		System.out.println();
 	}
 
-	private static void deleteDir(final File moduleDir) throws Exception {
-		if (moduleDir.exists() && moduleDir.isDirectory())
-			FileUtils.deleteDirectory(moduleDir);
+	private Path init(final String lang, final String moduleName) throws Exception {
+		return init(lang, moduleName, false);
 	}
-
-	private Path init(String lang, String moduleName) throws Exception {
+	
+	private Path init(final String lang, final String moduleName, final boolean hasPyCov)
+		throws Exception {
 		final Path workDir = Paths.get(TestConfigHelper.getTempTestDir(), moduleName);
-		deleteDir(workDir.toFile());
-		CREATED_MODULES.add(workDir);
+		TestUtils.deleteTestModule(workDir, hasPyCov, true);
+		CREATED_MODULES.put(workDir, hasPyCov);
 		new ModuleInitializer(
 				moduleName,
 				token.getUserName(),
@@ -106,7 +101,7 @@ public class ModuleTesterTest {
 		System.out.println("Test [testPythonModuleExample]");
 		String lang = "python";
 		String moduleName = SIMPLE_MODULE_NAME + "Python";
-		final Path moduleDir = init(lang, moduleName);
+		final Path moduleDir = init(lang, moduleName, true);
 		// TODO TESTHACK remove this when there's a base image that deploys the authclient correctly
 		FileUtils.copyFile(
 				new File("./src/java/us/kbase/templates/authclient.py"),
@@ -121,7 +116,7 @@ public class ModuleTesterTest {
 		System.out.println("Test [testPythonModuleError]");
 		String lang = "python";
 		String moduleName = SIMPLE_MODULE_NAME + "PythonError";
-		final Path moduleDir = init(lang, moduleName);
+		final Path moduleDir = init(lang, moduleName, true);
 		final Path implFile = moduleDir.resolve(
 				Paths.get("lib", moduleName, moduleName + "Impl.py")
 		);
@@ -169,8 +164,8 @@ public class ModuleTesterTest {
 		String lang = "python";
 		String moduleName = SIMPLE_MODULE_NAME + "Self";
 		final Path workDir = Paths.get(TestConfigHelper.getTempTestDir(), moduleName);
-		deleteDir(workDir.toFile());
-		CREATED_MODULES.add(workDir);
+		TestUtils.deleteTestModule(workDir, true, true);
+		CREATED_MODULES.put(workDir, true);
 		String implInit = "" +
 				"#BEGIN_HEADER\n" +
 				"import os\n"+
