@@ -8,7 +8,6 @@ _SetupSDKCompletion ()
     local INIT_CMD=init
     local VALIDATE_CMD=validate
     local INSTALL_CMD='install'
-    local RENAME_CMD='rename'
     local HELP_CMD='help'
     local TEST_CMD='test'
     local VER_CMD=version
@@ -22,7 +21,7 @@ _SetupSDKCompletion ()
     case ${COMP_CWORD} in
         1)
             # handle the first command
-            COMPREPLY=($(compgen -W "${VER_CMD} ${INIT_CMD} ${INSTALL_CMD} ${RENAME_CMD} ${VALIDATE_CMD} ${COMPILE_CMD} ${TEST_CMD} ${HELP_CMD}" ${cur}))
+            COMPREPLY=($(compgen -W "${VER_CMD} ${INIT_CMD} ${INSTALL_CMD} ${VALIDATE_CMD} ${COMPILE_CMD} ${TEST_CMD} ${HELP_CMD}" ${cur}))
             ;;
         *)
             case ${firstCmd} in
@@ -89,16 +88,6 @@ _SetupSDKCompletion ()
                       "--tag-or-ver") COMPREPLY=();;
                       "-n") COMPREPLY=();;
                       "--clientname") COMPREPLY=();;
-                      *)
-                        # todo - check if options are in COMP_WORDS, if they are, don't show them again
-                        COMPREPLY=($(compgen -W "${INIT_OPTS}" -- "${cur}") $(compgen -d -- "${cur}"))
-                        ;;
-                    esac
-                    ;;
-                ${RENAME_CMD})
-                    # init options
-                    local INIT_OPTS='-v --verbose'
-                    case ${prev} in
                       *)
                         # todo - check if options are in COMP_WORDS, if they are, don't show them again
                         COMPREPLY=($(compgen -W "${INIT_OPTS}" -- "${cur}") $(compgen -d -- "${cur}"))
