@@ -30,6 +30,7 @@ and runnable while we make changes to the forked codebase.
      * The KBase UI uses its own clients as far as we know.
      * The JS clients don't really do much.
      * If JS client support is needed they can be generated with the original SDK
+  * The `rename` command will be removed.
 * Otherwise `kb_sdk_plus` needs to be backwards compatible with `kb_sdk`
   * It must work with the current KBase backend services
   * Python and Java apps must continue to be supported

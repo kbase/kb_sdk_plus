@@ -23,7 +23,6 @@ import com.beust.jcommander.Parameters;
 import us.kbase.mobu.compiler.RunCompileCommand;
 import us.kbase.mobu.initializer.ModuleInitializer;
 import us.kbase.mobu.installer.ClientInstaller;
-import us.kbase.mobu.renamer.ModuleRenamer;
 import us.kbase.mobu.runner.ModuleRunner;
 import us.kbase.mobu.tester.ModuleTester;
 import us.kbase.mobu.util.ProcessHelper;
@@ -41,7 +40,6 @@ public class ModuleBuilder {
     private static final String HELP_COMMAND     = "help";
     private static final String TEST_COMMAND     = "test";
     private static final String VERSION_COMMAND  = "version";
-    private static final String RENAME_COMMAND   = "rename";
     private static final String INSTALL_COMMAND  = "install";
     private static final String RUN_COMMAND      = "run";
     //private static final String SUBMIT_COMMAND   = "submit";
@@ -83,10 +81,6 @@ public class ModuleBuilder {
         // add the 'version' command
         VersionCommandArgs versionArgs = new VersionCommandArgs();
         jc.addCommand(VERSION_COMMAND, versionArgs);
-
-        // add the 'rename' command
-        RenameCommandArgs renameArgs = new RenameCommandArgs();
-        jc.addCommand(RENAME_COMMAND, renameArgs);
 
         // add the 'install' command
         InstallCommandArgs installArgs = new InstallCommandArgs();
@@ -131,8 +125,6 @@ public class ModuleBuilder {
             returnCode = runTestCommand(testArgs,jc);
 	    } else if (jc.getParsedCommand().equals(VERSION_COMMAND)) {
 	        returnCode = runVersionCommand(versionArgs, jc);
-	    } else if (jc.getParsedCommand().equals(RENAME_COMMAND)) {
-	        returnCode = runRenameCommand(renameArgs, jc);
 	    } else if (jc.getParsedCommand().equals(INSTALL_COMMAND)) {
 	        returnCode = runInstallCommand(installArgs, jc);
 	    } else if (jc.getParsedCommand().equals(RUN_COMMAND)) {
@@ -379,21 +371,6 @@ public class ModuleBuilder {
     private static int runVersionCommand(VersionCommandArgs testArgs, JCommander jc) {
         printVersion();
         return 0;
-    }
-
-    private static int runRenameCommand(RenameCommandArgs renameArgs, JCommander jc) {
-        if (renameArgs.newModuleName == null || renameArgs.newModuleName.size() != 1) {
-            ModuleBuilder.showError("Command Line Argument Error", "One and only one module name should be provided");
-            return 1;
-        }
-        try {
-            return new ModuleRenamer().rename(renameArgs.newModuleName.get(0));
-        } catch (Exception e) {
-            if (renameArgs.verbose)
-                e.printStackTrace();
-            showError("Error while renaming module", e.getMessage());
-            return 1;
-        }
     }
 
     private static int runInstallCommand(InstallCommandArgs installArgs, JCommander jc) {
@@ -665,15 +642,6 @@ public class ModuleBuilder {
     private static class VersionCommandArgs {
     }
     
-    @Parameters(commandDescription = "Rename a module name.")
-    private static class RenameCommandArgs {
-        @Parameter(names={"-v","--verbose"}, description="Print more details including error stack traces")
-        boolean verbose = false;
-
-        @Parameter(required=true, description="<new module name>")
-        List<String> newModuleName;
-    }
-
     @Parameters(commandDescription = "Install a client for KBase module.")
     private static class InstallCommandArgs {
         @Parameter(names={"-l", "--language"}, description="Language of generated client code " +
