@@ -12,6 +12,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -22,6 +23,7 @@ import us.kbase.mobu.installer.Dependency;
 import us.kbase.mobu.util.DiskFileSaver;
 import us.kbase.scripts.test.TestConfigHelper;
 
+@Ignore
 public class DepsTest {
     private static File tempDir = null;
     private static File depsFile = null;

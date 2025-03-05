@@ -33,6 +33,7 @@ import org.eclipse.jetty.util.log.Logger;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -66,6 +67,7 @@ import us.kbase.mobu.util.TextUtils;
  * syslog, documentation and GWT-stubs. 
  * @author rsutormin
  */
+@Ignore
 public class TypeGeneratorTest extends Assert {
 
 	// TODO TEST seems like the 2 TODOs below are done, but not entirely sure

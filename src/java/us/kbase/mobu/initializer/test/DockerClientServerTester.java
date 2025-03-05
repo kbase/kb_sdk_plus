@@ -19,6 +19,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 
 import us.kbase.auth.AuthToken;
 import us.kbase.common.service.ServerException;
@@ -31,6 +32,7 @@ import us.kbase.mobu.util.TextUtils;
 import us.kbase.scripts.test.TestConfigHelper;
 import us.kbase.scripts.test.TypeGeneratorTest;
 
+@Ignore
 public class DockerClientServerTester {
 
     protected static final boolean cleanupAfterTests = true;

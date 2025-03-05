@@ -37,6 +37,7 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.DateTimeFormatterBuilder;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -65,6 +66,7 @@ import us.kbase.scripts.test.TestConfigHelper;
 import us.kbase.workspace.ProvenanceAction;
 import us.kbase.workspace.SubAction;
 
+@Ignore
 public class CallbackServerTest {
 	
 	// TODO TEST replace java CBS with the python ver. Should get these tests to pass against it

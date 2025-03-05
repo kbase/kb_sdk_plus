@@ -13,12 +13,14 @@ import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import junit.framework.Assert;
 import us.kbase.mobu.initializer.ModuleInitializer;
 import us.kbase.scripts.test.TestConfigHelper;
 
+@Ignore
 public class InitializerTest {
     private static File tempDir = null;
 

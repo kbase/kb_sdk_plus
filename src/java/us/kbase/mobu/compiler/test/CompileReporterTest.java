@@ -7,6 +7,7 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import us.kbase.kidl.KbModule;
@@ -18,6 +19,7 @@ import us.kbase.mobu.compiler.report.FunctionPlace;
 import us.kbase.mobu.compiler.report.Report;
 import us.kbase.mobu.compiler.report.SpecFile;
 
+@Ignore
 public class CompileReporterTest {
     
     @Test

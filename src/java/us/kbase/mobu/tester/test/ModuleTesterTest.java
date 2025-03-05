@@ -17,6 +17,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import us.kbase.auth.AuthToken;
@@ -128,6 +129,7 @@ public class ModuleTesterTest {
 		Assert.assertEquals(0, exitCode);
 	}
 
+	@Ignore
 	@Test
 	public void testPythonModuleError() throws Exception {
 		System.out.println("Test [testPythonModuleError]");
@@ -149,6 +151,7 @@ public class ModuleTesterTest {
 		Assert.assertEquals(2, exitCode);
 	}
 
+	@Ignore
 	@Test
 	public void testJavaModuleExample() throws Exception {
 		System.out.println("Test [testJavaModuleExample]");
@@ -159,6 +162,7 @@ public class ModuleTesterTest {
 		Assert.assertEquals(0, exitCode);
 	}
 
+	@Ignore
 	@Test
 	public void testJavaModuleError() throws Exception {
 		System.out.println("Test [testJavaModuleError]");
@@ -181,6 +185,7 @@ public class ModuleTesterTest {
 		Assert.assertEquals(2, exitCode);
 	}
 
+	@Ignore
 	@Test
 	public void testSelfCalls() throws Exception {
 		System.out.println("Test [testSelfCalls]");

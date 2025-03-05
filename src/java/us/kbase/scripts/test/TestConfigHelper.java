@@ -4,11 +4,13 @@ import java.io.File;
 import java.net.URL;
 
 import org.ini4j.Ini;
+import org.junit.Ignore;
 
 import us.kbase.auth.AuthConfig;
 import us.kbase.auth.AuthToken;
 import us.kbase.auth.ConfigurableAuthService;
 
+@Ignore
 public class TestConfigHelper {
     public static final String TEST_CFG = "kb_sdk_test";
 

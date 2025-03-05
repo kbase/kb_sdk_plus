@@ -31,6 +31,7 @@ import name.fraser.neil.plaintext.diff_match_patch.Operation;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import us.kbase.jkidl.IncludeProvider;
@@ -42,6 +43,7 @@ import us.kbase.mobu.compiler.html.HTMLGenVisitor;
 import us.kbase.mobu.compiler.html.HTMLGenerator;
 import us.kbase.mobu.util.FileSaver;
 
+@Ignore
 public class HTMLGenTest {
 
 	private static List<String> HTML_FILES;

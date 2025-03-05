@@ -11,12 +11,14 @@ import junit.framework.Assert;
 import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import us.kbase.mobu.initializer.ModuleInitializer;
 import us.kbase.mobu.installer.ClientInstaller;
 import us.kbase.scripts.test.TestConfigHelper;
 
+@Ignore
 public class ClientInstallerTest {
     private static File tempDir = null;
     

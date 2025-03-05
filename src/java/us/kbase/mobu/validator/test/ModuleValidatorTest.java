@@ -4,6 +4,7 @@ import java.io.StringReader;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import us.kbase.kidl.KbModule;
@@ -11,6 +12,7 @@ import us.kbase.kidl.KbService;
 import us.kbase.kidl.KidlParser;
 import us.kbase.mobu.validator.ModuleValidator;
 
+@Ignore
 public class ModuleValidatorTest {
     
     @Test

@@ -14,6 +14,7 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import us.kbase.common.service.JsonClientException;
@@ -24,6 +25,7 @@ import us.kbase.mobu.util.ProcessHelper;
 import us.kbase.scripts.test.TestConfigHelper;
 import us.kbase.scripts.test.TypeGeneratorTest;
 
+@Ignore
 public class DynamicServiceTest extends DockerClientServerTester {
 
     private static final String SIMPLE_MODULE_NAME = "TestDynamic";

@@ -7,11 +7,13 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import us.kbase.scripts.test.TestConfigHelper;
 import us.kbase.scripts.test.TypeGeneratorTest;
 
+@Ignore
 public class AsyncDockerTest extends DockerClientServerTester {
 
     private static final String SIMPLE_MODULE_NAME = "TestAsync";

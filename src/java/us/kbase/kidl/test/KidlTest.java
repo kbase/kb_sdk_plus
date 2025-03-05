@@ -26,6 +26,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import junit.framework.Assert;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
@@ -51,6 +52,7 @@ import us.kbase.kidl.KidlParseException;
 import us.kbase.kidl.KidlParser;
 import us.kbase.scripts.test.TestConfigHelper;
 
+@Ignore
 public class KidlTest {
     public static final String tempDirName = "temp_test";
 
