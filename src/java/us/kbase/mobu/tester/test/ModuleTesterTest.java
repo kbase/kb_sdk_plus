@@ -1,5 +1,9 @@
 package us.kbase.mobu.tester.test;
 
+import static org.junit.Assert.assertThat;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -107,6 +111,19 @@ public class ModuleTesterTest {
 				new File("./src/java/us/kbase/templates/authclient.py"),
 				moduleDir.resolve(Paths.get("lib", moduleName, "/authclient.py")).toFile()
 				);
+		// TODO TESTHACK PYTEST upgrade to pytest and remove this stuff assuming that works
+		// nose is identifying the class as a test case
+		final Path implFile = moduleDir.resolve(
+				Paths.get("lib", moduleName, moduleName + "Impl.py")
+		);
+		final String implText = FileUtils.readFileToString(implFile.toFile());
+		final String newText = implText.replace("    #BEGIN_CLASS_HEADER", 
+				"    #BEGIN_CLASS_HEADER\n" +
+				"    __test__ = False\n"
+		);
+		assertThat(implText, is(not(newText)));
+		FileUtils.writeStringToFile(implFile.toFile(), newText);
+		
 		int exitCode = runTestsInDocker(moduleDir.toFile());
 		Assert.assertEquals(0, exitCode);
 	}
@@ -120,11 +137,14 @@ public class ModuleTesterTest {
 		final Path implFile = moduleDir.resolve(
 				Paths.get("lib", moduleName, moduleName + "Impl.py")
 		);
-		String implText = FileUtils.readFileToString(implFile.toFile());
-		implText = implText.replace("    #BEGIN filter_contigs", 
-				"        #BEGIN filter_contigs\n" +
-				"        raise ValueError('Special error')");
-		FileUtils.writeStringToFile(implFile.toFile(), implText);
+		final String method = "run_ASimpleModule_for_unit_testingPythonError";
+		final String implText = FileUtils.readFileToString(implFile.toFile());
+		final String newText = implText.replace("    #BEGIN " + method, 
+				"        #BEGIN " + method + "\n" +
+				"        raise ValueError('Special error')"
+		);
+		assertThat(implText, is(not(newText)));
+		FileUtils.writeStringToFile(implFile.toFile(), newText);
 		int exitCode = runTestsInDocker(moduleDir.toFile());
 		Assert.assertEquals(2, exitCode);
 	}
@@ -149,11 +169,14 @@ public class ModuleTesterTest {
 				"lib/src/asimplemoduleforunittestingjavaerror/"
 				+ "ASimpleModuleForUnitTestingJavaErrorServer.java"
 		));
-		String implText = FileUtils.readFileToString(implFile.toFile());
-		implText = implText.replace("        //BEGIN filter_contigs", 
-				"        //BEGIN filter_contigs\n" +
-				"        if (true) throw new IllegalStateException(\"Special error\");");
-		FileUtils.writeStringToFile(implFile.toFile(), implText);
+		final String method = "run_ASimpleModule_for_unit_testingJavaError";
+		final String implText = FileUtils.readFileToString(implFile.toFile());
+		final String newText = implText.replace("        //BEGIN " + method, 
+				"        //BEGIN " + method + "\n" +
+				"        if (true) throw new IllegalStateException(\"Special error\");"
+		);
+		assertThat(implText, is(not(newText)));
+		FileUtils.writeStringToFile(implFile.toFile(), newText);
 		int exitCode = runTestsInDocker(moduleDir.toFile());
 		Assert.assertEquals(2, exitCode);
 	}
@@ -173,6 +196,8 @@ public class ModuleTesterTest {
 				"#END_HEADER\n" +
 				"\n" +
 				"    #BEGIN_CLASS_HEADER\n" +
+				// TODO TESTHACK PYTEST upgrade to pytest and remove this line assuming that works
+				"    __test__ = False\n" + // nose is identifying the class as a test case
 				"    #END_CLASS_HEADER\n" +
 				"\n" +
 				"        #BEGIN_CONSTRUCTOR\n" +
@@ -201,13 +226,15 @@ public class ModuleTesterTest {
 				"funcdef calc_square(int input) returns (int) authentication required;\n" +
 				"};");
 		File testFile = new File(moduleDir, "test/" + moduleName + "_server_test.py");
-		String testCode = FileUtils.readFileToString(testFile).replace("    def test_your_method(self):", 
-				"    def test_your_method(self):\n" +
-				"        self.assertEqual(25, self.getImpl().run_local(self.getContext(), 5)[0])"
-				);
+		final String testCode = FileUtils.readFileToString(testFile);
+		final int index = testCode.indexOf("    def test_your_method(self)");
+		final String newCode = testCode.substring(0, index)
+				+ "    def test_your_method(self):\n"
+				+ "        self.assertEqual(25, self.serviceImpl.run_local(self.ctx, 5)[0])\n";
+		assertThat(testCode, is(not(newCode)));
 		FileUtils.writeStringToFile(specFile, specText);
 		FileUtils.writeStringToFile(implFile, implInit);
-		FileUtils.writeStringToFile(testFile, testCode);
+		FileUtils.writeStringToFile(testFile, newCode);
 		int exitCode = runTestsInDocker(moduleDir, token, true);
 		Assert.assertEquals(0, exitCode);
 	}
