@@ -7,9 +7,8 @@ import static org.hamcrest.CoreMatchers.not;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.LinkedList;
+import java.util.List;
 
 import junit.framework.Assert;
 
@@ -33,7 +32,7 @@ public class ModuleTesterTest {
 	private static final String SIMPLE_MODULE_NAME = "ASimpleModule_for_unit_testing";
 	private static final boolean DELETE_TEST_MODULES = true;
 
-	private static final Map<Path, Boolean> CREATED_MODULES = new HashMap<>();
+	private static final List<Path> CREATED_MODULES = new LinkedList<>();
 	private static AuthToken token;
 
 	@BeforeClass
@@ -43,9 +42,8 @@ public class ModuleTesterTest {
 
 	@AfterClass
 	public static void tearDownModule() throws Exception {
-		for (final Entry<Path, Boolean> dirAndCov : CREATED_MODULES.entrySet()) {
-			TestUtils.deleteTestModule(
-					dirAndCov.getKey(), dirAndCov.getValue(), DELETE_TEST_MODULES);
+		for (final Path mod: CREATED_MODULES) {
+			TestUtils.deleteTestModule(mod, true, DELETE_TEST_MODULES);
 		}
 	}
 
@@ -55,14 +53,9 @@ public class ModuleTesterTest {
 	}
 
 	private Path init(final String lang, final String moduleName) throws Exception {
-		return init(lang, moduleName, false);
-	}
-	
-	private Path init(final String lang, final String moduleName, final boolean hasPyCov)
-		throws Exception {
 		final Path workDir = Paths.get(TestConfigHelper.getTempTestDir(), moduleName);
-		TestUtils.deleteTestModule(workDir, hasPyCov, true);
-		CREATED_MODULES.put(workDir, hasPyCov);
+		TestUtils.deleteTestModule(workDir, true, true);
+		CREATED_MODULES.add(workDir);
 		new ModuleInitializer(
 				moduleName,
 				token.getUserName(),
@@ -105,7 +98,7 @@ public class ModuleTesterTest {
 		System.out.println("Test [testPythonModuleExample]");
 		String lang = "python";
 		String moduleName = SIMPLE_MODULE_NAME + "Python";
-		final Path moduleDir = init(lang, moduleName, true);
+		final Path moduleDir = init(lang, moduleName);
 		// TODO TESTHACK remove this when there's a base image that deploys the authclient correctly
 		FileUtils.copyFile(
 				new File("./src/java/us/kbase/templates/authclient.py"),
@@ -133,7 +126,7 @@ public class ModuleTesterTest {
 		System.out.println("Test [testPythonModuleError]");
 		String lang = "python";
 		String moduleName = SIMPLE_MODULE_NAME + "PythonError";
-		final Path moduleDir = init(lang, moduleName, true);
+		final Path moduleDir = init(lang, moduleName);
 		final Path implFile = moduleDir.resolve(
 				Paths.get("lib", moduleName, moduleName + "Impl.py")
 		);
@@ -188,7 +181,7 @@ public class ModuleTesterTest {
 		String moduleName = SIMPLE_MODULE_NAME + "Self";
 		final Path workDir = Paths.get(TestConfigHelper.getTempTestDir(), moduleName);
 		TestUtils.deleteTestModule(workDir, true, true);
-		CREATED_MODULES.put(workDir, true);
+		CREATED_MODULES.add(workDir);
 		String implInit = "" +
 				"#BEGIN_HEADER\n" +
 				"import os\n"+
