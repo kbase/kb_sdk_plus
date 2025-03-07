@@ -1,4 +1,4 @@
-package us.kbase.mobu.tester.test;
+package us.kbase.test.sdk.tester;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertNotNull;
@@ -61,7 +61,7 @@ import us.kbase.common.service.UObject;
 import us.kbase.common.test.controllers.ControllerCommon;
 import us.kbase.mobu.tester.DockerMountPoints;
 import us.kbase.mobu.tester.SDKCallbackServer;
-import us.kbase.scripts.test.TestConfigHelper;
+import us.kbase.test.sdk.scripts.TestConfigHelper;
 import us.kbase.workspace.ProvenanceAction;
 import us.kbase.workspace.SubAction;
 

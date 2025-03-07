@@ -1,4 +1,4 @@
-package us.kbase.mobu.initializer.test;
+package us.kbase.test.sdk.initializer;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,7 +38,7 @@ import us.kbase.kbasejobservice.RpcContext;
 import us.kbase.kbasejobservice.RunJobParams;
 import us.kbase.mobu.util.DirUtils;
 import us.kbase.mobu.util.ProcessHelper;
-import us.kbase.scripts.test.TestConfigHelper;
+import us.kbase.test.sdk.scripts.TestConfigHelper;
 
 //END_HEADER
 

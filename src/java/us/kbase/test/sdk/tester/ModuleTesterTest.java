@@ -1,4 +1,4 @@
-package us.kbase.mobu.tester.test;
+package us.kbase.test.sdk.tester;
 
 import static org.junit.Assert.assertThat;
 import static org.hamcrest.CoreMatchers.is;
@@ -22,8 +22,8 @@ import us.kbase.auth.AuthToken;
 import us.kbase.mobu.ModuleBuilder;
 import us.kbase.mobu.initializer.ModuleInitializer;
 import us.kbase.mobu.tester.ModuleTester;
-import us.kbase.scripts.test.TestConfigHelper;
 import us.kbase.test.sdk.TestUtils;
+import us.kbase.test.sdk.scripts.TestConfigHelper;
 
 public class ModuleTesterTest {
 	

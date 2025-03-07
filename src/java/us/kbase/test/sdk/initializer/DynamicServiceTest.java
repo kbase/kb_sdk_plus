@@ -1,4 +1,4 @@
-package us.kbase.mobu.initializer.test;
+package us.kbase.test.sdk.initializer;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,8 +21,8 @@ import us.kbase.common.service.JsonServerMethod;
 import us.kbase.common.service.JsonServerServlet;
 import us.kbase.mobu.util.DirUtils;
 import us.kbase.mobu.util.ProcessHelper;
-import us.kbase.scripts.test.TestConfigHelper;
-import us.kbase.scripts.test.TypeGeneratorTest;
+import us.kbase.test.sdk.scripts.TestConfigHelper;
+import us.kbase.test.sdk.scripts.TypeGeneratorTest;
 
 public class DynamicServiceTest extends DockerClientServerTester {
 
