@@ -360,30 +360,35 @@ $JAVA_HOME/bin/java -cp ${lib.classpath}:${jar.absolute.path} us.kbase.tools.Wor
         </fileset>
       </batchtest>
      </junit>
-  	</jacoco:coverage>
+    </jacoco:coverage>
     <fail message="Test failure detected, check test results." if="test.failed" />
-  	<jacoco:report>
-  	    <executiondata>
-  	       <file file="${report.dir}/jacoco.exec"/>
-  	    </executiondata>
-  	    <structure name="SDK">
-  	       <classfiles>
-  	          <fileset dir="${report.dir}/classes">
-                <exclude name="**/test/**/**Test.class" />
-  	          </fileset>
-  	       </classfiles>
- 	       <sourcefiles encoding="UTF-8">
-  	          <fileset dir="${src}"/>
-  	       </sourcefiles>
-  	    </structure>
-        <html destdir="${report.dir}/html"/>
-        <csv destfile="${report.dir}/coverage-report.csv"/>
-        <xml destfile="${report.dir}/coverage-report.xml"/>
-  	</jacoco:report>
+    <jacoco:report>
+      <executiondata>
+        <file file="${report.dir}/jacoco.exec"/>
+      </executiondata>
+      <structure name="SDK">
+        <classfiles>
+          <fileset dir="${report.dir}/classes">
+            <exclude name="**/test/**"/>
+            <exclude name="**/fraser/neil/**"/>
+            <exclude name="**/common/executionengine/**"/>
+            <exclude name="**/catalog/**"/>
+            <exclude name="**/narrativemethodstore/**"/>
+            <exclude name="**/kbasejobservice/**"/>
+          </fileset>
+        </classfiles>
+        <sourcefiles encoding="UTF-8">
+          <fileset dir="${src}"/>
+        </sourcefiles>
+      </structure>
+      <html destdir="${report.dir}/html"/>
+      <csv destfile="${report.dir}/coverage-report.csv"/>
+      <xml destfile="${report.dir}/coverage-report.xml"/>
+    </jacoco:report>
     <delete dir="${report.dir}/classes"/>
-  	<exec executable="bash">
-  	  <arg value="./test_scripts/print_test_coverage.sh" />
-  	</exec>
+    <exec executable="bash">
+      <arg value="./test_scripts/print_test_coverage.sh" />
+    </exec>
   </target>
 
 

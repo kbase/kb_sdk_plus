@@ -556,6 +556,8 @@ public class TypeGeneratorTest extends Assert {
 	}
 
     private Server startJobService(File binDir, File tempDir) throws Exception {
+        // TODO TEST this is older than EE2. Figure out what it's used for and see if changes
+        //           are needed.
         Server jettyServer = new Server(findFreePort());
 	    ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
 	    context.setContextPath("/");
