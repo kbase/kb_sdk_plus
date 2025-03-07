@@ -7,9 +7,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.io.Writer;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.text.ParseException;
@@ -23,11 +21,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
-
-import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.CmdLineParser;
-import org.kohsuke.args4j.Option;
 
 import us.kbase.kidl.KbAuthdef;
 import us.kbase.kidl.KbBasicType;
@@ -81,64 +74,6 @@ public class JavaTypeGenerator {
 
 	private static final String defaultParentPackage = "us.kbase";
 	private static final String utilPackage = defaultParentPackage + ".common.service";
-	
-	public static void main(String[] args) throws Exception {
-		Args parsedArgs = new Args();
-		CmdLineParser parser = new CmdLineParser(parsedArgs);
-		parser.setUsageWidth(85);
-		if (args.length == 0 || (args.length == 1 && (args[0].equals("-h") || args[0].equals("--help")))) {
-            parser.parseArgument("no.spec");
-            showUsage(parser, null, System.out);
-            return;
-		}
-		try {
-            parser.parseArgument(args);
-        } catch( CmdLineException e ) {
-        	String message = e.getMessage();
-            showUsage(parser, message);
-            return;
-        }
-		File inputFile = parsedArgs.specFile;
-		File srcOutDir = null;
-		String packageParent = parsedArgs.packageParent;
-		File libDir = null;
-		if (parsedArgs.outputDir == null) {
-			if (parsedArgs.srcDir == null) {
-	            showUsage(parser, "Either -o or -s parameter should be defined");
-	            return;
-			}
-			srcOutDir = new File(parsedArgs.srcDir);
-			libDir = parsedArgs.libDir == null ? null : new File(parsedArgs.libDir);
-		} else {
-			srcOutDir = new File(parsedArgs.outputDir, "src");
-			libDir = new File(parsedArgs.outputDir, "lib");
-		}
-		boolean createServer = parsedArgs.createServerSide;
-		URL url = null;
-		if (parsedArgs.url != null) {
-			try {
-				url = new URL(parsedArgs.url);
-			} catch (MalformedURLException mue) {
-				String msg = "The provided url " + parsedArgs.url + " is invalid.";
-				showUsage(parser, msg);
-				return;
-			}
-		}
-		processSpec(inputFile, srcOutDir, packageParent, createServer, libDir, parsedArgs.gwtPackage, url);
-	}
-
-	private static void showUsage(CmdLineParser parser, String message) {
-		showUsage(parser, message, System.err);
-	}
-	
-	private static void showUsage(CmdLineParser parser, String message, PrintStream out) {
-		if (message != null)
-			out.println(message);
-		out.println("Program generates java client and server classes for JSON RPC calls.");
-		out.println("Usage: <program> [options...] <spec-file>");
-		out.println("Usage: <program> {-h|--help}     - to see this help");
-		parser.printUsage(out);
-	}
 	
 	public static JavaData processSpec(File specFile, File srcOutDir, String packageParent, 
 			boolean createServer, File libOutDir, String gwtPackage, URL url) throws Exception {		
@@ -1701,35 +1636,6 @@ public class JavaTypeGenerator {
 
 	private static String getPackagePrefix(String packageParent, JavaType type) {
 		return sub(packageParent, type.getModuleName()) + ".";
-	}
-	
-	public static class Args {
-		@Option(name="-o",usage="Output folder (src and lib subfolders will be created), use -s and possibly -l instead of -o for more detailed settings", metaVar="<out-dir>")
-		String outputDir;
-
-		@Option(name="-s",usage="Source output folder (exclusive with -o)", metaVar="<src-dir>")
-		String srcDir;
-
-		@Option(name="-l",usage="Library output folder (exclusive with -o, not required when using -s)", metaVar="<lib-dir>")
-		String libDir;
-		
-		@Option(name="-u", usage="Default url for service", metaVar="<url>")
-		String url = null;
-
-		@Option(name="-p",usage="Java package parent (module subpackages are created in this package), default value is " + defaultParentPackage, metaVar="<package>")		
-		String packageParent = defaultParentPackage;
-
-		@Option(name="-t", usage="Temporary folder, default value is parent folder of <spec-file>", metaVar="<tmp-dir>")
-		String tempDir;
-		
-		@Option(name="-S", usage="Defines whether or not java code for server side should be created, default value is false, use -S for true")
-		boolean createServerSide = false;
-
-		@Option(name="-g",usage="Gwt client java package (define it in case you need copies of generated classes for GWT client)", metaVar="<gwtpckg>")		
-		String gwtPackage = null;
-
-		@Argument(metaVar="<spec-file>",required=true,usage="File *.spec for compilation into java classes")
-		File specFile;
 	}
 }
 
