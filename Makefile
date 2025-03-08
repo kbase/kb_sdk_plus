@@ -4,7 +4,8 @@ VER := $(GITCOMMIT)
 EPOCH := $(shell date +%s)
 
 #EXT_KIDL_JAR = kbase-kidl-parser-$(EPOCH)-$(VER).jar
-# TODO BUILD build a jar with the current version. Probably easier to wait for Gradle conversion
+# TODO BUILD build a jar with the current version in the name.
+#            Probably easier to wait for Gradle conversion
 
 ANT ?= ant
 

@@ -1037,16 +1037,12 @@ public class TypeGeneratorTest extends Assert {
 		if (outDir != null) {
 			String resourceName = "Test" + testNum + ".config.properties";
 			String clientConfigText = checkForClientConfig(resourceName);
-			if (clientConfigText == null) {
-				System.err.println("- Python client tests are skipped (" + resourceName + "not found)");
-				return;
-			}
 			if (clientConfigText.isEmpty())
 				return;
 			System.out.println("- Python client -> " + serverType + " server");
-			runPythonClientTest(testNum, testPackage, parsingData, portNum, needClientServer, outDir, false);
-			System.out.println("- Python3 client -> " + serverType + " server");
-			runPythonClientTest(testNum, testPackage, parsingData, portNum, needClientServer, outDir, true);
+			runPythonClientTest(
+					testNum, parsingData, portNum, needClientServer, outDir
+			);
 		}
 	}
 	
@@ -1136,8 +1132,12 @@ public class TypeGeneratorTest extends Assert {
         return parsingData.getModules().get(0).getOriginal().getServiceName();
     }
 
-    private static void runPythonClientTest(int testNum, String testPackage, JavaData parsingData, 
-            int portNum, boolean needClientServer, File outDir, boolean ver3) throws Exception {
+    private static void runPythonClientTest(
+            final int testNum,
+            final JavaData parsingData, 
+            final int portNum,
+            final boolean needClientServer,
+            final File outDir) throws Exception {
         if (!needClientServer)
             return;
         long time = System.currentTimeMillis();
@@ -1147,10 +1147,8 @@ public class TypeGeneratorTest extends Assert {
         prepareClientTestConfigFile(parsingData, resourceName, configFile);
         shellFile = new File(outDir, "test_python_client.sh");
         List<String> lines = new ArrayList<String>(Arrays.asList("#!/bin/bash"));
-        String pyName = "Python" + (ver3 ? "3" : "");
+        String pyName = "Python";
         String pyCmd = pyName.toLowerCase();
-        if (ver3)
-            lines.add("export PYTHONPATH=");
         lines.addAll(Arrays.asList(
                 // TODO TESTCODE need a better way of referencing the test code, this is dumb
                 pyCmd + " ../../../../test_scripts/python/test_client.py -t " + configFile.getName() + 
