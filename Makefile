@@ -7,7 +7,6 @@ EPOCH := $(shell date +%s)
 # TODO BUILD build a jar with the current version. Probably easier to wait for Gradle conversion
 
 ANT ?= ant
-KBASE_COMMON_JAR = kbase/common/kbase-common-0.0.23.jar
 
 # make sure our make test works
 .PHONY : test test-python sdkbase
@@ -16,7 +15,7 @@ KBASE_COMMON_JAR = kbase/common/kbase-common-0.0.23.jar
 default: compile
 
 compile:
-	$(ANT) -Djardir=../jars/lib/jars/ -DKBASE_COMMON_JAR=$(KBASE_COMMON_JAR)
+	$(ANT)
 
 sdkbase:
 	# docker rmi -f kbase/deplbase:latest
@@ -25,7 +24,7 @@ sdkbase:
 
 test: test-python
 	@echo "Running tests"
-	$(ANT) test -DKBASE_COMMON_JAR=$(KBASE_COMMON_JAR) -Djardir=../jars/lib/jars/
+	$(ANT) test
 
 test-python:
 	@echo "Running python tests"

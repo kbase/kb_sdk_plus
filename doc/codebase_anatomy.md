@@ -9,7 +9,6 @@ This document describes the the file structure of the `kb_sdk` codebase.
 * `doc/` - additional documentation about this codebase
 * `Dockerfile` - the docker configuration for the container that runs the SDK
 * `entrypoint` - the entrypoint bash script that is run for the SDK docker container
-* `JAR_DEPS` and `JAR_DEPS_BIN` - indexes of java jar dependencies
 * `javacc/` - shell scripts used to generate code related to parsing KIDL specs
 * `KBaseJobService.spec` - KIDL spec for a JSON RPC job service
 * `lib` - some generic libraries that get included in SDK apps
@@ -18,7 +17,6 @@ This document describes the the file structure of the `kb_sdk` codebase.
 * `reports/` - files generated for JaCoCo test coverage reports
 * `sdkbase/` - Docker files for the image used inside actual SDK apps
 * `src/` - the main source code for this project; see below
-* `submodules/` and `submodules_hacks` - jars and other dependencies
 * `test_scripts/` - test helpers in perl, python, and js
 
 #### Source code in `/src/java/us/kbase`

@@ -9,62 +9,56 @@
   <property name="dist" location="dist"/>
   <property name="bin.local" location="bin"/>
   <property name="classes" location="classes"/>
+  <property name="jardir" location="../jars/lib/jars"/>
+  <property name="report.dir" location="reports"/>
 
   <!-- define the output jar and shell script filenames -->
   <property name="kidl.jar.file" value="kbase-kidl-parser.jar"/>
   <property name="module_builder.jar.file"	value="kbase_module_builder2.jar"/>
   <property name="module_builder.sh.file"	value="kb-sdk"/>
 
-  <property environment="env"/>
-  <condition property="jardir" value="../jars/lib/jars/">
-    <or>
-      <equals arg1="${env.JENKINS_JARS_MODULE_PATH}" arg2=""/>
-      <not>
-        <isset property="env.JENKINS_JARS_MODULE_PATH"/>
-      </not>
-    </or>
-  </condition>
-  <!-- Properties in ant are immutable, so the following assignment will only take place if jardir was not set above. -->
-  <property name="jardir" location="${env.JENKINS_JARS_MODULE_PATH}/lib/jars"/>
-  
-  <!-- KBASE_COMMON_JAR should come from Makefile because of "make bin" mode support -->
-  <condition property="commonjar" value="${KBASE_COMMON_JAR}">
-    <and>
-      <isset property="KBASE_COMMON_JAR"/>
-      <or>
-        <equals arg1="${env.JENKINS_JAVA_COMMON_JARFILE}" arg2=""/>
-        <not>
-          <isset property="env.JENKINS_JAVA_COMMON_JARFILE"/>
-        </not>
-      </or>
-    </and>
-  </condition>
-  <!-- Properties in ant are immutable, so the following assignment will only take place if jardir was not set above. -->
-  <condition property="commonjar" value="${env.JENKINS_JAVA_COMMON_JARFILE}">
-    <and>
-      <isset property="env.JENKINS_JAVA_COMMON_JARFILE"/>
-      <not>
-        <equals arg1="${env.JENKINS_JAVA_COMMON_JARFILE}" arg2=""/>
-      </not>
-    </and>
-  </condition>
-
-  <condition property="report.dir" value="${env.JENKINS_REPORT_DIR}">
-    <and>
-      <isset property="env.JENKINS_REPORT_DIR"/>
-      <not>
-        <equals arg1="${env.JENKINS_REPORT_DIR}" arg2=""/>
-      </not>
-    </and>
-  </condition>
-  <!-- Properties in ant are immutable, so the following assignment will only take place if report.dir was not set above. -->
-  <property name="report.dir" location="reports"/>
-
+  <fileset dir="${jardir}" id="lib">
+    <!-- TODO GRADLE try to organize this list a bit when converting to Gradle-->
+    <include name="apache_commons/commons-collections-3.2.1.jar"/>
+    <include name="apache_commons/commons-io-2.4.jar"/>
+    <include name="apache_commons/commons-lang-2.4.jar"/>
+    <include name="apache_commons/commons-lang3-3.1.jar"/>
+    <include name="apache_commons/commons-logging-1.1.1.jar"/>
+    <include name="apache_commons/http/httpclient-4.3.1.jar"/>
+    <include name="apache_commons/http/httpcore-4.3.jar"/>
+    <include name="apache_commons/http/httpmime-4.3.1.jar"/>
+    <include name="apache_commons/velocity-1.7.jar"/>
+    <include name="annotation/javax.annotation-api-1.3.2.jar"/>
+    <include name="codemodel/codemodel-2.4.1.jar"/>
+    <include name="google/guava-18.0.jar"/>
+    <include name="google/jsonschema2pojo-core-0.3.6.jar"/>
+    <include name="ini4j/ini4j-0.5.2.jar"/>
+    <include name="j2html/j2html-0.7.jar"/>
+    <include name="jackson/jackson-annotations-2.2.3.jar"/>
+    <include name="jackson/jackson-core-2.2.3.jar"/>
+    <include name="jackson/jackson-databind-2.2.3.jar"/>
+    <include name="jcommander/jcommander-1.48.jar"/>
+    <include name="jetty/jetty-all-7.0.0.jar"/>
+    <include name="jna/jna-3.4.0.jar"/>
+    <include name="joda/joda-time-2.2.jar"/>
+    <include name="junit/junit-4.9.jar"/>
+    <include name="kbase/auth/kbase-auth-0.4.4.jar"/>
+    <include name="kbase/handle/HandleManagerClient-141020-ff26a5d.jar"/>
+    <include name="kbase/handle/HandleServiceClient-141020-5eda76e.jar"/>
+    <include name="kbase/shock/shock-client-0.0.15.jar"/>
+    <include name="kbase/workspace/WorkspaceClient-0.6.0.jar"/>
+    <include name="kohsuke/args4j-2.0.21.jar"/>
+    <include name="logback/logback-classic-1.1.2.jar"/>
+    <include name="logback/logback-core-1.1.2.jar"/>
+    <include name="servlet/servlet-api-2.5.jar"/>
+    <include name="slf4j/slf4j-api-1.7.7.jar"/>
+    <include name="snakeyaml/snakeyaml-1.11.jar"/>
+    <include name="syslog4j/syslog4j-0.9.46.jar"/>
+    <include name="kbase/common/kbase-common-0.0.23.jar"/>
+  </fileset>
 
   <path id="compile.classpath">
-    <fileset dir="${jardir}" includesfile="JAR_DEPS">
-      <include name="${commonjar}"/>
-    </fileset>
+    <fileset refid="lib"/>
   </path>
 
   <target name="init">
@@ -75,11 +69,6 @@
   </target>
 
   <target name="compile" depends="init" description="compile the source">
-    <fail message="KBase common jar is not set">
-        <condition>
-            <not><isset property="commonjar" /></not>
-        </condition>
-    </fail>
     <!-- Compile class files-->
     <exec executable="git" outputproperty="git.url"><arg line="config --get remote.origin.url"/></exec>
     <exec executable="git" outputproperty="git.branch"><arg line="rev-parse --abbrev-ref HEAD"/></exec>
@@ -132,14 +121,7 @@ commit=${git.commit}</echo>
     <echo>Successfully created versioned library jar: ${EXT_KIDL_JAR}</echo>
   </target>
 
-
-
   <target name="sh_bin" description="create shell file wrappers">
-    <fail message="KBase common jar is not set">
-        <condition>
-            <not><isset property="commonjar" /></not>
-        </condition>
-    </fail>
     <!-- Define absolute path to main jar file-->
     <property name="jar.absolute.path" location="${dist}/${module_builder.jar.file}"/>
     <!-- Define classpath string with : delimiter from list of lib-jar files-->
@@ -222,8 +204,6 @@ java -cp ${lib.classpath}:${jar.absolute.path} us.kbase.mobu.ModuleBuilder $@
     </exec>
   </target>
 
-
-
   <target name="clean" description="clean up" >
     <!-- Clean up internal temporary files and folders-->
     <delete dir="${classes}"/>
@@ -231,6 +211,4 @@ java -cp ${lib.classpath}:${jar.absolute.path} us.kbase.mobu.ModuleBuilder $@
     <delete dir="${bin.local}"/>
   </target>
 
-
 </project>
-
