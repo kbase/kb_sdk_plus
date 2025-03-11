@@ -1,4 +1,4 @@
-package us.kbase.scripts.test;
+package us.kbase.test.sdk.scripts;
 
 import java.io.File;
 import java.net.URL;

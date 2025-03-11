@@ -1,4 +1,4 @@
-package us.kbase.kidl.test;
+package us.kbase.test.kidl;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -49,7 +49,7 @@ import us.kbase.kidl.KbTuple;
 import us.kbase.kidl.KbTypedef;
 import us.kbase.kidl.KidlParseException;
 import us.kbase.kidl.KidlParser;
-import us.kbase.scripts.test.TestConfigHelper;
+import us.kbase.test.sdk.scripts.TestConfigHelper;
 
 public class KidlTest {
     public static final String tempDirName = "temp_test";

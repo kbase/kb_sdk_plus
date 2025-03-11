@@ -1,4 +1,4 @@
-package us.kbase.mobu.installer.test;
+package us.kbase.test.sdk.installer;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -15,7 +15,7 @@ import org.junit.Test;
 
 import us.kbase.mobu.initializer.ModuleInitializer;
 import us.kbase.mobu.installer.ClientInstaller;
-import us.kbase.scripts.test.TestConfigHelper;
+import us.kbase.test.sdk.scripts.TestConfigHelper;
 
 public class ClientInstallerTest {
     private static File tempDir = null;

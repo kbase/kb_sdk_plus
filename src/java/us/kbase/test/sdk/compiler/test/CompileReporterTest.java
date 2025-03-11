@@ -1,4 +1,4 @@
-package us.kbase.mobu.compiler.test;
+package us.kbase.test.sdk.compiler.test;
 
 import java.io.StringReader;
 import java.util.ArrayList;

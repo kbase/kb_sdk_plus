@@ -1,4 +1,4 @@
-package us.kbase.mobu.initializer.test;
+package us.kbase.test.sdk.initializer;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,7 +17,7 @@ import org.junit.Test;
 
 import junit.framework.Assert;
 import us.kbase.mobu.initializer.ModuleInitializer;
-import us.kbase.scripts.test.TestConfigHelper;
+import us.kbase.test.sdk.scripts.TestConfigHelper;
 
 public class InitializerTest {
     private static File tempDir = null;

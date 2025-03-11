@@ -1,4 +1,4 @@
-package us.kbase.mobu.validator.test;
+package us.kbase.test.sdk.validator;
 
 import java.io.StringReader;
 import java.util.List;

@@ -1,4 +1,4 @@
-package us.kbase.mobu.installer.test;
+package us.kbase.test.sdk.installer;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -20,7 +20,7 @@ import us.kbase.common.service.UObject;
 import us.kbase.mobu.installer.ClientInstaller;
 import us.kbase.mobu.installer.Dependency;
 import us.kbase.mobu.util.DiskFileSaver;
-import us.kbase.scripts.test.TestConfigHelper;
+import us.kbase.test.sdk.scripts.TestConfigHelper;
 
 public class DepsTest {
     private static File tempDir = null;

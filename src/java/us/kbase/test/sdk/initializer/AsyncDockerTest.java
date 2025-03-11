@@ -1,4 +1,4 @@
-package us.kbase.mobu.initializer.test;
+package us.kbase.test.sdk.initializer;
 
 import java.io.File;
 
@@ -9,8 +9,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import us.kbase.scripts.test.TestConfigHelper;
-import us.kbase.scripts.test.TypeGeneratorTest;
+import us.kbase.test.sdk.scripts.TestConfigHelper;
+import us.kbase.test.sdk.scripts.TypeGeneratorTest;
 
 public class AsyncDockerTest extends DockerClientServerTester {
 
