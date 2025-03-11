@@ -54,20 +54,20 @@ public class TestUtils {
 	
 	/** Delete an SDK module. Does nothing if the module path doesn't exist or isn't a directory.
 	 * @param module the path to the module root.
-	 * @param hasPyCov true if the module is expected to have root owned coverage data
-	 * in test_local/test_coverage, which will be set to world writable depending on the
+	 * @param makeWriteable true if the module is expected to have root owned data
+	 * in test_local/workdir, which will be set to world writable depending on the
 	 * test configuration file.
 	 * @param deleteModule if false, the module won't be deleted.
 	 * @throws Exception if an error occurs
 	 */
 	public static void deleteTestModule(
 			final Path module,
-			boolean hasPyCov,
+			boolean makeWriteable,
 			boolean deleteModule)
 			throws Exception {
 		if (Files.exists(module) && Files.isDirectory(module)) {
-			if (TestConfigHelper.getMakeRootOwnedFilesWriteable() && hasPyCov) {
-				TestUtils.makeDockerOutputWritable(module, Paths.get("test_coverage"), true);
+			if (TestConfigHelper.getMakeRootOwnedFilesWriteable() && makeWriteable) {
+				TestUtils.makeDockerOutputWritable(module, Paths.get("."), true);
 			}
 			if (deleteModule) {
 				try {
