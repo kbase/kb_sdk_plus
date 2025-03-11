@@ -3,8 +3,6 @@ package us.kbase.mobu.util;
 import java.io.File;
 import java.io.IOException;
 
-import us.kbase.tools.WinShortPath;
-
 public class DirUtils {
 
     public static boolean isModuleDir(File dir) {
@@ -35,7 +33,26 @@ public class DirUtils {
         boolean isWindows = System.getProperty("os.name").startsWith("Windows");
         String ret = f.getCanonicalPath();
         if (isWindows)
-            ret = WinShortPath.getWinShortPath(ret);
+            ret = getWinShortPath(ret);
         return ret;
+    }
+    
+    private static String getWinShortPath(String path) throws IOException, InterruptedException {
+        // no idea what this is doing or if it works
+        // TODO WINDOWS SUPPORT test on windows system or decide we're not supporting windows
+
+        Process process = Runtime.getRuntime().exec(
+                "cmd /c for %I in (\"" + path + "\") do @echo %~fsI"
+        );
+        process.waitFor();
+
+        byte[] data = new byte[65536];
+        int size = process.getInputStream().read(data);
+
+        if (size <= 0) {
+            return null;
+        }
+        
+        return new String(data, 0, size).replaceAll("\\r\\n", "");
     }
 }
