@@ -372,6 +372,7 @@ $JAVA_HOME/bin/java -cp ${lib.classpath}:${jar.absolute.path} us.kbase.tools.Wor
             <exclude name="**/test/**"/>
             <exclude name="**/fraser/neil/**"/>
             <exclude name="**/common/executionengine/**"/>
+            <exclude name="**/common/service/**"/>
             <exclude name="**/catalog/**"/>
             <exclude name="**/narrativemethodstore/**"/>
             <exclude name="**/kbasejobservice/**"/>
