@@ -38,7 +38,6 @@ import us.kbase.common.service.JsonServerServlet;
 import us.kbase.common.service.JsonServerSyslog;
 import us.kbase.common.service.UObject;
 import us.kbase.common.utils.NetUtils;
-import us.kbase.kbasejobservice.FinishJobParams;
 import us.kbase.mobu.ModuleBuilder;
 import us.kbase.mobu.tester.ConfigLoader;
 import us.kbase.mobu.tester.DockerMountPoints;

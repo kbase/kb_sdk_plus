@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 
 import us.kbase.common.service.UObject;
 import us.kbase.mobu.util.ProcessHelper;
@@ -42,7 +43,7 @@ public class KBaseJobServiceServer extends JsonServerServlet {
 
     //BEGIN_CLASS_HEADER
     private int lastJobId = 0;
-    private final Map<String, FinishJobParams> results = new LinkedHashMap<>();
+    private final Map<String, Map<String, Object>> results = new LinkedHashMap<>();
     private File binDir = null;
     private File tempDir = null;
     
@@ -97,19 +98,19 @@ public class KBaseJobServiceServer extends JsonServerServlet {
                     result.add(runJob(runJobParams, t));
                 } else if (rpcName.endsWith("._check_job") && paramsList.size() == 1) {
                     String jobId = paramsList.get(0).asClassInstance(String.class);
-                    FinishJobParams fjp = results.get(jobId);
-                    if (fjp != null && fjp.getError() != null) {
+                    Map<String, Object> fjp = results.get(jobId);
+                    if (fjp != null && fjp.get("error") != null) {
                         Map<String, Object> ret = new LinkedHashMap<String, Object>();
                         ret.put("version", "1.1");
-                        ret.put("error", fjp.getError());
+                        ret.put("error", fjp.get("error"));
                         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                         mapper.writeValue(new UnclosableOutputStream(output), ret);
                         return;
                     }
                     final Map<String, Object> res = new HashMap<>();
                     res.put("finished", fjp == null ? 0 : 1);
-                    res.put("result", fjp != null ? fjp.getResult(): null);
-                    res.put("error", fjp != null ? fjp.getError() : null);
+                    res.put("result", fjp != null ? fjp.get("result"): null);
+                    res.put("error", fjp != null ? fjp.get("error") : null);
                     result = Arrays.asList((Object) res);
                 } else {
                     throw new IllegalArgumentException("Method [" + rpcName +
@@ -218,11 +219,19 @@ public class KBaseJobServiceServer extends JsonServerServlet {
                     File outputFile = new File(jobDir, "output.json");
                     ProcessHelper.cmd("bash", scriptFilePath, inputFile.getCanonicalPath(),
                             outputFile.getCanonicalPath(), token.getToken()).exec(jobDir);
-                    FinishJobParams result = UObject.getMapper().readValue(outputFile, FinishJobParams.class);
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> result = UObject.getMapper().readValue(
+                            outputFile, Map.class
+                    );
                     results.put(jobId, result);
                 } catch (Exception ex) {
-                    FinishJobParams result = new FinishJobParams().withError(new JsonRpcError().withCode(-1L)
-                            .withName("JSONRPCError").withMessage("Job service side error: " + ex.getMessage()));
+                    final Map<String, Object> result = ImmutableMap.of("error",
+                            (Object) ImmutableMap.of(
+                                    "code", -1L,
+                                    "name", "JSONRPCError",
+                                    "message", "Job service side error: " + ex.getMessage()
+                            )
+                    );
                     results.put(jobId, result);
                 }
             }
