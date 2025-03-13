@@ -252,8 +252,8 @@ public class ModuleRunner {
             File outputTmpFile = new File(workDir, "output.json");
             if (!outputTmpFile.exists())
                 throw new IllegalStateException("Output JSON file was not found");
-            // TODO CODE this should use a compiled client FJP
-            //           actually why is FJP used here at all?
+            // TODO CODE change this to an internal class or use a map or something.
+            //           untested so need to write tests first
             FinishJobParams outObj = UObject.getMapper().readValue(outputTmpFile, 
                     FinishJobParams.class);
             if (outObj.getError() != null || outObj.getResult() == null) {

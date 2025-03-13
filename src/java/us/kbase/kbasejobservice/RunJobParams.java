@@ -44,16 +44,6 @@ public class RunJobParams {
     private List<UObject> params;
     @JsonProperty("service_ver")
     private String serviceVer;
-    /**
-     * <p>Original spec-file type: RpcContext</p>
-     * <pre>
-     * call_stack - upstream calls details including nested service calls and 
-     *     parent jobs where calls are listed in order from outer to inner.
-     * </pre>
-     * 
-     */
-    @JsonProperty("rpc_context")
-    private RpcContext rpcContext;
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     @JsonProperty("method")
@@ -101,37 +91,6 @@ public class RunJobParams {
         return this;
     }
 
-    /**
-     * <p>Original spec-file type: RpcContext</p>
-     * <pre>
-     * call_stack - upstream calls details including nested service calls and 
-     *     parent jobs where calls are listed in order from outer to inner.
-     * </pre>
-     * 
-     */
-    @JsonProperty("rpc_context")
-    public RpcContext getRpcContext() {
-        return rpcContext;
-    }
-
-    /**
-     * <p>Original spec-file type: RpcContext</p>
-     * <pre>
-     * call_stack - upstream calls details including nested service calls and 
-     *     parent jobs where calls are listed in order from outer to inner.
-     * </pre>
-     * 
-     */
-    @JsonProperty("rpc_context")
-    public void setRpcContext(RpcContext rpcContext) {
-        this.rpcContext = rpcContext;
-    }
-
-    public RunJobParams withRpcContext(RpcContext rpcContext) {
-        this.rpcContext = rpcContext;
-        return this;
-    }
-
     @JsonAnyGetter
     public Map<String, Object> getAdditionalProperties() {
         return this.additionalProperties;
@@ -144,7 +103,7 @@ public class RunJobParams {
 
     @Override
     public String toString() {
-        return ((((((((((("RunJobParams"+" [method=")+ method)+", params=")+ params)+", serviceVer=")+ serviceVer)+", rpcContext=")+ rpcContext)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((("RunJobParams"+" [method=")+ method)+", params=")+ params)+", serviceVer=")+ serviceVer)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

@@ -7,7 +7,6 @@ import java.io.PrintWriter;
 
 import us.kbase.auth.AuthToken;
 import us.kbase.common.service.JacksonTupleModule;
-import us.kbase.common.service.JsonServerMethod;
 import us.kbase.common.service.JsonServerServlet;
 import us.kbase.common.service.JsonServerSyslog;
 
@@ -24,8 +23,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -33,8 +30,6 @@ import us.kbase.common.service.UObject;
 import us.kbase.kbasejobservice.FinishJobParams;
 import us.kbase.kbasejobservice.JobState;
 import us.kbase.kbasejobservice.JsonRpcError;
-import us.kbase.kbasejobservice.MethodCall;
-import us.kbase.kbasejobservice.RpcContext;
 import us.kbase.kbasejobservice.RunJobParams;
 import us.kbase.mobu.util.DirUtils;
 import us.kbase.mobu.util.ProcessHelper;
@@ -83,8 +78,6 @@ public class ExecEngineMock extends JsonServerServlet {
             List<UObject> paramsList = rpcCallData.getParams();
             List<Object> result = null;
             ObjectMapper mapper = new ObjectMapper().registerModule(new JacksonTupleModule());
-            RpcContext context = UObject.transformObjectToObject(rpcCallData.getContext(),
-                            RpcContext.class);
             Exception exc = null;
             try {
                 final AuthToken t = new AuthToken(token, "<unknown>");
@@ -100,14 +93,23 @@ public class ExecEngineMock extends JsonServerServlet {
                     runJobParams.setServiceVer(serviceVer);
                     runJobParams.setMethod(origRpcName);
                     runJobParams.setParams(paramsList);
-                    runJobParams.setRpcContext(context);
                     result = new ArrayList<Object>(); 
-                    result.add(runJob(runJobParams, t,
-                            rpcCallData.getContext()));
+                    result.add(runJob(runJobParams, t));
                 } else if (rpcName.endsWith("._check_job") && paramsList.size() == 1) {
                     String jobId = paramsList.get(0).asClassInstance(String.class);
-                    JobState jobState = checkJob(jobId, t,
-                            rpcCallData.getContext());
+                    if (lastCheckJobAccessTime != null && debugCheckJobTimes) {
+                        System.out.println("ExecEngineMock.checkJob: time = " + (System.currentTimeMillis() - lastCheckJobAccessTime));
+                    }
+                    lastCheckJobAccessTime = System.currentTimeMillis();
+                    final JobState jobState = new JobState();
+                    FinishJobParams fjp = jobToResults.get(jobId);
+                    if (fjp == null) {
+                        jobState.setFinished(0L);
+                    } else {
+                        jobState.setFinished(1L);
+                        jobState.setResult(fjp.getResult());
+                        jobState.setError(fjp.getError());
+                    }
                     Long finished = jobState.getFinished();
                     if (finished != 0L) {
                         Object error = jobState.getError();
@@ -213,22 +215,10 @@ public class ExecEngineMock extends JsonServerServlet {
         //END_CONSTRUCTOR
     }
 
-    /**
-     * <p>Original spec-file function name: run_job</p>
-     * <pre>
-     * Start a new job
-     * </pre>
-     * @param   params   instance of type {@link us.kbase.kbasejobservice.RunJobParams RunJobParams}
-     * @return   parameter "job_id" of original type "job_id" (A job id.)
-     */
-    @JsonServerMethod(rpc = "KBaseJobService.run_job")
-    public String runJob(RunJobParams params, AuthToken authPart, us.kbase.common.service.RpcContext... jsonRpcCallContext) throws Exception {
-        String returnVal = null;
-        //BEGIN run_job
+    private String runJob(RunJobParams params, AuthToken authPart) throws Exception {
         lastJobId++;
         final String jobId = "" + lastJobId;
         final AuthToken token = authPart;
-        returnVal = jobId;
         String moduleName = params.getMethod().split(Pattern.quote("."))[0];
         jobToModule.put(jobId, moduleName);
         File moduleDir = moduleToRepoDir.get(moduleName);
@@ -240,19 +230,10 @@ public class ExecEngineMock extends JsonServerServlet {
         File jobFile = new File(jobDir, "job.json");
         UObject.getMapper().writeValue(jobFile, params);
         final String dockerImage = moduleToDockerImage.get(moduleName);
-        RpcContext context = params.getRpcContext();
-        if (context == null)
-            context = new RpcContext().withRunId("");
-        if (context.getCallStack() == null)
-            context.setCallStack(new ArrayList<MethodCall>());
-        context.getCallStack().add(new MethodCall().withJobId(jobId).withMethod(params.getMethod())
-                .withTime(DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ssZ").withZoneUTC()
-                        .print(new DateTime())));
         Map<String, Object> rpc = new LinkedHashMap<String, Object>();
         rpc.put("version", "1.1");
         rpc.put("method", params.getMethod());
         rpc.put("params", params.getParams());
-        rpc.put("context", params.getRpcContext());
         File tokenFile = new File(jobDir, "token");
         FileUtils.writeStringToFile(tokenFile, token.getToken());
         File inputFile = new File(jobDir, "input.json");
@@ -279,14 +260,12 @@ public class ExecEngineMock extends JsonServerServlet {
                         throw new IllegalStateException("Output file wasn't created");
                     }
                     FinishJobParams result = UObject.getMapper().readValue(outputFile, FinishJobParams.class);
-                    finishJob(jobId, result, token);
+                    jobToResults.put(jobId, result);
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     FinishJobParams result = new FinishJobParams().withError(new JsonRpcError().withCode(-1L)
                             .withName("JSONRPCError").withMessage("Job service side error: " + ex.getMessage()));
-                    try {
-                        finishJob(jobId, result, token);
-                    } catch (Exception ignore) {}
+                    jobToResults.put(jobId, result);
                 } finally {
                     try {
                         ProcessHelper.cmd("bash", runDockerPath, "rm", "-v", "-f", 
@@ -299,82 +278,6 @@ public class ExecEngineMock extends JsonServerServlet {
         });
         t.start();
         jobToWorker.put(jobId, t);
-        //END run_job
-        return returnVal;
-    }
-
-    /**
-     * <p>Original spec-file function name: get_job_params</p>
-     * <pre>
-     * Get job params necessary for job execution
-     * </pre>
-     * @param   jobId   instance of original type "job_id" (A job id.)
-     * @return   parameter "params" of type {@link us.kbase.kbasejobservice.RunJobParams RunJobParams}
-     */
-    @JsonServerMethod(rpc = "KBaseJobService.get_job_params")
-    public RunJobParams getJobParams(String jobId, AuthToken authPart, us.kbase.common.service.RpcContext... jsonRpcCallContext) throws Exception {
-        RunJobParams returnVal = null;
-        //BEGIN get_job_params
-        final File jobDir = jobToWorkDir.get(jobId);
-        File jobFile = new File(jobDir, "job.json");
-        returnVal = UObject.getMapper().readValue(jobFile, RunJobParams.class);
-        //END get_job_params
-        return returnVal;
-    }
-
-    /**
-     * <p>Original spec-file function name: finish_job</p>
-     * <pre>
-     * Register results of already started job
-     * </pre>
-     * @param   jobId   instance of original type "job_id" (A job id.)
-     * @param   params   instance of type {@link us.kbase.kbasejobservice.FinishJobParams FinishJobParams}
-     */
-    @JsonServerMethod(rpc = "KBaseJobService.finish_job")
-    public void finishJob(String jobId, FinishJobParams params, AuthToken authPart, us.kbase.common.service.RpcContext... jsonRpcCallContext) throws Exception {
-        //BEGIN finish_job
-        jobToResults.put(jobId, params);
-        //END finish_job
-    }
-
-    /**
-     * <p>Original spec-file function name: check_job</p>
-     * <pre>
-     * Check if job is finished and get results/error
-     * </pre>
-     * @param   jobId   instance of original type "job_id" (A job id.)
-     * @return   parameter "job_state" of type {@link us.kbase.kbasejobservice.JobState JobState}
-     */
-    @JsonServerMethod(rpc = "KBaseJobService.check_job")
-    public JobState checkJob(String jobId, AuthToken authPart, us.kbase.common.service.RpcContext... jsonRpcCallContext) throws Exception {
-        JobState returnVal = null;
-        //BEGIN check_job
-        if (lastCheckJobAccessTime != null && debugCheckJobTimes) {
-            System.out.println("ExecEngineMock.checkJob: time = " + (System.currentTimeMillis() - lastCheckJobAccessTime));
-        }
-        lastCheckJobAccessTime = System.currentTimeMillis();
-        returnVal = new JobState();
-        FinishJobParams result = jobToResults.get(jobId);
-        if (result == null) {
-            returnVal.setFinished(0L);
-        } else {
-            returnVal.setFinished(1L);
-            returnVal.setResult(result.getResult());
-            returnVal.setError(result.getError());
-        }
-        //END check_job
-        return returnVal;
-    }
-
-    public static void main(String[] args) throws Exception {
-        if (args.length == 1) {
-            new ExecEngineMock().startupServer(Integer.parseInt(args[0]));
-        } else if (args.length == 3) {
-            new ExecEngineMock().processRpcCall(new File(args[0]), new File(args[1]), args[2]);
-        } else {
-            System.out.println("Usage: <program> <server_port>");
-            System.out.println("   or: <program> <context_json_file> <output_json_file> <token>");
-            return;
-        }
+        return jobId;
     }
 }
