@@ -115,12 +115,6 @@ commit=${git.commit}</echo>
     <delete dir="${classes}"/>
   </target>
 
-  <target name="copy_kidl_jar" if="EXT_KIDL_JAR">
-    <!-- copy the kidl jar to a versioned jar suitable for addition to the jars repo -->
-    <copy file="${dist}/${kidl.jar.file}" tofile="${dist}/${EXT_KIDL_JAR}"/>
-    <echo>Successfully created versioned library jar: ${EXT_KIDL_JAR}</echo>
-  </target>
-
   <target name="sh_bin" description="create shell file wrappers">
     <!-- Define absolute path to main jar file-->
     <property name="jar.absolute.path" location="${dist}/${module_builder.jar.file}"/>
@@ -134,7 +128,7 @@ java -cp ${lib.classpath}:${jar.absolute.path} us.kbase.mobu.ModuleBuilder $@
     <chmod file="${bin.local}/${module_builder.sh.file}" perm="a+x"/>
   </target>
 
-  <target name="compile_and_bin" depends="compile, copy_kidl_jar, sh_bin" description="compile and create shell file in the local bin directory" >
+  <target name="compile_and_bin" depends="compile, sh_bin" description="compile and create shell file in the local bin directory" >
   </target>
 
   <path id="jacoco.classpath">

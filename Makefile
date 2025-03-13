@@ -10,18 +10,13 @@ EPOCH := $(shell date +%s)
 ANT ?= ant
 
 # make sure our make test works
-.PHONY : test test-python sdkbase
+.PHONY : test test-python
 
 
 default: compile
 
 compile:
 	$(ANT)
-
-sdkbase:
-	# docker rmi -f kbase/deplbase:latest
-	cd sdkbase && ./makeconfig
-	docker build --no-cache -t kbase/kbase:sdkbase2.latest sdkbase
 
 test: test-python
 	@echo "Running tests"
