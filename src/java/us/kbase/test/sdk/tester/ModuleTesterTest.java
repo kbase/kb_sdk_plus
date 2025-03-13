@@ -56,12 +56,14 @@ public class ModuleTesterTest {
 		final Path workDir = Paths.get(TestConfigHelper.getTempTestDir(), moduleName);
 		TestUtils.deleteTestModule(workDir, true, true);
 		CREATED_MODULES.add(workDir);
+		TestUtils.createSdkCfgFile(Paths.get(TestConfigHelper.getTempTestDir()), moduleName);
 		new ModuleInitializer(
 				moduleName,
 				token.getUserName(),
 				lang,
 				false,
-				new File(TestConfigHelper.getTempTestDir())
+				new File(TestConfigHelper.getTempTestDir()),
+				true
 		).initialize(true);
 		return workDir;
 	}
@@ -205,13 +207,14 @@ public class ModuleTesterTest {
 				"        #END calc_square\n";
 		File moduleDir = workDir.toFile();
 		File implFile = new File(moduleDir, "lib/" + moduleName + "/" + moduleName + "Impl.py");
+		TestUtils.createSdkCfgFile(Paths.get(TestConfigHelper.getTempTestDir()), moduleName);
 		new ModuleInitializer(
 				moduleName,
 				token.getUserName(),
 				lang,
 				false,
-				new File(TestConfigHelper.getTempTestDir()
-		)
+				new File(TestConfigHelper.getTempTestDir()),
+				true
 		).initialize(false);
 		File specFile = new File(moduleDir, moduleName + ".spec");
 		String specText = FileUtils.readFileToString(specFile).replace("};", 
