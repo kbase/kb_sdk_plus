@@ -14,6 +14,8 @@ import us.kbase.common.service.JsonServerSyslog;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +30,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import us.kbase.common.service.UObject;
 import us.kbase.kbasejobservice.FinishJobParams;
-import us.kbase.kbasejobservice.JobState;
 import us.kbase.kbasejobservice.JsonRpcError;
 import us.kbase.kbasejobservice.RunJobParams;
 import us.kbase.mobu.util.DirUtils;
@@ -101,29 +102,20 @@ public class ExecEngineMock extends JsonServerServlet {
                         System.out.println("ExecEngineMock.checkJob: time = " + (System.currentTimeMillis() - lastCheckJobAccessTime));
                     }
                     lastCheckJobAccessTime = System.currentTimeMillis();
-                    final JobState jobState = new JobState();
                     FinishJobParams fjp = jobToResults.get(jobId);
-                    if (fjp == null) {
-                        jobState.setFinished(0L);
-                    } else {
-                        jobState.setFinished(1L);
-                        jobState.setResult(fjp.getResult());
-                        jobState.setError(fjp.getError());
+                    if (fjp != null && fjp.getError() != null) {
+                        Map<String, Object> ret = new LinkedHashMap<String, Object>();
+                        ret.put("version", "1.1");
+                        ret.put("error", fjp.getError());
+                        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                        mapper.writeValue(new UnclosableOutputStream(output), ret);
+                        return;
                     }
-                    Long finished = jobState.getFinished();
-                    if (finished != 0L) {
-                        Object error = jobState.getError();
-                        if (error != null) {
-                            Map<String, Object> ret = new LinkedHashMap<String, Object>();
-                            ret.put("version", "1.1");
-                            ret.put("error", error);
-                            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                            mapper.writeValue(new UnclosableOutputStream(output), ret);
-                            return;
-                        }
-                    }
-                    result = new ArrayList<Object>();
-                    result.add(jobState);
+                    final Map<String, Object> res = new HashMap<>();
+                    res.put("finished", fjp == null ? 0 : 1);
+                    res.put("result", fjp != null ? fjp.getResult(): null);
+                    res.put("error", fjp != null ? fjp.getError() : null);
+                    result = Arrays.asList((Object) res);
                 } else {
                     throw new IllegalArgumentException("Method [" + rpcName +
                             "] doesn't ends with \"_submit\" or \"_check_job\" suffix");
