@@ -45,7 +45,6 @@ import us.kbase.common.service.JsonServerMethod;
 import us.kbase.common.service.JsonServerServlet;
 import us.kbase.common.service.ServerException;
 import us.kbase.common.service.UObject;
-import us.kbase.kbasejobservice.KBaseJobServiceServer;
 import us.kbase.kidl.KbFuncdef;
 import us.kbase.kidl.KbService;
 import us.kbase.kidl.KidlParser;
@@ -342,8 +341,8 @@ public class TypeGeneratorTest extends Assert {
 		File workDir = prepareWorkDir(testNum);
 		System.out.println();
 		System.out.println("Test " + testNum + " (testAsyncMethods) is starting in directory: " + workDir.getName());
-		Server jettyServer = startJobService(workDir, workDir);
-		int jobServicePort = jettyServer.getConnectors()[0].getLocalPort();
+		Server jettyServer = startCBSMock(workDir, workDir);
+		int cbsMockPort = jettyServer.getConnectors()[0].getLocalPort();
 		try {
 			String testPackage = rootPackageName + ".test" + testNum;
 			File libDir = new File(workDir, "lib");
@@ -368,7 +367,7 @@ public class TypeGeneratorTest extends Assert {
 					));
 			TextUtils.writeFileLines(lines, new File(workDir, "run_" + moduleName + "_async_job.sh"));
 			runPythonServerTest(testNum, true, workDir, testPackage, libDir, binDir, 
-					parsingData, serverOutDir, jobServicePort, null, null);
+					parsingData, serverOutDir, cbsMockPort, null, null);
 			//////////////////////////////////////// Java server ///////////////////////////////////////////
 			lines = new ArrayList<String>(Arrays.asList("#!/bin/bash"));
 			lines.addAll(Arrays.asList(
@@ -377,7 +376,7 @@ public class TypeGeneratorTest extends Assert {
 					));
 			TextUtils.writeFileLines(lines, new File(workDir, "run_" + moduleName + "_async_job.sh"));
 			runJavaServerTest(testNum, true, workDir, testPackage, libDir, binDir, 
-					parsingData, serverOutDir, jobServicePort, null);
+					parsingData, serverOutDir, cbsMockPort, null);
 		} finally {
 			jettyServer.stop();
 		}
@@ -555,17 +554,17 @@ public class TypeGeneratorTest extends Assert {
 		}
 	}
 
-    private Server startJobService(File binDir, File tempDir) throws Exception {
-        // TODO TEST this is older than EE2. Figure out what it's used for and see if changes
-        //           are needed.
-        Server jettyServer = new Server(findFreePort());
-	    ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
-	    context.setContextPath("/");
-	    jettyServer.setHandler(context);
-	    context.addServlet(new ServletHolder(new KBaseJobServiceServer().withBinDir(binDir).withTempDir(tempDir)),"/*");
-	    jettyServer.start();
-        return jettyServer;
-    }
+	private Server startCBSMock(File binDir, File tempDir) throws Exception {
+		Server jettyServer = new Server(findFreePort());
+		ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
+		context.setContextPath("/");
+		jettyServer.setHandler(context);
+		context.addServlet(new ServletHolder(
+				new CallbackServerMock().withBinDir(binDir).withTempDir(tempDir)),"/*"
+		);
+		jettyServer.start();
+		return jettyServer;
+	}
 
 	private Server startServiceWizard(int[] serverPortHolder) throws Exception {
 		// TODO TESTLOGGING this service wizard doesn't appear to log at all which makes debugging
