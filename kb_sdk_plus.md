@@ -71,6 +71,9 @@ and runnable while we make changes to the forked codebase.
 * Add tests that run `kb-sdk` from the command line vs. just testing java classes
   * See examples in .travis.yml but do much more than that
   * Many issues crop up here
+* Figure out how to make the docker image work on arm64 macs
+  * Look into multiarch builds
+  * One workaround is `export DOCKER_DEFAULT_PLATFORM=linux/amd64`
 * Get the SDK running on docker03
   * Not sure what the issues are here, need to investigate
 * Figure out how to support Argonne staff, where Docker Desktop is banned

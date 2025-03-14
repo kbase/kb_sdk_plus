@@ -19,11 +19,12 @@ import us.kbase.templates.TemplateFormatter;
 public class ModuleInitializer {
 	public static final String DEFAULT_LANGUAGE = "python";
 
-	private String moduleName;
-	private String userName;
+	private final String moduleName;
+	private final String userName;
 	private String language;
-	private boolean verbose;
-	private File dir;
+	private final boolean verbose;
+	private final File dir;
+	private boolean dirExists;
 	
 	private static String[] subdirs = {"data",
 										"scripts",
@@ -31,19 +32,39 @@ public class ModuleInitializer {
 										"test",
 										"ui",
 										"ui/narrative",
-										"ui/narrative/methods"};
-	
+										"ui/narrative/methods"
+										};
+
 	public ModuleInitializer(String moduleName, String userName, String language, boolean verbose) {
-	    this(moduleName, userName, language, verbose, null);
+		this(moduleName, userName, language, verbose, null);
 	}
 	
-    public ModuleInitializer(String moduleName, String userName, String language, 
-            boolean verbose, File dir) {
+	public ModuleInitializer(
+			final String moduleName,
+			final String userName,
+			final String language, 
+			final boolean verbose,
+			final File dir
+	) {
+		// this is difficult to test because it winds up using the default prod / appdev catalog
+		// URL rather than the one in the test cfg file
+		this(moduleName, userName, language, verbose, dir, false);
+	}
+	
+	public ModuleInitializer(
+			final String moduleName,
+			final String userName,
+			final String language, 
+			final boolean verbose,
+			final File dir,
+			final boolean dirExists
+	) {
 		this.moduleName = moduleName;
 		this.userName = userName;
 		this.language = language == null ? DEFAULT_LANGUAGE : language;
 		this.verbose = verbose;
 		this.dir = dir;
+		this.dirExists = dirExists;
 	}
 	
 	/**
@@ -55,8 +76,8 @@ public class ModuleInitializer {
 		if (this.moduleName == null) {
 			throw new RuntimeException("Unable to create a null directory!");
 		}
-        String moduleDir = dir == null ? this.moduleName : 
-            new File(dir, this.moduleName).getPath();
+		String moduleDir = dir == null ? this.moduleName :
+			new File(dir, this.moduleName).getPath();
 		this.language = qualifyLanguage(this.language);
 		
 		if (this.verbose) {
@@ -77,7 +98,7 @@ public class ModuleInitializer {
 		}
 	
 		// 1. build dir with moduleName
-		initDirectory(Paths.get(moduleDir), true);
+		initDirectory(Paths.get(moduleDir), !this.dirExists);
 		
 		// 2. build skeleton subdirs
 		for (String dir : subdirList) {

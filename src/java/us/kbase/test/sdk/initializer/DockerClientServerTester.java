@@ -28,6 +28,7 @@ import us.kbase.mobu.installer.ClientInstaller;
 import us.kbase.mobu.tester.ModuleTester;
 import us.kbase.mobu.util.ProcessHelper;
 import us.kbase.mobu.util.TextUtils;
+import us.kbase.test.sdk.TestUtils;
 import us.kbase.test.sdk.scripts.TestConfigHelper;
 import us.kbase.test.sdk.scripts.TypeGeneratorTest;
 
@@ -79,12 +80,14 @@ public class DockerClientServerTester {
         final Path moduleDir = Paths.get(TestConfigHelper.getTempTestDir(), moduleName);
         deleteDir(moduleDir.toFile());
         CREATED_MODULES.add(moduleDir);
+        TestUtils.createSdkCfgFile(Paths.get(TestConfigHelper.getTempTestDir()), moduleName);
         new ModuleInitializer(
                 moduleName,
                 token.getUserName(),
                 lang,
                 false,
-                new File(TestConfigHelper.getTempTestDir())
+                new File(TestConfigHelper.getTempTestDir()),
+                true
         ).initialize(false);
         File specFile = new File(moduleDir.toFile(), moduleName + ".spec");
         String specText = FileUtils.readFileToString(specFile).replace("};", 
