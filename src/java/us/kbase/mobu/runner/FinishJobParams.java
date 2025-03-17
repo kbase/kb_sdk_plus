@@ -1,5 +1,5 @@
 
-package us.kbase.kbasejobservice;
+package us.kbase.mobu.runner;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,7 +29,7 @@ import us.kbase.common.service.UObject;
     "result",
     "error"
 })
-public class FinishJobParams {
+class FinishJobParams {
 
     @JsonProperty("result")
     private UObject result;

@@ -27,10 +27,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 
 import us.kbase.common.service.UObject;
-import us.kbase.kbasejobservice.FinishJobParams;
-import us.kbase.kbasejobservice.JsonRpcError;
 import us.kbase.kbasejobservice.RunJobParams;
 import us.kbase.mobu.util.DirUtils;
 import us.kbase.mobu.util.ProcessHelper;
@@ -52,7 +51,7 @@ public class ExecEngineMock extends JsonServerServlet {
     private Map<String, String> jobToModule = new LinkedHashMap<String, String>();
     private Map<String, File> jobToWorkDir = new LinkedHashMap<String, File>();
     private Map<String, Thread> jobToWorker = new LinkedHashMap<String, Thread>();
-    private Map<String, FinishJobParams> jobToResults = new LinkedHashMap<String, FinishJobParams>();
+    private Map<String, Map<String, Object>> jobToResults = new LinkedHashMap<>();
     private Map<String, String> moduleToDockerImage = new LinkedHashMap<String, String>();
     private Map<String, File> moduleToRepoDir = new LinkedHashMap<String, File>();
     private static boolean debugCheckJobTimes = false;
@@ -102,19 +101,19 @@ public class ExecEngineMock extends JsonServerServlet {
                         System.out.println("ExecEngineMock.checkJob: time = " + (System.currentTimeMillis() - lastCheckJobAccessTime));
                     }
                     lastCheckJobAccessTime = System.currentTimeMillis();
-                    FinishJobParams fjp = jobToResults.get(jobId);
-                    if (fjp != null && fjp.getError() != null) {
+                    Map<String, Object> fjp = jobToResults.get(jobId);
+                    if (fjp != null && fjp.get("error") != null) {
                         Map<String, Object> ret = new LinkedHashMap<String, Object>();
                         ret.put("version", "1.1");
-                        ret.put("error", fjp.getError());
+                        ret.put("error", fjp.get("error"));
                         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                         mapper.writeValue(new UnclosableOutputStream(output), ret);
                         return;
                     }
                     final Map<String, Object> res = new HashMap<>();
                     res.put("finished", fjp == null ? 0 : 1);
-                    res.put("result", fjp != null ? fjp.getResult(): null);
-                    res.put("error", fjp != null ? fjp.getError() : null);
+                    res.put("result", fjp != null ? fjp.get("result"): null);
+                    res.put("error", fjp != null ? fjp.get("error") : null);
                     result = Arrays.asList((Object) res);
                 } else {
                     throw new IllegalArgumentException("Method [" + rpcName +
@@ -251,12 +250,20 @@ public class ExecEngineMock extends JsonServerServlet {
                         ProcessHelper.cmd("bash", runDockerPath, "logs", containerName).exec(jobDir);
                         throw new IllegalStateException("Output file wasn't created");
                     }
-                    FinishJobParams result = UObject.getMapper().readValue(outputFile, FinishJobParams.class);
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> result = UObject.getMapper().readValue(
+                            outputFile, Map.class
+                    );
                     jobToResults.put(jobId, result);
                 } catch (Exception ex) {
                     ex.printStackTrace();
-                    FinishJobParams result = new FinishJobParams().withError(new JsonRpcError().withCode(-1L)
-                            .withName("JSONRPCError").withMessage("Job service side error: " + ex.getMessage()));
+                    final Map<String, Object> result = ImmutableMap.of("error",
+                            (Object) ImmutableMap.of(
+                                    "code", -1L,
+                                    "name", "JSONRPCError",
+                                    "message", "Job service side error: " + ex.getMessage()
+                            )
+                    );
                     jobToResults.put(jobId, result);
                 } finally {
                     try {

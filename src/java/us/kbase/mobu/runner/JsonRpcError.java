@@ -1,5 +1,5 @@
 
-package us.kbase.kbasejobservice;
+package us.kbase.mobu.runner;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "message",
     "error"
 })
-public class JsonRpcError {
+class JsonRpcError {
 
     @JsonProperty("name")
     private String name;
