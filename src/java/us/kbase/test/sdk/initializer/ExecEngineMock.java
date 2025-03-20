@@ -30,7 +30,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 
 import us.kbase.common.service.UObject;
-import us.kbase.kbasejobservice.RunJobParams;
 import us.kbase.mobu.util.DirUtils;
 import us.kbase.mobu.util.ProcessHelper;
 import us.kbase.test.sdk.scripts.TestConfigHelper;
@@ -87,12 +86,12 @@ public class ExecEngineMock extends JsonServerServlet {
                     if (!parts[1].startsWith("_"))
                         throw new IllegalStateException("Unexpected method name: " + rpcName);
                     origRpcName = parts[0] + "." + parts[1].substring(1);
-                    RunJobParams runJobParams = new RunJobParams();
                     String serviceVer = rpcCallData.getContext() == null ? null : 
                         (String)rpcCallData.getContext().getAdditionalProperties().get("service_ver");
-                    runJobParams.setServiceVer(serviceVer);
-                    runJobParams.setMethod(origRpcName);
-                    runJobParams.setParams(paramsList);
+                    final Map<String, Object> runJobParams = new HashMap<>();
+                    runJobParams.put("service_ver", serviceVer);
+                    runJobParams.put("method", origRpcName);
+                    runJobParams.put("params", paramsList);
                     result = new ArrayList<Object>(); 
                     result.add(runJob(runJobParams, t));
                 } else if (rpcName.endsWith("._check_job") && paramsList.size() == 1) {
@@ -206,11 +205,11 @@ public class ExecEngineMock extends JsonServerServlet {
         //END_CONSTRUCTOR
     }
 
-    private String runJob(RunJobParams params, AuthToken authPart) throws Exception {
+    private String runJob(Map<String, Object> params, AuthToken authPart) throws Exception {
         lastJobId++;
         final String jobId = "" + lastJobId;
         final AuthToken token = authPart;
-        String moduleName = params.getMethod().split(Pattern.quote("."))[0];
+        String moduleName = ((String)params.get("method")).split(Pattern.quote("."))[0];
         jobToModule.put(jobId, moduleName);
         File moduleDir = moduleToRepoDir.get(moduleName);
         File testLocalDir = new File(moduleDir, "test_local");
@@ -223,8 +222,8 @@ public class ExecEngineMock extends JsonServerServlet {
         final String dockerImage = moduleToDockerImage.get(moduleName);
         Map<String, Object> rpc = new LinkedHashMap<String, Object>();
         rpc.put("version", "1.1");
-        rpc.put("method", params.getMethod());
-        rpc.put("params", params.getParams());
+        rpc.put("method", params.get("method"));
+        rpc.put("params", params.get("params"));
         File tokenFile = new File(jobDir, "token");
         FileUtils.writeStringToFile(tokenFile, token.getToken());
         File inputFile = new File(jobDir, "input.json");

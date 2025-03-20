@@ -88,12 +88,12 @@ public class KBaseJobServiceServer extends JsonServerServlet {
                     if (!parts[1].startsWith("_"))
                         throw new IllegalStateException("Unexpected method name: " + rpcName);
                     origRpcName = parts[0] + "." + parts[1].substring(1);
-                    RunJobParams runJobParams = new RunJobParams();
                     String serviceVer = rpcCallData.getContext() == null ? null : 
                         (String)rpcCallData.getContext().getAdditionalProperties().get("service_ver");
-                    runJobParams.setServiceVer(serviceVer);
-                    runJobParams.setMethod(origRpcName);
-                    runJobParams.setParams(paramsList);
+                    final Map<String, Object> runJobParams = new HashMap<>();
+                    runJobParams.put("service_ver", serviceVer);
+                    runJobParams.put("method", origRpcName);
+                    runJobParams.put("params", paramsList);
                     result = new ArrayList<Object>(); 
                     result.add(runJob(runJobParams, t));
                 } else if (rpcName.endsWith("._check_job") && paramsList.size() == 1) {
@@ -189,7 +189,7 @@ public class KBaseJobServiceServer extends JsonServerServlet {
         //END_CONSTRUCTOR
     }
 
-    private String runJob(RunJobParams params, AuthToken authPart) throws Exception {
+    private String runJob(Map<String, Object> params, AuthToken authPart) throws Exception {
         lastJobId++;
         final String jobId = "" + lastJobId;
         final AuthToken token = authPart;
@@ -204,15 +204,18 @@ public class KBaseJobServiceServer extends JsonServerServlet {
                 try {
                     final File jobDir = new File(tempDir, "job_" + jobId);
                     final File jobFile = new File(jobDir, "job.json");
-                    final RunJobParams job = UObject.getMapper().readValue(jobFile, RunJobParams.class);
-                    String serviceName = job.getMethod().split("\\.")[0];
+                    @SuppressWarnings("unchecked")
+                    final Map<String, Object> job = UObject.getMapper().readValue(
+                            jobFile, Map.class
+                    );
+                    String serviceName = ((String)job.get("method")).split("\\.")[0];
                     if (!jobDir.exists()) {
                         jobDir.mkdirs();
                     }
                     Map<String, Object> rpc = new LinkedHashMap<String, Object>();
                     rpc.put("version", "1.1");
-                    rpc.put("method", job.getMethod());
-                    rpc.put("params", job.getParams());
+                    rpc.put("method", job.get("method"));
+                    rpc.put("params", job.get("params"));
                     File inputFile = new File(jobDir, "input.json");
                     UObject.getMapper().writeValue(inputFile, rpc);
                     String scriptFilePath = getBinScript("run_" + serviceName + "_async_job.sh");
