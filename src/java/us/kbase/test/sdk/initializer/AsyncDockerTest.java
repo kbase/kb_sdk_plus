@@ -18,7 +18,7 @@ public class AsyncDockerTest extends DockerClientServerTester {
     
     private static int execEnginePort;
     private static Server execEngineJettyServer;
-    private static ExecEngineMock execEngine;
+    private static CallbackServerMock cbsMock;
     
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -27,14 +27,14 @@ public class AsyncDockerTest extends DockerClientServerTester {
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.setContextPath("/");
         execEngineJettyServer.setHandler(context);
-        execEngine = new ExecEngineMock().withKBaseEndpoint(TestConfigHelper.getKBaseEndpoint());
-        context.addServlet(new ServletHolder(execEngine), "/*");
+        cbsMock = new CallbackServerMock().withKBaseEndpoint(TestConfigHelper.getKBaseEndpoint());
+        context.addServlet(new ServletHolder(cbsMock), "/*");
         execEngineJettyServer.start();
     }
     
     @AfterClass
     public static void tearDownModule() throws Exception {
-        execEngine.waitAndCleanAllJobs();
+        cbsMock.waitAndCleanAllJobs();
         if (execEngineJettyServer != null)
             execEngineJettyServer.stop();
     }
@@ -42,12 +42,12 @@ public class AsyncDockerTest extends DockerClientServerTester {
     private static void testAsyncClients(File moduleDir, String serverType) throws Exception {
         try {
             String dockerImage = prepareDockerImage(moduleDir, token);
-            execEngine.withModule(moduleDir.getName(), dockerImage, moduleDir);
+            cbsMock.withModule(moduleDir.getName(), dockerImage, moduleDir);
             String clientEndpointUrl = "http://localhost:" + execEnginePort;
             testClients(moduleDir, clientEndpointUrl, true, false, serverType);
             testStatus(moduleDir, clientEndpointUrl, true, false, serverType);
         } finally {
-            execEngine.waitAndCleanAllJobs();
+            cbsMock.waitAndCleanAllJobs();
         }
     }
 
