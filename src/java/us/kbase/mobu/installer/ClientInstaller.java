@@ -286,7 +286,7 @@ public class ClientInstaller {
             String customClientClassName = TextUtils.capitalize(clientName) + "Client";
             URL urlEndpoint = url == null ? null : new URL(url);
             JavaTypeGenerator.processSpec(services, javaSrcDir, javaPackageParent, false, null, 
-                    null, urlEndpoint, null, null, clientAsyncVer, dynservVer, semanticVersion, 
+                    null, urlEndpoint, null, clientAsyncVer, dynservVer, semanticVersion, 
                     gitUrl, gitCommitHash, null, customClientClassName);
         } else {
             String perlClientName = null;
@@ -304,7 +304,7 @@ public class ClientInstaller {
             FileSaver output = new DiskFileSaver(libDir);
             TemplateBasedGenerator.generate(services, url, isJS, jsClientName, isPerl, 
                     perlClientName, false, null, null, null, isPython, pyClientName, false, null,
-                    null, isR, rClientName, false, null, null, false, ip, output, null, null, 
+                    null, isR, rClientName, false, null, null, false, ip, output,
                     async, clientAsyncVer, dynservVer, semanticVersion, gitUrl, gitCommitHash);
         }
         // Now let's add record about this client to dependencies.json file

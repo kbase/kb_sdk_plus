@@ -822,7 +822,6 @@ public class TypeGeneratorTest extends Assert {
 				null,                    // rImplName
 				serverOutDir,            // outDir
 				null,                    // jsonSchemaPath
-				true,                    // createMakeFile
 				null,                    // clientAsyncVer
 				null,                    // dynServVer
 				false,                   // html
@@ -862,7 +861,6 @@ public class TypeGeneratorTest extends Assert {
 				null,                    // rImplName
 				serverOutDir,            // outDir
 				null,                     // jsonSchemaPath
-				true,                    // createMakeFile
 				null,                    // clientAsyncVer
 				isClientDynamic ? "dev" : null,     // dynServVer
 				false,                   // html
@@ -938,7 +936,7 @@ public class TypeGeneratorTest extends Assert {
 		JavaData parsingData = JavaTypeGenerator.processSpec(services, new DiskFileSaver(srcDir), 
 		        testPackage, true, new DiskFileSaver(libDir), gwtPackageName, defaultUrl, 
 		        new OneFileSaver(new File(workDir, "build.xml")), 
-		        new OneFileSaver(new File(workDir, "makefile")), null, isDynamic ? "dev" : null, null, null, null);
+		        null, isDynamic ? "dev" : null, null, null, null);
 		return parsingData;
 	}
 

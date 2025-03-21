@@ -42,7 +42,7 @@ public class RunCompileCommand {
             boolean withJavaBuildXml, String javaGwtPackage, boolean rClientSide, 
             String rClientName, boolean rServerSide, String rServerName, 
             String rImplName, File outDir, String jsonSchemaPath, 
-            boolean createMakefile, String clientAsyncVer, String dynservVer,
+            String clientAsyncVer, String dynservVer,
             boolean html, String semanticVersion, String gitUrl,
             String gitCommitHash)
             throws Exception {
@@ -123,26 +123,6 @@ public class RunCompileCommand {
                 }
             }
         }
-        FileSaver perlMakefile = null;
-        FileSaver pyMakefile = null;
-        FileSaver javaMakefile = null;
-        if (createMakefile) {
-            perlServerSide = TemplateBasedGenerator.genPerlServer(perlServerSide, 
-                    perlServerName, perlImplName, perlPsgiName);
-            pyServerSide = TemplateBasedGenerator.genPythonServer(pyServerSide, 
-                    pyServerName, pyImplName);
-            int srvNum = (javaServerSide ? 1 : 0) + (perlServerSide ? 1 : 0) +
-                    (pyServerSide ? 1 : 0);
-            if (perlServerSide)
-                perlMakefile = new OneFileSaver(output, "makefile." + 
-                        (srvNum > 1 ? "perl_" : "") + "template");
-            if (pyServerSide)
-                pyMakefile = new OneFileSaver(output, "makefile." + 
-                        (srvNum > 1 ? "py_" : "") + "template");
-            if (javaServerSide)
-                javaMakefile = new OneFileSaver(output, "makefile." + 
-                        (srvNum > 1 ? "java_" : "") + "template");
-        }
         if (javaServerSide)
             javaClientSide = true;
         if (javaGwtPackage != null)
@@ -152,7 +132,7 @@ public class RunCompileCommand {
             //TODO DYNSERV add dynamic service client generation to all clients except Python
             javaParsingData = JavaTypeGenerator.processSpec(services, javaSrcDir, 
                     javaPackageParent, javaServerSide, javaLibDir, javaGwtPackage, 
-                    url == null ? null : new URL(url), javaBuildXml, javaMakefile,
+                    url == null ? null : new URL(url), javaBuildXml,
                     clientAsyncVer, dynservVer, semanticVersion, gitUrl, gitCommitHash);
         }
         TemplateBasedGenerator.generate(services, url, jsClientSide, jsClientName, 
@@ -160,7 +140,7 @@ public class RunCompileCommand {
                 perlImplName, perlPsgiName, pyClientSide, pyClientName, 
                 pyServerSide, pyServerName, pyImplName, rClientSide, rClientName, 
                 rServerSide, rServerName, rImplName, perlEnableRetries,
-                ip, output, perlMakefile, pyMakefile, true, clientAsyncVer,
+                ip, output, true, clientAsyncVer,
                 dynservVer, semanticVersion, gitUrl, gitCommitHash);
         String reportFile = System.getenv("KB_SDK_COMPILE_REPORT_FILE");
         if (reportFile == null || reportFile.isEmpty())

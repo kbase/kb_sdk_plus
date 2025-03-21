@@ -40,7 +40,7 @@ public class TemplateBasedGenerator {
             String pythonServerName, String pythonImplName, boolean genR, 
             String rClientName, boolean genRServer, String rServerName, String rImplName, 
             boolean enableRetries, IncludeProvider ip, FileSaver output,
-            FileSaver perlMakefile, FileSaver pyMakefile, boolean asyncByDefault,
+            boolean asyncByDefault,
             String clientAsyncVer, String dynservVer, String semanticVersion,
             String gitUrl, String gitCommitHash)
             throws Exception {
@@ -260,16 +260,6 @@ public class TemplateBasedGenerator {
             TemplateFormatter.formatTemplate("perl_psgi", context, perlPsgi);
             perlPsgi.close();
             perlMakefileContext.put("psgi_file", perlPsgiName);
-        }
-        if (perlMakefile != null) {
-            Writer perlMakefileWr = perlMakefile.openWriter(".");
-            TemplateFormatter.formatTemplate("perl_makefile", perlMakefileContext, perlMakefileWr);
-            perlMakefileWr.close();
-        }
-        if (pyMakefile != null) {
-            Writer pyMakefileWr = pyMakefile.openWriter(".");
-            TemplateFormatter.formatTemplate("python_makefile", pyMakefileContext, pyMakefileWr);
-            pyMakefileWr.close();
         }
     }
     

@@ -289,7 +289,7 @@ public class ModuleBuilder {
                     a.javaServerSide, a.javaPackageParent, a.javaSrcDir, a.javaLibDir, 
                     a.javaBuildXml, a.javaGwtPackage, a.rClientSide, a.rClientName, 
                     a.rServerSide, a.rServerName, a.rImplName, outDir, a.jsonSchema, 
-                    a.makefile, a.clAsyncVer, a.dynservVer, a.html,
+                    a.clAsyncVer, a.dynservVer, a.html,
                     semanticVersion, gitUrl, gitCommitHash);
         } catch (Throwable e) {
             System.err.println("Error compiling KIDL specfication:");
@@ -594,9 +594,6 @@ public class ModuleBuilder {
     	@Parameter(names="--javabuildxml",description="Will generate build.xml template for Ant")
         boolean javaBuildXml;
     	
-    	@Parameter(names="--makefile",description="Will generate makefile templates for servers and/or java client")
-        boolean makefile = false;
-
         @Parameter(names="--clasyncver",description="Will set in client code version of service for asyncronous calls " +
         		"(it could be git commit hash of version registered in catalog or one of version tags: dev/beta/release)")
         String clAsyncVer = null;
