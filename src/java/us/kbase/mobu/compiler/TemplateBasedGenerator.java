@@ -31,30 +31,6 @@ public class TemplateBasedGenerator {
         return genPythonServer || pythonServerName != null || pythonImplName != null;
     }
 
-    public static boolean genRServer(boolean genRServer,
-            String rServerName, String rImplName) {
-        return genRServer || rServerName != null || rImplName != null;
-    }
-
-    public static void generate(List<KbService> srvs, String defaultUrl, 
-            boolean genJs, String jsClientName,
-            boolean genPerl, String perlClientName, boolean genPerlServer, 
-            String perlServerName, String perlImplName, String perlPsgiName, 
-            boolean genPython, String pythonClientName, boolean genPythonServer,
-            String pythonServerName, String pythonImplName, boolean genR, 
-            String rClientName, boolean genRServer, String rServerName, String rImplName, 
-            boolean enableRetries, IncludeProvider ip, FileSaver output,
-            FileSaver perlMakefile, FileSaver pyMakefile, boolean asyncByDefault,
-            String clientAsyncVer, String dynservVer, String semanticVersion,
-            String gitUrl, String gitCommitHash) throws Exception {
-        generate(srvs, defaultUrl, genJs, jsClientName, genPerl, perlClientName, 
-                genPerlServer, perlServerName, perlImplName, perlPsgiName, genPython, 
-                pythonClientName, genPythonServer, pythonServerName, pythonImplName, 
-                genR, rClientName, genRServer, rServerName, rImplName, enableRetries, 
-                ip, output, perlMakefile, pyMakefile, asyncByDefault, 
-                clientAsyncVer, dynservVer, semanticVersion, gitUrl, gitCommitHash, null);
-    }
-    
     @SuppressWarnings("unchecked")
     public static void generate(List<KbService> srvs, String defaultUrl, 
             boolean genJs, String jsClientName,
@@ -66,7 +42,7 @@ public class TemplateBasedGenerator {
             boolean enableRetries, IncludeProvider ip, FileSaver output,
             FileSaver perlMakefile, FileSaver pyMakefile, boolean asyncByDefault,
             String clientAsyncVer, String dynservVer, String semanticVersion,
-            String gitUrl, String gitCommitHash, Map<String, String> prevCode)
+            String gitUrl, String gitCommitHash)
             throws Exception {
         if (semanticVersion == null)
             semanticVersion = "";
@@ -213,10 +189,9 @@ public class TemplateBasedGenerator {
                 if (genPerlServer) {
                     String perlModuleImplName = (String)module.get("impl_package_name");
                     perlImplPath = fixPath(perlModuleImplName, "::") + ".pm";
-                    Map<String, String> innerPrevCode = prevCode;
-                    if (innerPrevCode == null)
-                        innerPrevCode = PrevCodeParser.parsePrevCode(
-                                output.getAsFileOrNull(perlImplPath), "#", methodNames, false);
+                    Map<String, String> innerPrevCode = PrevCodeParser.parsePrevCode(
+                            output.getAsFileOrNull(perlImplPath), "#", methodNames, false
+                    );
                     module.put("module_header", innerPrevCode.get(PrevCodeParser.HEADER));
                     module.put("module_constructor", innerPrevCode.get(PrevCodeParser.CONSTRUCTOR));
                     module.put("module_status", innerPrevCode.get(PrevCodeParser.STATUS));
@@ -231,10 +206,9 @@ public class TemplateBasedGenerator {
                 if (genPythonServer) {
                     String pythonModuleImplName = (String)module.get("pymodule");
                     pythonImplPath = fixPath(pythonModuleImplName, ".") + ".py";
-                    Map<String, String> innerPrevCode = prevCode;
-                    if (innerPrevCode == null)
-                        innerPrevCode = PrevCodeParser.parsePrevCode(
-                                output.getAsFileOrNull(pythonImplPath), "#", methodNames, true);
+                    Map<String, String> innerPrevCode = PrevCodeParser.parsePrevCode(
+                            output.getAsFileOrNull(pythonImplPath), "#", methodNames, true
+                    );
                     module.put("py_module_header", innerPrevCode.get(PrevCodeParser.HEADER));
                     module.put("py_module_class_header", innerPrevCode.get(PrevCodeParser.CLSHEADER));
                     module.put("py_module_constructor", innerPrevCode.get(PrevCodeParser.CONSTRUCTOR));
@@ -249,10 +223,9 @@ public class TemplateBasedGenerator {
                 String rImplPath = null;
                 if (genRServer) {
                     rImplPath = rImplName + ".r";
-                    Map<String, String> innerPrevCode = prevCode;
-                    if (innerPrevCode == null)
-                        innerPrevCode = PrevCodeParser.parsePrevCode(
-                                output.getAsFileOrNull(rImplPath), "#", methodNames, false);
+                    Map<String, String> innerPrevCode = PrevCodeParser.parsePrevCode(
+                            output.getAsFileOrNull(rImplPath), "#", methodNames, false
+                    );
                     module.put("r_module_header", innerPrevCode.get(PrevCodeParser.HEADER));
                     module.put("r_module_constructor", innerPrevCode.get(PrevCodeParser.CONSTRUCTOR));
                     for (Map<String, Object> method : methods) {
