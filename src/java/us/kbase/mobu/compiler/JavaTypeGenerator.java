@@ -76,63 +76,39 @@ public class JavaTypeGenerator {
 	private static final String utilPackage = defaultParentPackage + ".common.service";
 	
 	public static JavaData processSpec(File specFile, File srcOutDir, String packageParent, 
-			boolean createServer, File libOutDir, String gwtPackage, URL url) throws Exception {		
+			boolean createServer, File libOutDir, String gwtPackage, URL url) throws Exception {
 		List<KbService> services = KidlParser.parseSpec(specFile, null);
-		return processSpec(services, srcOutDir, packageParent, createServer, libOutDir, gwtPackage, url, null, null);
-	}
-	
-	private static JavaData processSpec(List<KbService> services, File srcOutDir, String packageParent, 
-			boolean createServer, File libOutDir, String gwtPackage, URL url,
-			File buildXml, File makefile) throws Exception {		
-        FileSaver libOut = libOutDir == null ? null : new DiskFileSaver(libOutDir);
-        FileSaver buildXmlOut = buildXml == null ? null : new OneFileSaver(buildXml);
-        FileSaver makefileOut = makefile == null ? null : new OneFileSaver(makefile);
-		return processSpec(services, new DiskFileSaver(srcOutDir), packageParent, 
-		        createServer, libOut, gwtPackage, url, buildXmlOut, makefileOut);
-	}
-
-	private static JavaData processSpec(List<KbService> services, FileSaver srcOut, String packageParent, 
-	        boolean createServer, FileSaver libOut, String gwtPackage, URL url, 
-	        FileSaver buildXml, FileSaver makefile) throws Exception {
-	    return processSpec(services, srcOut, packageParent, createServer, libOut, gwtPackage, url, 
-	            buildXml, makefile, null, null, null, null, null, null);
+		FileSaver libOut = libOutDir == null ? null : new DiskFileSaver(libOutDir);
+		FileSaver buildXmlOut = null == null ? null : new OneFileSaver(null);
+		return processSpec(services, new DiskFileSaver(srcOutDir), packageParent, createServer,
+				libOut, gwtPackage, url, buildXmlOut, null, null, null, null, null, null, null);
 	}
 
 	public static JavaData processSpec(List<KbService> services, FileSaver srcOut, String packageParent, 
-	        boolean createServer, FileSaver libOut, String gwtPackage, URL url, 
-	        FileSaver buildXml, FileSaver makefile, String clientAsyncVersion, String clientDynservVersion, 
-	        String semanticVersion, String gitUrl, String gitCommitHash) throws Exception {        
-	    return processSpec(services, srcOut, packageParent, createServer, libOut, gwtPackage, url, 
-	            buildXml, makefile, clientAsyncVersion, clientDynservVersion, semanticVersion, gitUrl, 
-	            gitCommitHash, null);
+			boolean createServer, FileSaver libOut, String gwtPackage, URL url,
+			FileSaver buildXml, String clientAsyncVersion, String clientDynservVersion,
+			String semanticVersion, String gitUrl, String gitCommitHash) throws Exception {
+		return processSpec(services, srcOut, packageParent, createServer, libOut, gwtPackage, url,
+				buildXml, clientAsyncVersion, clientDynservVersion, semanticVersion,
+				gitUrl, gitCommitHash, null, null);
 	}
 
 	public static JavaData processSpec(List<KbService> services, FileSaver srcOut, 
-	        String packageParent, boolean createServer, FileSaver libOut, String gwtPackage, 
-	        URL url, FileSaver buildXml, FileSaver makefile, String clientAsyncVersion, 
+			String packageParent, boolean createServer, FileSaver libOut, String gwtPackage,
+			URL url, FileSaver buildXml, String clientAsyncVersion,
 			String clientDynservVersion, String semanticVersion, String gitUrl, 
-			String gitCommitHash, Map<String, String> originalCode) throws Exception {
-	    return processSpec(services, srcOut, packageParent, createServer, libOut, gwtPackage, url,
-	            buildXml, makefile, clientAsyncVersion, clientDynservVersion, semanticVersion, 
-	            gitUrl, gitCommitHash, originalCode, null);
-	}
-
-	public static JavaData processSpec(List<KbService> services, FileSaver srcOut, 
-	        String packageParent, boolean createServer, FileSaver libOut, String gwtPackage, 
-	        URL url, FileSaver buildXml, FileSaver makefile, String clientAsyncVersion, 
-	        String clientDynservVersion, String semanticVersion, String gitUrl, 
-	        String gitCommitHash, Map<String, String> originalCode, 
-	        String customClientClassName) throws Exception {        
-	    JavaData data = prepareDataStructures(services);
-	    outputData(data, srcOut, packageParent, createServer, libOut, gwtPackage, url, buildXml, 
-	            makefile, clientAsyncVersion, clientDynservVersion, semanticVersion, gitUrl, 
-	            gitCommitHash, originalCode, customClientClassName);
-	    return data;
+			String gitCommitHash, Map<String, String> originalCode,
+			String customClientClassName) throws Exception {
+		JavaData data = prepareDataStructures(services);
+		outputData(data, srcOut, packageParent, createServer, libOut, gwtPackage, url, buildXml,
+				clientAsyncVersion, clientDynservVersion, semanticVersion, gitUrl,
+				gitCommitHash, originalCode, customClientClassName);
+		return data;
 	}
 
 	public static JavaData parseSpec(File specFile) throws Exception {
-	    List<KbService> services = KidlParser.parseSpec(specFile, null);
-	    return prepareDataStructures(services);
+		List<KbService> services = KidlParser.parseSpec(specFile, null);
+		return prepareDataStructures(services);
 	}
 
 	private static JavaData prepareDataStructures(List<KbService> services) {
@@ -188,7 +164,7 @@ public class JavaTypeGenerator {
 
 	private static void outputData(JavaData data, FileSaver srcOutDir, String packageParent, 
 			boolean createServers, FileSaver libOutDir, String gwtPackage, URL url,
-			FileSaver buildXml, FileSaver makefile, String clientAsyncVersion,
+			FileSaver buildXml, String clientAsyncVersion,
 			String clientDynservVersion, String semanticVersion, String gitUrl, 
 			String gitCommitHash, Map<String, String> originalCode,
 			String customClientClassName) throws Exception {
@@ -203,7 +179,6 @@ public class JavaTypeGenerator {
 			        gitCommitHash, originalCode);
 		List<String> jars = checkLibs(libOutDir, createServers, buildXml);
 		generateBuildXml(data, jars, createServers, buildXml);
-		generateMakefile(data, createServers, makefile);
 		if (gwtPackage != null) {
 			GwtGenerator.generate(data, srcOutDir, gwtPackage);
 		}
@@ -1380,65 +1355,6 @@ public class JavaTypeGenerator {
             }
         return async;
     }
-	
-	private static void generateMakefile(JavaData data, boolean createServers, 
-	        FileSaver makefile) throws Exception {
-	    if (makefile == null)
-	        return;
-	    List<String> lines = new ArrayList<String>(Arrays.asList(
-	            "TARGET ?= /kb/deployment",
-	            "ANT = ant",
-	            "",
-	            "default: jar",
-	            "",
-	            "jar:",
-	            "\t$(ANT) compile",
-	            "",
-	            "deploy: deploy-client deploy-service deploy-scripts",
-	            "",
-	            "undeploy:",
-	            "\t@echo \"Nothing to undeploy\"",
-	            "",
-	            "deploy-client:",
-	            "\t@echo \"No deployment for client\"",
-	            "",
-	            "deploy-service:",
-	            "\t@echo \"No deployment for service\"",
-	            ""
-	            ));
-	    lines.add("deploy-scripts:");
-	    if (anyAsync(data.getModules().get(0))) {
-	        lines.add("\t$(ANT) make_async_job_script");
-	    } else {
-	        lines.add("\t@echo \"No deployment for scripts\"");
-	    }
-	    lines.addAll(Arrays.asList(
-	            "",
-	            "test: test-client test-service test-scripts",
-	            "",
-	            "test-client:",
-	            "\t@echo \"No tests for client\"",
-	            "",
-	            "test-service:"
-	            ));
-	    if (createServers) {
-            lines.add("\t$(ANT) test");
-	    } else {
-	        lines.add("\t@echo \"No tests for service\"");
-	    }
-	    lines.addAll(Arrays.asList(
-	            "",
-	            "test-scripts:",
-	            "\t@echo \"No tests for scripts\"",
-	            "",
-	            "clean:",
-	            "\t@echo \"No clean is necessary\""
-	            ));
-        Writer w = makefile.openWriter("*");
-        for (String l : lines)
-            w.write(l + "\n");
-        w.close();
-	}
 	
 	public static String checkLib(FileSaver libDir, String libName) throws Exception {
 		// TODO CODECLEANUP try to eliminate this method entirely. It seems to be used to move
