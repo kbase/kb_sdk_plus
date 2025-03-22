@@ -45,33 +45,31 @@ public interface SpecParserConstants {
   /** RegularExpression Id. */
   int T_returns = 24;
   /** RegularExpression Id. */
-  int T_async = 25;
+  int T_round_open_bracket = 25;
   /** RegularExpression Id. */
-  int T_round_open_bracket = 26;
+  int T_round_close_bracket = 26;
   /** RegularExpression Id. */
-  int T_round_close_bracket = 27;
+  int T_comma = 27;
   /** RegularExpression Id. */
-  int T_comma = 28;
+  int T_dot = 28;
   /** RegularExpression Id. */
-  int T_dot = 29;
+  int T_semicolon = 29;
   /** RegularExpression Id. */
-  int T_semicolon = 30;
+  int T_colon = 30;
   /** RegularExpression Id. */
-  int T_colon = 31;
+  int T_figure_open_bracket = 31;
   /** RegularExpression Id. */
-  int T_figure_open_bracket = 32;
+  int T_figure_close_bracket = 32;
   /** RegularExpression Id. */
-  int T_figure_close_bracket = 33;
+  int S_IDENTIFIER = 33;
   /** RegularExpression Id. */
-  int S_IDENTIFIER = 34;
+  int LETTER = 34;
   /** RegularExpression Id. */
-  int LETTER = 35;
+  int DIGIT = 35;
   /** RegularExpression Id. */
-  int DIGIT = 36;
+  int SPECIAL_CHARS = 36;
   /** RegularExpression Id. */
-  int SPECIAL_CHARS = 37;
-  /** RegularExpression Id. */
-  int INCLUDE_LITERAL = 38;
+  int INCLUDE_LITERAL = 37;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -105,7 +103,6 @@ public interface SpecParserConstants {
     "\"structure\"",
     "\"tuple\"",
     "\"returns\"",
-    "\"async\"",
     "\"(\"",
     "\")\"",
     "\",\"",

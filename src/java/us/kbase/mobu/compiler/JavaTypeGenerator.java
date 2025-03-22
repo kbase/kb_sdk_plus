@@ -178,7 +178,7 @@ public class JavaTypeGenerator {
 			generateServerClass(data, srcOutDir, packageParent, semanticVersion, gitUrl, 
 			        gitCommitHash, originalCode);
 		List<String> jars = checkLibs(libOutDir, createServers, buildXml);
-		generateBuildXml(data, jars, createServers, buildXml);
+		generateBuildXml(data, jars, createServers, buildXml, clientAsyncVersion);
 		if (gwtPackage != null) {
 			GwtGenerator.generate(data, srcOutDir, gwtPackage);
 		}
@@ -375,7 +375,7 @@ public class JavaTypeGenerator {
 					break;
 				}
 			}
-            boolean anyAsync = asyncVersion != null || anyAsync(module);
+            boolean anyAsync = asyncVersion != null;
             String serviceVersion = null;
             if (asyncVersion != null) {
                 serviceVersion = asyncVersion;
@@ -647,7 +647,7 @@ public class JavaTypeGenerator {
 					"        caller.setFileForNextRpcResponse(f);",
 					"    }"
 					));
-			if (anyAsync || asyncVersion != null) {
+			if (anyAsync) {
 			    classLines.addAll(Arrays.asList(
 			            "",
 			            "    public long getAsyncJobCheckTimeMs() {",
@@ -685,7 +685,7 @@ public class JavaTypeGenerator {
                     "        this.serviceVersion = newValue;",
                     "    }"
                     ));
-			if (anyAsync || asyncVersion != null) {
+			if (anyAsync) {
                 String exceptions = "throws " + model.ref("java.io.IOException") 
                         + ", " + model.ref(utilPackage + ".JsonClientException");
                 String listClass = model.ref("java.util.List");
@@ -731,7 +731,7 @@ public class JavaTypeGenerator {
                 String arrayListClass = model.ref("java.util.ArrayList");
                 String exceptions = "throws " + model.ref("java.io.IOException") 
                         + ", " + model.ref(utilPackage + ".JsonClientException");
-			    if (func.getOriginal().isAsync() || asyncVersion != null) {
+			    if (asyncVersion != null) {
 			        if (!func.isAuthCouldBeUsed())
 			            throw new IllegalStateException("Function " + func.getOriginal().getName() + " is async but doesn't allow authentication");
 			        classLines.add("");
@@ -1110,8 +1110,7 @@ public class JavaTypeGenerator {
 				classLines.add("    @" + model.ref(utilPackage + ".JsonServerMethod") + "(" +
 						"rpc = \"" + module.getOriginal().getModuleName() + "." + func.getOriginal().getName() + "\"" +
 						(func.getRetMultyType() == null ? "" : ", tuple = true") + 
-						(func.isAuthOptional() ? ", authOptional=true" : "") + ", async=true" +
-						(func.getOriginal().isAsync() ? ", sync=false" : "") + ")");
+						(func.isAuthOptional() ? ", authOptional=true" : "") + ")");
 				classLines.add("    public " + retTypeName + " " + func.getJavaName() + "(" + funcParams + ") throws Exception {");
 				
 				List<String> funcLines = new LinkedList<String>();
@@ -1247,115 +1246,109 @@ public class JavaTypeGenerator {
 		return jars;
 	}
 
-	private static void generateBuildXml(JavaData data, List<String> jars, boolean createServers,
-	        FileSaver buildXml) throws Exception {
-	    if (buildXml != null) {
-	        JavaModule module = data.getModules().get(0);
-	        List<String> lines = new ArrayList<String>(Arrays.asList(
-		            "<project name=\"Generated automatically\" default=\"compile\" basedir=\".\">",
-		            "  <property environment=\"env\"/>",
-		            "  <property name=\"src\"     location=\"src\"/>",
-		            "  <property name=\"classes\" location=\"classes\"/>",
-                    "  <property name=\"dist\"    location=\"dist\"/>",
-		            "  <property name=\"lib\"     location=\"${env.KB_TOP}/modules/jars/lib/jars/\"/>",
-                    "  <property name=\"module\"  value=\"" + module.getModuleName() + "\"/>",
-                    "  <property name=\"jar.file\" value=\"${module}.jar\"/>",
-		            "",
-		            "  <path id=\"compile.classpath\">",
-		            "    <fileset dir=\"${lib}\">"
-		            ));
-		    for (String jar : jars)
-		        if (!new File(jar).isAbsolute())
-		            lines.add("      <include name=\"" + jar + "\"/>");
-		    
-		    lines.add("    </fileset>");
-            for (String jar : jars)
-                if (new File(jar).isAbsolute())
-                    lines.addAll(Arrays.asList(
-                            "    <fileset dir=\"" + new File(jar).getParent() + "\">",
-                            "      <include name=\"" + new File(jar).getName() + "\"/>",
-                            "    </fileset>"
-                            ));
-		    lines.addAll(Arrays.asList(
-		            "  </path>",
-		            "",
-		            "  <target name=\"compile\" description=\"compile the source\">",
-		            "    <mkdir dir=\"${classes}\"/>",
-		            "    <javac srcdir=\"${src}\" destdir=\"${classes}\" includeantruntime=\"false\" debug=\"true\" classpathref=\"compile.classpath\"/>",
-		            "    <copy todir=\"${classes}\">",
-		            "      <fileset dir=\"${src}\">",
-		            "        <patternset>",
-		            "          <include name=\"**/*\"/>",
-		            "        </patternset>",
-		            "      </fileset>",
-		            "    </copy>",
-		            "    <jar destfile=\"${dist}/${jar.file}\" basedir=\"${classes}\">",
-		            "      <manifest>",
-		            "        <!-- attribute name=\"Main-Class\" value=\"us.kbase." + module.getModulePackage() + "." + module.getModuleName() + "\"/ -->",
-		            "      </manifest>",
-		            "    </jar>",
-		            "    <delete dir=\"${classes}\"/>",
-		            "  </target>",
-		            "",
-		            "  <target name=\"preparejunitreportdir\" if=\"env.JENKINS_REPORT_DIR\">",
-		            "    <delete dir=\"${env.JENKINS_REPORT_DIR}\"/>",
-		            "    <mkdir dir=\"${env.JENKINS_REPORT_DIR}\"/>",
-		            "  </target>",
-		            "",
-		            "  <target name=\"test\" depends=\"compile, preparejunitreportdir\" description=\"run all tests\">",
-		            "    <!-- Define absolute path to main jar file-->",
-		            "    <junit printsummary=\"yes\" haltonfailure=\"yes\" fork=\"true\">",
-		            "      <classpath>",
-		            "        <pathelement location=\"${dist}/${jar.file}\"/>",
-		            "        <path refid=\"compile.classpath\"/>",
-		            "      </classpath>",
-		            "      <formatter type=\"plain\" usefile=\"false\" />",
-		            "      <formatter type=\"xml\" usefile=\"true\" if=\"env.JENKINS_REPORT_DIR\"/>",
-		            "      <batchtest todir=\"${env.JENKINS_REPORT_DIR}\">",
-		            "        <fileset dir=\"${src}\">",
-		            "          <include name=\"**/test/**/**Test.java\"/>",
-		            "        </fileset>",
-		            "      </batchtest>",
-		            "    </junit>",
-		            "  </target>"
-		            ));
-		    if (createServers) {
-		        boolean async = anyAsync(module);
-		        if (async) {
-		            String shellFileName = "run_" + module.getModuleName() + "_async_job.sh";
-		            lines.addAll(Arrays.asList(
-		                    "",
-		                    "  <target name=\"make_async_job_script\" depends=\"compile\" description=\"make batch script for async job running\">",
-		                    "    <property name=\"jar.absolute.path\" location=\"${dist}/${jar.file}\"/>",
-		                    "    <pathconvert targetos=\"unix\" property=\"lib.classpath\" refid=\"compile.classpath\"/>",
-		                    "    <echo file=\"${dist}/" + shellFileName + "\">#!/bin/bash",
-		                    "java -cp ${jar.absolute.path}:${lib.classpath} us.kbase." + module.getModulePackage() + "." + module.getModuleName() + "Server" + " $1 $2 $3",
-		                    "    </echo>",
-		                    "<chmod file=\"${dist}/" + shellFileName + "\" perm=\"a+x\"/>",
-		                    "  </target>"
-		                    ));
-		        }
-		    }
-            lines.addAll(Arrays.asList(
-		            "</project>"
-		            ));
-            Writer w = buildXml.openWriter("*");
-            for (String l : lines)
-                w.write(l + "\n");
-            w.close();
+	private static void generateBuildXml(
+			final JavaData data,
+			final List<String> jars,
+			final boolean createServers,
+			final FileSaver buildXml,
+			final String clientAsyncVersion
+			) throws Exception {
+		if (buildXml != null) {
+			JavaModule module = data.getModules().get(0);
+			List<String> lines = new ArrayList<String>(Arrays.asList(
+					"<project name=\"Generated automatically\" default=\"compile\" basedir=\".\">",
+					"  <property environment=\"env\"/>",
+					"  <property name=\"src\"     location=\"src\"/>",
+					"  <property name=\"classes\" location=\"classes\"/>",
+					"  <property name=\"dist\"    location=\"dist\"/>",
+					"  <property name=\"lib\"     location=\"${env.KB_TOP}/modules/jars/lib/jars/\"/>",
+					"  <property name=\"module\"  value=\"" + module.getModuleName() + "\"/>",
+					"  <property name=\"jar.file\" value=\"${module}.jar\"/>",
+					"",
+					"  <path id=\"compile.classpath\">",
+					"    <fileset dir=\"${lib}\">"
+					));
+			for (String jar : jars)
+				if (!new File(jar).isAbsolute())
+					lines.add("      <include name=\"" + jar + "\"/>");
+
+			lines.add("    </fileset>");
+			for (String jar : jars)
+				if (new File(jar).isAbsolute())
+					lines.addAll(Arrays.asList(
+							"    <fileset dir=\"" + new File(jar).getParent() + "\">",
+							"      <include name=\"" + new File(jar).getName() + "\"/>",
+							"    </fileset>"
+							));
+			lines.addAll(Arrays.asList(
+					"  </path>",
+					"",
+					"  <target name=\"compile\" description=\"compile the source\">",
+					"    <mkdir dir=\"${classes}\"/>",
+					"    <javac srcdir=\"${src}\" destdir=\"${classes}\" includeantruntime=\"false\" debug=\"true\" classpathref=\"compile.classpath\"/>",
+					"    <copy todir=\"${classes}\">",
+					"      <fileset dir=\"${src}\">",
+					"        <patternset>",
+					"          <include name=\"**/*\"/>",
+					"        </patternset>",
+					"      </fileset>",
+					"    </copy>",
+					"    <jar destfile=\"${dist}/${jar.file}\" basedir=\"${classes}\">",
+					"      <manifest>",
+					"        <!-- attribute name=\"Main-Class\" value=\"us.kbase." + module.getModulePackage() + "." + module.getModuleName() + "\"/ -->",
+					"      </manifest>",
+					"    </jar>",
+					"    <delete dir=\"${classes}\"/>",
+					"  </target>",
+					"",
+					"  <target name=\"preparejunitreportdir\" if=\"env.JENKINS_REPORT_DIR\">",
+					"    <delete dir=\"${env.JENKINS_REPORT_DIR}\"/>",
+					"    <mkdir dir=\"${env.JENKINS_REPORT_DIR}\"/>",
+					"  </target>",
+					"",
+					"  <target name=\"test\" depends=\"compile, preparejunitreportdir\" description=\"run all tests\">",
+					"    <!-- Define absolute path to main jar file-->",
+					"    <junit printsummary=\"yes\" haltonfailure=\"yes\" fork=\"true\">",
+					"      <classpath>",
+					"        <pathelement location=\"${dist}/${jar.file}\"/>",
+					"        <path refid=\"compile.classpath\"/>",
+					"      </classpath>",
+					"      <formatter type=\"plain\" usefile=\"false\" />",
+					"      <formatter type=\"xml\" usefile=\"true\" if=\"env.JENKINS_REPORT_DIR\"/>",
+					"      <batchtest todir=\"${env.JENKINS_REPORT_DIR}\">",
+					"        <fileset dir=\"${src}\">",
+					"          <include name=\"**/test/**/**Test.java\"/>",
+					"        </fileset>",
+					"      </batchtest>",
+					"    </junit>",
+					"  </target>"
+					));
+			if (createServers) {
+				if (clientAsyncVersion != null) {
+					String shellFileName = "run_" + module.getModuleName() + "_async_job.sh";
+					lines.addAll(Arrays.asList(
+							"",
+							"  <target name=\"make_async_job_script\" depends=\"compile\" description=\"make batch script for async job running\">",
+							"    <property name=\"jar.absolute.path\" location=\"${dist}/${jar.file}\"/>",
+							"    <pathconvert targetos=\"unix\" property=\"lib.classpath\" refid=\"compile.classpath\"/>",
+							"    <echo file=\"${dist}/" + shellFileName + "\">#!/bin/bash",
+							"java -cp ${jar.absolute.path}:${lib.classpath} us.kbase." + module.getModulePackage() + "." + module.getModuleName() + "Server" + " $1 $2 $3",
+							"    </echo>",
+							"<chmod file=\"${dist}/" + shellFileName + "\" perm=\"a+x\"/>",
+							"  </target>"
+							));
+				}
+			}
+			lines.addAll(Arrays.asList(
+					"</project>"
+					));
+			Writer w = buildXml.openWriter("*");
+			for (String l : lines)
+				w.write(l + "\n");
+			w.close();
 		}
 	}
 
-    private static boolean anyAsync(JavaModule module) {
-        boolean async = false;
-        for (JavaFunc func : module.getFuncs())
-            if (func.getOriginal().isAsync()) {
-                async = true;
-                break;
-            }
-        return async;
-    }
-	
 	public static String checkLib(FileSaver libDir, String libName) throws Exception {
 		// TODO CODECLEANUP try to eliminate this method entirely. It seems to be used to move
 		//                  urls to the lib directory which is never specified unless the

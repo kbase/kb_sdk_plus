@@ -25,7 +25,6 @@ public class JSONableVisitor implements KidlVisitor<Object> {
 		final Map<String, Object> ret = new TreeMap<String, Object>();
 		ret.put("!", "Bio::KBase::KIDL::KBT::Funcdef");
 		ret.put("annotations", func.getAnnotations().toJson(false));
-		ret.put("async", func.isAsync() ? "1" : "0");
 		ret.put("authentication", func.getAuthentication());
 		ret.put("comment", func.getComment());
 		ret.put("name", func.getName());

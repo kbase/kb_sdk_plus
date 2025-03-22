@@ -55,12 +55,8 @@ public class KbService {
 		boolean psbl = false;
 		boolean only = true;
 		int funcCount = 0;
-		boolean anyAsync = false;
 		for (KbModule m : getModules()) {
-			Map<String, Object> map = m.forTemplates();
-			modules.add(map);
-			if (map.get("any_async") != null && map.get("any_async").toString().equals("true"))
-				anyAsync = true;
+			modules.add(m.forTemplates());
 			for (KbModuleComp mc : m.getModuleComponents())
 				if (mc instanceof KbFuncdef) {
 					KbFuncdef func = (KbFuncdef)mc;
@@ -92,8 +88,6 @@ public class KbService {
 		if (only)
 			ret.put("authenticated_only", true);
 		ret.put("service_name", getName());
-		if (anyAsync)
-			ret.put("any_async", anyAsync);
 		return ret;
 	}
 

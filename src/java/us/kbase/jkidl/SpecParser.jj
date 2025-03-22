@@ -147,7 +147,6 @@ TOKEN:
 |   <T_structure:"structure">
 |   <T_tuple:"tuple">
 |   <T_returns:"returns">
-|   <T_async:"async">
 |   <T_round_open_bracket:"(">
 |   <T_round_close_bracket:")">
 |   <T_comma:",">
@@ -250,8 +249,6 @@ Token Identifier():
     ( ret = "optional" ) 
     |
     ( ret = "none" )
-    |
-    ( ret = "async" )
   )
   { return ret; }
 }
@@ -473,7 +470,6 @@ KbAuthdef Auth():
 KbFuncdef Funcdef(KbModule curModule, Map<String, KbModule> includes):
 {
   Token first;
-  boolean async = false;
   KbFuncdef ret = null;
   String comment = null;
   Token name;
@@ -482,10 +478,6 @@ KbFuncdef Funcdef(KbModule curModule, Map<String, KbModule> includes):
   KbAuthdef auth;
 }
 {
-  [
-    "async"
-    { async = true; }
-  ]
   first = "funcdef"
   {
 	comment = getLastComment(first);
@@ -493,7 +485,7 @@ KbFuncdef Funcdef(KbModule curModule, Map<String, KbModule> includes):
   name = Identifier()
   "("
   { try {
-	  	ret = new KbFuncdef(name.toString(), comment, async); 
+	  	ret = new KbFuncdef(name.toString(), comment); 
 	} catch (KidlParseException ex) {
 		generateParseException(ex);
 	}
