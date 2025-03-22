@@ -140,7 +140,7 @@ public class RunCompileCommand {
                 perlImplName, perlPsgiName, pyClientSide, pyClientName, 
                 pyServerSide, pyServerName, pyImplName, rClientSide, rClientName, 
                 rServerSide, rServerName, rImplName, perlEnableRetries,
-                ip, output, true, clientAsyncVer,
+                ip, output, clientAsyncVer,
                 dynservVer, semanticVersion, gitUrl, gitCommitHash);
         String reportFile = System.getenv("KB_SDK_COMPILE_REPORT_FILE");
         if (reportFile == null || reportFile.isEmpty())

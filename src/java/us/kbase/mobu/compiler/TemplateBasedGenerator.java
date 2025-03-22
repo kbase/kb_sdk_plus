@@ -40,7 +40,6 @@ public class TemplateBasedGenerator {
             String pythonServerName, String pythonImplName, boolean genR, 
             String rClientName, boolean genRServer, String rServerName, String rImplName, 
             boolean enableRetries, IncludeProvider ip, FileSaver output,
-            boolean asyncByDefault,
             String clientAsyncVer, String dynservVer, String semanticVersion,
             String gitUrl, String gitCommitHash)
             throws Exception {
@@ -104,7 +103,6 @@ public class TemplateBasedGenerator {
             jsClient.close();
         }
         Map<String, Object> perlMakefileContext = new LinkedHashMap<String, Object>(context);
-        Map<String, Object> pyMakefileContext = new LinkedHashMap<String, Object>(context);
         if (perlClientName != null) {
             String perlClientPath = fixPath(perlClientName, "::") + ".pm";
             Writer perlClient = output.openWriter(perlClientPath);
@@ -119,8 +117,6 @@ public class TemplateBasedGenerator {
             Writer pythonClient = output.openWriter(pythonClientPath);
             TemplateFormatter.formatTemplate("python_client", context, pythonClient);
             pythonClient.close();
-            pyMakefileContext.put("client_package_name", pythonClientName);
-            pyMakefileContext.put("client_file", pythonClientPath);
         }
         if (rClientName != null) {
             String rClientPath = rClientName + ".r";
@@ -129,26 +125,6 @@ public class TemplateBasedGenerator {
             rClient.close();
         }
         //////////////////////////////////////// Servers /////////////////////////////////////////
-        if (asyncByDefault) {
-            // Make all methods async and mark methods being async already as couldn't be sync
-            context.put("any_async", true);
-            List<Map<String, Object>> modules = (List<Map<String, Object>>)context.get("modules");
-            for (int modulePos = 0; modulePos < modules.size(); modulePos++) {
-                Map<String, Object> module = modules.get(modulePos);
-                module.put("any_async", true);
-                List<Map<String, Object>> methods = (List<Map<String, Object>>)module.get("methods");
-                if (methods == null)
-                    continue;
-                for (int methodPos = 0; methodPos < methods.size(); methodPos++) {
-                    Map<String, Object> method = methods.get(methodPos);
-                    //TODO ROMAN should async go into the map or can this line be deleted?
-//                    Boolean async = (Boolean)method.get("async");
-                    method.put("async", true);
-                    //if (async == null || !async)
-                    //    method.put("could_be_sync", true);
-                }
-            }
-        }
         if (perlServerName != null) {
             String perlServerPath = fixPath(perlServerName, "::") + ".pm";
             Writer perlServer = output.openWriter(perlServerPath);
@@ -163,8 +139,6 @@ public class TemplateBasedGenerator {
             Writer pythonServer = output.openWriter(pythonServerPath);
             TemplateFormatter.formatTemplate("python_server", context, pythonServer);
             pythonServer.close();
-            pyMakefileContext.put("server_package_name", pythonServerName);
-            pyMakefileContext.put("server_file", pythonServerPath);
         }
         if (rServerName != null) {
             String rServerPath = rServerName + ".r";
@@ -180,7 +154,6 @@ public class TemplateBasedGenerator {
                 module.put("git_url", gitUrl);
                 module.put("git_commit_hash", gitCommitHash);
                 perlMakefileContext.put("module", module);
-                pyMakefileContext.put("module", module);
                 List<Map<String, Object>> methods = (List<Map<String, Object>>)module.get("methods");
                 List<String> methodNames = new ArrayList<String>();
                 for (Map<String, Object> method : methods)
@@ -217,8 +190,6 @@ public class TemplateBasedGenerator {
                         String code = innerPrevCode.get(PrevCodeParser.METHOD + method.get("name"));
                         method.put("py_user_code", code == null ? "" : code);
                     }
-                    pyMakefileContext.put("impl_package_name", pythonModuleImplName);
-                    pyMakefileContext.put("impl_file", pythonImplPath);
                 }
                 String rImplPath = null;
                 if (genRServer) {

@@ -347,14 +347,16 @@ public class TypeGeneratorTest extends Assert {
 			String testPackage = rootPackageName + ".test" + testNum;
 			File libDir = new File(workDir, "lib");
 			File binDir = new File(workDir, "bin");
-			JavaData parsingData = prepareJavaCode(testNum, workDir, testPackage, libDir, binDir, null, true);
+			JavaData parsingData = prepareJavaCode(
+					testNum, workDir, testPackage, libDir, binDir, null, true, false, true, null
+			);
 			String moduleName = parsingData.getModules().get(0).getModuleName();
 			String modulePackage = parsingData.getModules().get(0).getModulePackage();
 			StringBuilder cp = new StringBuilder(binDir.getAbsolutePath());
 			for (File f : libDir.listFiles()) {
 				cp.append(":").append(f.getAbsolutePath());
 			}
-			File serverOutDir = preparePerlAndPyServerCode(testNum, workDir);
+			File serverOutDir = preparePerlAndPyServerCode(testNum, workDir, false, true);
 			List<String> lines = null;
 			System.setProperty("KB_JOB_CHECK_WAIT_TIME", "100");
 			File cfgFile = prepareDeployCfg(workDir, getModuleName(parsingData));
@@ -399,10 +401,11 @@ public class TypeGeneratorTest extends Assert {
         int portNum = findFreePort();
         Map<String, String> serverManualCorrections = new HashMap<String, String>();
         serverManualCorrections.put("send_context", "returnVal = arg1; " +
-        		"returnVal.getMethods().add(jsonRpcContext.getCallStack().get(0).getMethod()); " +
-        		"returnVal.getMethods().add(jsonRpcContext.getCallStack().get(1).getMethod())");
-        JavaData parsingData = prepareJavaCode(testNum, workDir, testPackage, libDir, binDir, portNum, true,
-                false, serverManualCorrections);
+                "returnVal.getMethods().add(jsonRpcContext.getCallStack().get(0).getMethod()); " +
+                "returnVal.getMethods().add(jsonRpcContext.getCallStack().get(1).getMethod())");
+        JavaData parsingData = prepareJavaCode(testNum, workDir, testPackage, libDir, binDir,
+                portNum, true, false, false, serverManualCorrections
+        );
         runJavaServerTest(testNum, true, workDir, testPackage, libDir, binDir, parsingData, null, portNum);
     }
 
@@ -463,8 +466,9 @@ public class TypeGeneratorTest extends Assert {
         if (!libDir.exists())
             libDir.mkdirs();
         JavaTypeGenerator.checkLib(new DiskFileSaver(libDir), "WorkspaceClient");
-        JavaData parsingData = prepareJavaCode(testNum, workDir, testPackage, libDir, binDir, portNum, true,
-                false, javaSrvManualCorr);
+        JavaData parsingData = prepareJavaCode(testNum, workDir, testPackage, libDir, binDir,
+                portNum, true, false, false, javaSrvManualCorr
+        );
         File serverOutDir = preparePerlAndPyServerCode(testNum, workDir);
         int pyPort = findFreePort();
         runPythonServerTest(testNum, true, workDir, testPackage, libDir, binDir, parsingData, 
@@ -532,8 +536,10 @@ public class TypeGeneratorTest extends Assert {
 		String testPackage = rootPackageName + ".test" + testNum;
 		File libDir = new File(workDir, "lib");
 		File binDir = new File(workDir, "bin");
-		JavaData parsingData = prepareJavaCode(testNum, workDir, testPackage, libDir, binDir, null, true, true);
-		File serverOutDir = preparePerlAndPyServerCode(testNum, workDir, true);
+		JavaData parsingData = prepareJavaCode(
+				testNum, workDir, testPackage, libDir, binDir, null, true, true, false, null
+		);
+		File serverOutDir = preparePerlAndPyServerCode(testNum, workDir, true, false);
 		// TODO TESTSIMPLICITY not sure why serverPortHolder is needed
 		final int[] serverPortHolder = new int[] {-1};  // Servers should startup on this port
 		// Starting up service wizard
@@ -647,8 +653,8 @@ public class TypeGeneratorTest extends Assert {
 			final File serverOutDir,
 			final int clientPortNum,
 			final Integer serverPortNum,
-			final Map<String, String> serverManualCorrections)
-			throws Exception {
+			final Map<String, String> serverManualCorrections
+			) throws Exception {
 		String serverType = "Python";
 		File pidFile = new File(serverOutDir, "pid.txt");
 		pythonServerCorrection(serverOutDir, parsingData, serverManualCorrections);
@@ -777,14 +783,15 @@ public class TypeGeneratorTest extends Assert {
 	}
 
 	protected static File preparePerlAndPyServerCode(int testNum, File workDir) throws Exception {
-	    return preparePerlAndPyServerCode(testNum, workDir, false);
+	    return preparePerlAndPyServerCode(testNum, workDir, false, false);
 	}
 	
 	protected static File preparePerlAndPyServerCode(
 			final int testNum,
 			final File workDir, 
-			final boolean isClientDynamic)
-			throws Exception {
+			final boolean isClientDynamic,
+			final boolean isClientAsync
+			) throws Exception {
 		File testFile = new File(workDir, "test" + testNum + ".spec");
 		File serverOutDir = new File(workDir, "out");
 		if (!serverOutDir.exists())
@@ -861,7 +868,7 @@ public class TypeGeneratorTest extends Assert {
 				null,                    // rImplName
 				serverOutDir,            // outDir
 				null,                     // jsonSchemaPath
-				null,                    // clientAsyncVer
+				isClientAsync ? "dev" : null,  // clientAsyncVer
 				isClientDynamic ? "dev" : null,     // dynServVer
 				false,                   // html
 				null,                    // semanticVersion
@@ -872,26 +879,25 @@ public class TypeGeneratorTest extends Assert {
 	}
 
 	protected static JavaData prepareJavaCode(int testNum, File workDir,
-	        String testPackage, File libDir, File binDir, Integer defaultUrlPort,
-	        boolean needJavaServerCorrection) throws Exception,
-	        IOException, MalformedURLException, FileNotFoundException {
-	    return prepareJavaCode(testNum, workDir, testPackage, libDir, binDir, defaultUrlPort, 
-	            needJavaServerCorrection, false, null);
+			String testPackage, File libDir, File binDir, Integer defaultUrlPort,
+			boolean needJavaServerCorrection) throws Exception,
+	IOException, MalformedURLException, FileNotFoundException {
+		return prepareJavaCode(testNum, workDir, testPackage, libDir, binDir, defaultUrlPort, 
+				needJavaServerCorrection, false, false, null);
 	}
 
-	protected static JavaData prepareJavaCode(int testNum, File workDir,
-	        String testPackage, File libDir, File binDir, Integer defaultUrlPort,
-	        boolean needJavaServerCorrection, boolean isDynamic) throws Exception,
-	        IOException, MalformedURLException, FileNotFoundException {
-	    return prepareJavaCode(testNum, workDir, testPackage, libDir, binDir, defaultUrlPort, 
-	            needJavaServerCorrection, isDynamic, null);
-	}
-	
-	protected static JavaData prepareJavaCode(int testNum, File workDir,
-			String testPackage, File libDir, File binDir, Integer defaultUrlPort,
-			boolean needJavaServerCorrection, boolean isDynamic,
-			Map<String, String> serverManualCorrections) throws Exception,
-			IOException, MalformedURLException, FileNotFoundException {
+	protected static JavaData prepareJavaCode(
+			final int testNum,
+			final File workDir,
+			final String testPackage,
+			final File libDir,
+			final File binDir,
+			final Integer defaultUrlPort,
+			final boolean needJavaServerCorrection,
+			final boolean isDynamic,
+			final boolean isAsync,
+			final Map<String, String> serverManualCorrections)
+			throws Exception, IOException, MalformedURLException, FileNotFoundException {
 		JavaData parsingData = null;
 		String testFileName = "test" + testNum + ".spec";
 		extractSpecFiles(testNum, workDir, testFileName);
@@ -900,43 +906,53 @@ public class TypeGeneratorTest extends Assert {
 		URL defaultUrl = defaultUrlPort == null ? null :
 			new URL("http://localhost:" + defaultUrlPort);
 		parsingData = processSpec(workDir, testPackage, libDir, testFileName,
-				srcDir, gwtPackageName, defaultUrl, isDynamic);
-		if (needJavaServerCorrection)
+				srcDir, gwtPackageName, defaultUrl, isDynamic, isAsync);
+		if (needJavaServerCorrection) {
 			javaServerCorrection(srcDir, testPackage, parsingData, serverManualCorrections);
+		}
 		parsingData = processSpec(workDir, testPackage, libDir, testFileName,
-				srcDir, gwtPackageName, defaultUrl, isDynamic);
+				srcDir, gwtPackageName, defaultUrl, isDynamic, isAsync);
 		List<URL> cpUrls = new ArrayList<URL>();
 		String classPath = prepareClassPath(libDir, cpUrls);
-        cpUrls.add(binDir.toURI().toURL());
+		cpUrls.add(binDir.toURI().toURL());
 		compileModulesIntoBin(workDir, srcDir, testPackage, parsingData, classPath, binDir);
-        String testJavaFileName = "Test" + testNum + ".java";
-    	String testFilePath = "src/" + testPackage.replace('.', '/') + "/" + testJavaFileName;
-        File testJavaFile = new File(workDir, testFilePath);
-        String testJavaResource = testJavaFileName + ".properties";
-        InputStream testClassIS = TypeGeneratorTest.class.getResourceAsStream(testJavaResource);
-        if (testClassIS == null) {
-        	Assert.fail("Java test class resource was not found: " + testJavaResource);
-        }
-        TextUtils.copyStreams(testClassIS, new FileOutputStream(testJavaFile));
-    	runJavac(workDir, srcDir, classPath, binDir, testFilePath);
-    	File docDir = new File(workDir, "doc");
-    	docDir.mkdir();
-    	List<String> docPackages = new ArrayList<String>(Arrays.asList(testPackage));
-    	for (JavaModule module : parsingData.getModules())
-    		docPackages.add(testPackage + "." + module.getModulePackage());
-    	runJavaDoc(workDir, srcDir, classPath, docDir, docPackages.toArray(new String[docPackages.size()]));
+		String testJavaFileName = "Test" + testNum + ".java";
+		String testFilePath = "src/" + testPackage.replace('.', '/') + "/" + testJavaFileName;
+		File testJavaFile = new File(workDir, testFilePath);
+		String testJavaResource = testJavaFileName + ".properties";
+		InputStream testClassIS = TypeGeneratorTest.class.getResourceAsStream(testJavaResource);
+		if (testClassIS == null) {
+			Assert.fail("Java test class resource was not found: " + testJavaResource);
+		}
+		TextUtils.copyStreams(testClassIS, new FileOutputStream(testJavaFile));
+		runJavac(workDir, srcDir, classPath, binDir, testFilePath);
+		File docDir = new File(workDir, "doc");
+		docDir.mkdir();
+		List<String> docPackages = new ArrayList<String>(Arrays.asList(testPackage));
+		for (JavaModule module : parsingData.getModules()) {
+			docPackages.add(testPackage + "." + module.getModulePackage());
+		}
+		runJavaDoc(workDir, srcDir, classPath, docDir, docPackages.toArray(new String[docPackages.size()]));
 		return parsingData;
 	}
 
-	public static JavaData processSpec(File workDir, String testPackage,
-			File libDir, String testFileName, File srcDir,
-			String gwtPackageName, URL defaultUrl, boolean isDynamic) throws Exception {
+	public static JavaData processSpec(
+			final File workDir,
+			final String testPackage,
+			final File libDir,
+			final String testFileName,
+			final File srcDir,
+			final String gwtPackageName,
+			final URL defaultUrl,
+			final boolean isDynamic,
+			final boolean isAsync
+			) throws Exception {
 		File specFile = new File(workDir, testFileName);
 		List<KbService> services = KidlParser.parseSpec(specFile, null);
 		JavaData parsingData = JavaTypeGenerator.processSpec(services, new DiskFileSaver(srcDir), 
-		        testPackage, true, new DiskFileSaver(libDir), gwtPackageName, defaultUrl, 
-		        new OneFileSaver(new File(workDir, "build.xml")), 
-		        null, isDynamic ? "dev" : null, null, null, null);
+				testPackage, true, new DiskFileSaver(libDir), gwtPackageName, defaultUrl, 
+				new OneFileSaver(new File(workDir, "build.xml")), 
+				isAsync ? "dev": null, isDynamic ? "dev" : null, null, null, null);
 		return parsingData;
 	}
 
