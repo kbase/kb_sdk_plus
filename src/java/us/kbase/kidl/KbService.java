@@ -2,7 +2,6 @@ package us.kbase.kidl;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -48,49 +47,6 @@ public class KbService {
 		return modules;
 	}
 	
-	
-	public Map<String, Object> forTemplates(String perlImplName, String pythonImplName) {
-		Map<String, Object> ret = new LinkedHashMap<String, Object>();
-		List<Map<String, Object>> modules = new ArrayList<Map<String, Object>>();
-		boolean psbl = false;
-		boolean only = true;
-		int funcCount = 0;
-		for (KbModule m : getModules()) {
-			modules.add(m.forTemplates());
-			for (KbModuleComp mc : m.getModuleComponents())
-				if (mc instanceof KbFuncdef) {
-					KbFuncdef func = (KbFuncdef)mc;
-					funcCount++;
-					boolean req = func.isAuthenticationRequired();
-					boolean opt = func.isAuthenticationOptional();
-					psbl |= req || opt;
-					only &= req;
-				}
-		}
-		only &= funcCount > 0;
-		for (Map<String, Object> module : modules) {
-			String moduleName = (String)module.get("module_name");
-			module.put("impl_package_name", perlImplName == null ? (moduleName + "Impl") : perlImplName);
-			final String pymod = pythonImplName == null ?
-					(moduleName + "Impl") : pythonImplName;
-			module.put("pymodule", pymod);
-			final String pypkg;
-			if (pymod.lastIndexOf(".") > 0) {
-				pypkg = pymod.substring(0, pymod.lastIndexOf(".")) + ".";
-			} else {
-				pypkg = "";
-			}
-			module.put("pypackage", pypkg);
-		}
-		ret.put("modules", modules);
-		if (psbl)
-			ret.put("authenticated", true);
-		if (only)
-			ret.put("authenticated_only", true);
-		ret.put("service_name", getName());
-		return ret;
-	}
-
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */

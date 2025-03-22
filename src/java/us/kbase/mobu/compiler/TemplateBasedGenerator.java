@@ -15,6 +15,9 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 
 import us.kbase.jkidl.IncludeProvider;
+import us.kbase.kidl.KbFuncdef;
+import us.kbase.kidl.KbModule;
+import us.kbase.kidl.KbModuleComp;
 import us.kbase.kidl.KbService;
 import us.kbase.mobu.util.FileSaver;
 import us.kbase.templates.TemplateFormatter;
@@ -74,10 +77,13 @@ public class TemplateBasedGenerator {
                     "WARNING: R support is deprecated and will be removed in a future release\n" +
                     "************************************************************************");
             genR = true;
-            if (rServerName == null)
+            if (rServerName == null) {
                 rServerName = service.getName() + "Server";
+            }
         }
-        Map<String, Object> context = service.forTemplates(perlImplName, pythonImplName);
+        final Map<String, Object> context = generateTemplateData(
+                service, perlImplName, pythonImplName
+        );
         if (defaultUrl != null)
             context.put("default_service_url", defaultUrl);
         context.put("client_package_name", perlClientName);
@@ -233,7 +239,52 @@ public class TemplateBasedGenerator {
             perlMakefileContext.put("psgi_file", perlPsgiName);
         }
     }
-    
+
+	private static Map<String, Object> generateTemplateData(
+			final KbService service,
+			final String perlImplName,
+			final String pythonImplName) {
+		Map<String, Object> ret = new LinkedHashMap<String, Object>();
+		List<Map<String, Object>> modules = new ArrayList<Map<String, Object>>();
+		boolean psbl = false;
+		boolean only = true;
+		int funcCount = 0;
+		for (KbModule m : service.getModules()) {
+			modules.add(m.accept(new TemplateVisitor()));
+			for (KbModuleComp mc : m.getModuleComponents())
+				if (mc instanceof KbFuncdef) {
+					KbFuncdef func = (KbFuncdef)mc;
+					funcCount++;
+					boolean req = func.isAuthenticationRequired();
+					boolean opt = func.isAuthenticationOptional();
+					psbl |= req || opt;
+					only &= req;
+				}
+		}
+		only &= funcCount > 0;
+		for (Map<String, Object> module : modules) {
+			String moduleName = (String)module.get("module_name");
+			module.put("impl_package_name",
+					perlImplName == null ? (moduleName + "Impl") : perlImplName);
+			final String pymod = pythonImplName == null ? (moduleName + "Impl") : pythonImplName;
+			module.put("pymodule", pymod);
+			final String pypkg;
+			if (pymod.lastIndexOf(".") > 0) {
+				pypkg = pymod.substring(0, pymod.lastIndexOf(".")) + ".";
+			} else {
+				pypkg = "";
+			}
+			module.put("pypackage", pypkg);
+		}
+		ret.put("modules", modules);
+		if (psbl)
+			ret.put("authenticated", true);
+		if (only)
+			ret.put("authenticated_only", true);
+		ret.put("service_name", service.getName());
+		return ret;
+	}
+
     private static void initPythonPackages(String relativePyPath, FileSaver output, boolean client) throws Exception {
         String path = relativePyPath;
         while (true) {

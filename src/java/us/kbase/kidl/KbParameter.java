@@ -1,6 +1,5 @@
 package us.kbase.kidl;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -47,47 +46,6 @@ public class KbParameter implements KidlNode {
 		return visitor.visit(this, type.accept(visitor, this));
 	}
 	
-	public Map<String, Object> forTemplates(String altName) {
-		Map<String, Object> ret = new LinkedHashMap<String, Object>();
-		String name = this.name != null ? this.name : altName;
-		ret.put("name", name);
-		String validator = null;
-		KbType t = type;
-		while (t instanceof KbTypedef) {
-			t = ((KbTypedef)t).getAliasType();
-		}
-		if (t instanceof KbMapping || t instanceof KbStruct) {
-			validator = "ref($" + name + ") eq 'HASH'";
-		} else if (t instanceof KbList || t instanceof KbTuple) {
-			validator = "ref($" + name + ") eq 'ARRAY'";
-		} else if (t instanceof KbUnspecifiedObject) {
-			validator = "defined $" + name;
-		} else {
-			validator = "!ref($" + name + ")";
-		}
-		ret.put("validator", validator);
-		ret.put("perl_var", "$" + name);
-		ret.put("baretype", getBareType(t));
-		return ret;
-	}
-
-	private static String getBareType(KbType t) {
-		if (t instanceof KbScalar) {
-			return ((KbScalar)t).getSpecName();
-		} else if (t instanceof KbList) {
-			return "list";
-		} else if (t instanceof KbMapping) {
-			return "mapping";
-		} else if (t instanceof KbTuple) {
-			return "tuple";
-		} else if (t instanceof KbStruct) {
-			return "struct";
-		} else if (t instanceof KbUnspecifiedObject) {
-			return "UnspecifiedObject";
-		} else {
-			throw new IllegalStateException(t.getClass().getSimpleName());
-		}
-	}
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()

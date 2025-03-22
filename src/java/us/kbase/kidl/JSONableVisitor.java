@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * Tranform a KIDL class structure to a JSONable object (e.g. Maps and
+ * Transform a KIDL class structure to a JSONable object (e.g. Maps and
  * Lists).
  */
 public class JSONableVisitor implements KidlVisitor<Object> {

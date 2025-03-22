@@ -157,27 +157,6 @@ public class KbModule implements KidlNode {
 		return data;
 	}
 
-	public Map<String, Object> forTemplates() {
-		Map<String, Object> ret = new LinkedHashMap<String, Object>();
-		ret.put("module_name", moduleName);
-		ret.put("module_doc", Utils.removeStarsInComment(comment));
-		List<Object> methods = new ArrayList<Object>();
-		List<Object> types = new ArrayList<Object>();
-		for (KbModuleComp comp : moduleComponents)
-			if (comp instanceof KbFuncdef) {
-				methods.add(comp.forTemplates());
-			} else if (comp instanceof KbTypedef) {
-				types.add(comp.forTemplates());
-			} else if (comp instanceof KbAuthdef) {
-				//do nothing
-			} else {
-				System.out.println("Module component: " + comp);
-			}
-		ret.put("methods", methods);
-		ret.put("types", types);
-		return ret;
-	}
-
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */

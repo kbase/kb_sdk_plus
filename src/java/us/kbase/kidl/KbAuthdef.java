@@ -1,7 +1,5 @@
 package us.kbase.kidl;
 
-import java.util.Map;
-
 /**
  * Class represents authentication module component or function modifier in spec-file.
  */
@@ -19,12 +17,6 @@ public class KbAuthdef implements KbModuleComp {
 		return type;
 	}
 
-	@Override
-	public Map<String, Object> forTemplates() {
-		throw new IllegalStateException("Templates are not yet supported for authentication");
-	}
-
-	
 	@Override
 	public <T> T accept(final KidlVisitor<T> visitor, final KidlNode parent) {
 		return visitor.visit(this);
