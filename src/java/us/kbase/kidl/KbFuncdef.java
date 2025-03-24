@@ -32,12 +32,6 @@ public class KbFuncdef implements KbModuleDef {
 
 	public KbFuncdef(final String name, final String comment)
 			throws KidlParseException {
-		this(name, comment, false);
-	}
-	
-	public KbFuncdef(final String name, final String comment,
-			final boolean async)
-			throws KidlParseException {
 		this.name = name;
 		this.comment = comment == null ? "" : comment;
 		parameters = new ArrayList<KbParameter>();
