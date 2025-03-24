@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-//TODO CODE don't make a dependency on SDK compiled code in the SDK
-import us.kbase.common.service.Tuple2;
 import us.kbase.kidl.KbAuthdef;
 import us.kbase.kidl.KbFuncdef;
 import us.kbase.kidl.KbList;
@@ -28,6 +26,7 @@ import us.kbase.kidl.KbUnspecifiedObject;
 import us.kbase.kidl.KidlNode;
 import us.kbase.kidl.KidlVisitor;
 import us.kbase.kidl.Utils;
+import us.kbase.kidl.Utils.NameAndTypeAlias;
 
 /**
  * Transform a KIDL class structure to a data structure for template generation by the
@@ -69,16 +68,16 @@ public class TemplateVisitor implements KidlVisitor<Map<String, Object>> {
 		ret.put("ret_vars", getNames(returnNames, "$"));
 		ret.put("authentication", authentication == null ? "none" : authentication);
 		List<String> docLines = new ArrayList<String>();
-		LinkedList<Tuple2<String, KbType>> typeQueue = new LinkedList<Tuple2<String, KbType>>();
+		final LinkedList<NameAndTypeAlias> typeQueue = new LinkedList<NameAndTypeAlias>();
 		for (int paramPos = 0; paramPos < parameters.size(); paramPos++) {
 			KbParameter arg = parameters.get(paramPos);
 			String item = paramNames.get(paramPos);
-			typeQueue.add(new Tuple2<String, KbType>().withE1("$" + item).withE2(arg.getType()));
+			typeQueue.add(new NameAndTypeAlias("$" + item, arg.getType()));
 		}
 		for (int returnPos = 0; returnPos < returnType.size(); returnPos++) {
 			KbParameter arg = returnType.get(returnPos);
 			String item = returnNames.get(returnPos);
-			typeQueue.add(new Tuple2<String, KbType>().withE1("$" + item).withE2(arg.getType()));
+			typeQueue.add(new NameAndTypeAlias("$" + item, arg.getType()));
 		}
 		processArgDoc(typeQueue, docLines, null, true);
 		ret.put("arg_doc", docLines);
@@ -158,19 +157,20 @@ public class TemplateVisitor implements KidlVisitor<Map<String, Object>> {
 		return ret;
 	}
 
-	private static void processArgDoc(LinkedList<Tuple2<String, KbType>> typeQueue, 
+	private static void processArgDoc(LinkedList<NameAndTypeAlias> typeQueue, 
 			List<String> docLines, Set<String> allKeys, boolean topLevel) {
 		if (allKeys == null)
 			allKeys = new HashSet<String>();
 		List<String> additional = new ArrayList<>();
-		LinkedList<Tuple2<String, KbType>> subQueue = new LinkedList<Tuple2<String, KbType>>();
+		final LinkedList<NameAndTypeAlias> subQueue = new LinkedList<NameAndTypeAlias>();
 		while (!typeQueue.isEmpty()) {
-			Tuple2<String, KbType> namedType = typeQueue.removeFirst();
-			String key = namedType.getE1();
-			if (allKeys.contains(key))
+			final NameAndTypeAlias namedType = typeQueue.removeFirst();
+			String key = namedType.getName();
+			if (allKeys.contains(key)) {
 				continue;
+			}
 			allKeys.add(key);
-			KbType type = namedType.getE2();
+			KbType type = namedType.getAliasType();
 			additional.clear();
 			String argLine = key + " is " + 
 					Utils.getEnglishTypeDescr(type, subQueue, allKeys, additional);
@@ -438,8 +438,7 @@ public class TemplateVisitor implements KidlVisitor<Map<String, Object>> {
 	private static String getTypeInEnglish(KbType type) {
 		Set<String> allKeys = new HashSet<String>();
 		List<String> additional = new ArrayList<>();
-		// TODO CODE don't use generated code in here please
-		LinkedList<Tuple2<String, KbType>> subQueue = new LinkedList<Tuple2<String, KbType>>();
+		final LinkedList<NameAndTypeAlias> subQueue = new LinkedList<NameAndTypeAlias>();
 		StringBuilder ret = new StringBuilder(
 				Utils.getEnglishTypeDescr(type, subQueue, allKeys, additional)
 		);

@@ -11,9 +11,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-//TODO CODE don't make a dependency on SDK compiled code in the SDK
-import us.kbase.common.service.Tuple2;
-
 public class Utils {
 
 	public static String prop(Map<?,?> map, String propName) throws KidlParseException {
@@ -107,14 +104,44 @@ public class Utils {
 		return type;
 	}
 	
+	/** The name of a type along with the alias of the type. */
+	public static class NameAndTypeAlias {
+		// TODO CODE all this stuff needs a refactor most likely - side effects etc.
+		private final String name;
+		private final KbType aliasType;
+
+		/** Create the name and type holder.
+		 * @param name the type's name.
+		 * @param aliasType the alias for the type.
+		 */
+		public NameAndTypeAlias(final String name, final KbType aliasType) {
+			this.name = name;
+			this.aliasType = aliasType;
+		}
+
+		/** Get the type name.
+		 * @return the name.
+		 */
+		public String getName() {
+			return name;
+		}
+
+		/** Get the alias of the type.
+		 * @return the type's alias.
+		 */
+		public KbType getAliasType() {
+			return aliasType;
+		}
+	}
+	
     public static String getEnglishTypeDescr(
-            KbType type, LinkedList<Tuple2<String, KbType>> typeQueue, 
+            KbType type, LinkedList<NameAndTypeAlias> typeQueue, 
             Set<String> allKeys, List<String> additional) {
         return getEnglishTypeDescr(type, typeQueue, allKeys, additional, 0);
     }
     
     private static String getEnglishTypeDescr(
-            KbType type, LinkedList<Tuple2<String, KbType>> typeQueue, 
+            KbType type, LinkedList<NameAndTypeAlias> typeQueue, 
             Set<String> allKeys, List<String> additional, int nested) {
         String descr = null;
         if (type instanceof KbScalar) {
@@ -124,7 +151,7 @@ public class Utils {
             KbTypedef td = (KbTypedef)type;
             descr = td.getModule() + "." + td.getName();
             if (!allKeys.contains(td.getName())) {
-                typeQueue.add(new Tuple2<String, KbType>().withE1(td.getName()).withE2(td.getAliasType()));
+                typeQueue.add(new NameAndTypeAlias(td.getName(), td.getAliasType()));
             }
         } else if (type instanceof KbList) {
             KbList ls = (KbList)type;
