@@ -18,7 +18,6 @@ import us.kbase.common.service.Tuple2;
  */
 public class KbFuncdef implements KbModuleDef {
 	private String name;
-	private boolean async;
 	private String authentication;
 	private String comment;
 	private List<KbParameter> parameters;
@@ -33,14 +32,7 @@ public class KbFuncdef implements KbModuleDef {
 
 	public KbFuncdef(final String name, final String comment)
 			throws KidlParseException {
-		this(name, comment, false);
-	}
-	
-	public KbFuncdef(final String name, final String comment,
-			final boolean async)
-			throws KidlParseException {
 		this.name = name;
-		this.async = async;
 		this.comment = comment == null ? "" : comment;
 		parameters = new ArrayList<KbParameter>();
 		returnType = new ArrayList<KbParameter>();
@@ -49,7 +41,6 @@ public class KbFuncdef implements KbModuleDef {
 
 	public KbFuncdef loadFromMap(Map<?,?> data, String defaultAuth) throws KidlParseException {
 		name = Utils.prop(data, "name");
-		async = (0 != Utils.intPropFromString(data, "async"));
 		authentication = Utils.prop(data, "authentication");  // defaultAuth was already involved on kidl stage
 		comment = Utils.prop(data, "comment");
 		parameters = loadParameters(Utils.propList(data, "parameters"), false);
@@ -72,10 +63,6 @@ public class KbFuncdef implements KbModuleDef {
 	
 	public String getName() {
 		return name;
-	}
-	
-	public boolean isAsync() {
-		return async;
 	}
 	
 	public String getAuthentication() {
@@ -204,8 +191,6 @@ public class KbFuncdef implements KbModuleDef {
 			returns.add(paramMap);
 		}
 		ret.put("returns", returns);
-		if (isAsync())
-			ret.put("async", true);
 		return ret;
 	}
 
@@ -392,8 +377,6 @@ public class KbFuncdef implements KbModuleDef {
 		StringBuilder builder = new StringBuilder();
 		builder.append("KbFuncdef [name=");
 		builder.append(name);
-		builder.append(", async=");
-		builder.append(async);
 		builder.append(", authentication=");
 		builder.append(authentication);
 		builder.append(", comment=");
