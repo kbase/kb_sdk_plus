@@ -1,6 +1,7 @@
 package us.kbase.test.kidl;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
@@ -13,9 +14,6 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -36,7 +34,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-import us.kbase.common.service.UObject;
 import us.kbase.jkidl.StaticIncludeProvider;
 import us.kbase.kidl.KbAnnotations;
 import us.kbase.kidl.KbModule;
@@ -49,15 +46,17 @@ import us.kbase.kidl.KbTuple;
 import us.kbase.kidl.KbTypedef;
 import us.kbase.kidl.KidlParseException;
 import us.kbase.kidl.KidlParser;
-import us.kbase.test.sdk.scripts.TestConfigHelper;
 
 public class KidlTest {
     public static final String tempDirName = "temp_test";
 
 	private static File prepareWorkDir() throws Exception {
-		final Path workDir = Paths.get(TestConfigHelper.getTempTestDir(), "test_kidl");
-		Files.createDirectories(workDir);
-		return workDir.toFile();
+		File tempDir = new File(".").getCanonicalFile();
+		File workDir = new File(tempDir, "test_kidl");
+		if (!workDir.exists()) {
+			workDir.mkdir();
+		}
+		return workDir;
 	}
 
 	private static List<String> getLines(String text) throws Exception {
@@ -159,39 +158,36 @@ public class KidlTest {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void checkDeprecation(String spec, String deptarg, boolean isdep,
-			Map<String, Object> unknown)
-			throws Exception {
+	private void checkDeprecation(
+			final String spec,
+			final String deptarg,
+			final boolean isdep,
+			final Map<String, Object> unknown
+			) throws Exception {
 		Map<String, Map<String, String>> schemas =
 				new HashMap<String, Map<String, String>>();
-		Map<?, ?> parsed = KidlParser.parseSpecInt(new StringReader(spec),
-				schemas, new StaticIncludeProvider());
-		final UObject modComps = new UObject(parsed)
-			.asMap().get("t1")
-			.asList().get(0)
-			.asList().get(0)
-			.asMap().get("module_components");
-		Map<String, UObject> annotations = modComps
-			.asList().get(0)
-			.asMap().get("annotations").asMap();
+		final Map<String, Object> parsed = (Map<String, Object>) KidlParser.parseSpecInt(
+				new StringReader(spec), schemas, new StaticIncludeProvider()
+		);
+		final List<Map<String, Map<String, Object>>> modComps =
+				((List<List<Map<String, List<Map<String, Map<String, Object>>>>>>)parsed.get("t1"))
+				.get(0).get(0).get("module_components");
+		final Map<String, Object> annotations = modComps.get(0).get("annotations");
 		assertThat("incorrect deprecation",
 				annotations.containsKey("deprecated"), is(true));
 		if (deptarg != null) {
 			assertThat("incorrect deprecation target",
-					annotations.get("deprecated").asClassInstance(String.class),
+					(String) annotations.get("deprecated"),
 					is(deptarg));
 		} else {
 			assertThat("incorrect deprecation target",
-					annotations.get("deprecated").isNull(), is(true));
+					annotations.get("deprecated"), is(nullValue()));
 		}
 		if (unknown != null) {
-			Map<String, Object> uk = annotations.get("unknown_annotations")
-					.asClassInstance(Map.class);
+			Map<String, Object> uk = (Map<String, Object>) annotations.get("unknown_annotations");
 			assertThat("incorrect unknown annotations", uk, is(unknown));
 		}
-		Map<String, UObject> stdtarget = modComps
-				.asList().get(1)
-				.asMap().get("annotations").asMap();
+		final Map<String, Object> stdtarget = modComps.get(1).get("annotations");
 		assertThat("incorrect deprection", stdtarget.containsKey("deprecation"),
 				is(false));
 		List<KbService> reparsed = KidlParser.parseSpec(parsed);
