@@ -1,8 +1,8 @@
 package us.kbase.mobu.compiler;
 
-import static org.apache.commons.lang.StringUtils.stripEnd;
-import static org.apache.commons.lang.StringUtils.substringAfter;
-import static org.apache.commons.lang.StringUtils.substringBefore;
+import static org.apache.commons.lang3.StringUtils.stripEnd;
+import static org.apache.commons.lang3.StringUtils.substringAfter;
+import static org.apache.commons.lang3.StringUtils.substringBefore;
 
 import java.io.IOException;
 import java.io.InputStream;
