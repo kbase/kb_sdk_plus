@@ -38,3 +38,4 @@ src/java/us/kbase/mobu/git.properties
 /reports/
 /junit*.properties
 /temp_kbsdkplus_test/
+/test_kidl/

@@ -25,8 +25,7 @@ import us.kbase.kidl.KbTypedef;
 import us.kbase.kidl.KbUnspecifiedObject;
 import us.kbase.kidl.KidlNode;
 import us.kbase.kidl.KidlVisitor;
-import us.kbase.kidl.Utils;
-import us.kbase.kidl.Utils.NameAndTypeAlias;
+import us.kbase.mobu.compiler.Utils.NameAndTypeAlias;
 
 /**
  * Transform a KIDL class structure to a data structure for template generation by the
