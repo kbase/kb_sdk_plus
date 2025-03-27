@@ -2,7 +2,7 @@ package us.kbase.mobu.compiler;
 
 import static com.googlecode.jsonschema2pojo.rules.PrimitiveTypes.isPrimitive;
 import static com.googlecode.jsonschema2pojo.rules.PrimitiveTypes.primitiveType;
-import static org.apache.commons.lang.StringUtils.capitalize;
+import static org.apache.commons.lang3.StringUtils.capitalize;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -11,9 +11,9 @@ import java.util.List;
 
 import javax.annotation.Generated;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.googlecode.jsonschema2pojo.Schema;

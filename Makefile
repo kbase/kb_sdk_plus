@@ -18,8 +18,11 @@ default: compile
 compile:
 	$(ANT)
 
-test: test-python
+test: test-python test-java
 	@echo "Running tests"
+	
+test-java:
+	@echo "Running java tests"
 	$(ANT) test
 
 test-python:
