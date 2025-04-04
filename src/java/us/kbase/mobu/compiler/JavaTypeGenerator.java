@@ -3,11 +3,9 @@ package us.kbase.mobu.compiler;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Writer;
 import java.net.URI;
 import java.net.URL;
 import java.text.ParseException;
@@ -43,7 +41,6 @@ import us.kbase.kidl.KidlParser;
 import us.kbase.mobu.util.DiskFileSaver;
 import us.kbase.mobu.util.FileSaveCodeWriter;
 import us.kbase.mobu.util.FileSaver;
-import us.kbase.mobu.util.OneFileSaver;
 import us.kbase.mobu.util.TextUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -74,32 +71,54 @@ public class JavaTypeGenerator {
 	private static final String defaultParentPackage = "us.kbase";
 	private static final String utilPackage = defaultParentPackage + ".common.service";
 	
-	public static JavaData processSpec(File specFile, File srcOutDir, String packageParent, 
-			boolean createServer, File libOutDir, String gwtPackage, URL url) throws Exception {
+	public static JavaData processSpec(
+			final File specFile,
+			final File srcOutDir,
+			final String packageParent, 
+			final boolean createServer,
+			final String gwtPackage,
+			final URL url
+			) throws Exception {
 		List<KbService> services = KidlParser.parseSpec(specFile, null);
-		FileSaver libOut = libOutDir == null ? null : new DiskFileSaver(libOutDir);
-		FileSaver buildXmlOut = null == null ? null : new OneFileSaver(null);
 		return processSpec(services, new DiskFileSaver(srcOutDir), packageParent, createServer,
-				libOut, gwtPackage, url, buildXmlOut, null, null, null, null, null, null, null);
+				gwtPackage, url, null, null, null, null, null, null, null);
 	}
 
-	public static JavaData processSpec(List<KbService> services, FileSaver srcOut, String packageParent, 
-			boolean createServer, FileSaver libOut, String gwtPackage, URL url,
-			FileSaver buildXml, String clientAsyncVersion, String clientDynservVersion,
-			String semanticVersion, String gitUrl, String gitCommitHash) throws Exception {
-		return processSpec(services, srcOut, packageParent, createServer, libOut, gwtPackage, url,
-				buildXml, clientAsyncVersion, clientDynservVersion, semanticVersion,
+	public static JavaData processSpec(
+			final List<KbService> services,
+			final FileSaver srcOut,
+			final String packageParent, 
+			final boolean createServer,
+			final String gwtPackage,
+			final URL url,
+			final String clientAsyncVersion,
+			final String clientDynservVersion,
+			final String semanticVersion,
+			final String gitUrl,
+			final String gitCommitHash
+			) throws Exception {
+		return processSpec(services, srcOut, packageParent, createServer, gwtPackage, url,
+				clientAsyncVersion, clientDynservVersion, semanticVersion,
 				gitUrl, gitCommitHash, null, null);
 	}
 
-	public static JavaData processSpec(List<KbService> services, FileSaver srcOut, 
-			String packageParent, boolean createServer, FileSaver libOut, String gwtPackage,
-			URL url, FileSaver buildXml, String clientAsyncVersion,
-			String clientDynservVersion, String semanticVersion, String gitUrl, 
-			String gitCommitHash, Map<String, String> originalCode,
-			String customClientClassName) throws Exception {
+	public static JavaData processSpec(
+			final List<KbService> services,
+			final FileSaver srcOut, 
+			final String packageParent,
+			final boolean createServer,
+			final String gwtPackage,
+			final URL url,
+			final String clientAsyncVersion,
+			final String clientDynservVersion,
+			final String semanticVersion,
+			final String gitUrl, 
+			final String gitCommitHash,
+			final Map<String, String> originalCode,
+			final String customClientClassName
+		) throws Exception {
 		JavaData data = prepareDataStructures(services);
-		outputData(data, srcOut, packageParent, createServer, libOut, gwtPackage, url, buildXml,
+		outputData(data, srcOut, packageParent, createServer, gwtPackage, url,
 				clientAsyncVersion, clientDynservVersion, semanticVersion, gitUrl,
 				gitCommitHash, originalCode, customClientClassName);
 		return data;
@@ -161,23 +180,31 @@ public class JavaTypeGenerator {
 		return data;
 	}
 
-	private static void outputData(JavaData data, FileSaver srcOutDir, String packageParent, 
-			boolean createServers, FileSaver libOutDir, String gwtPackage, URL url,
-			FileSaver buildXml, String clientAsyncVersion,
-			String clientDynservVersion, String semanticVersion, String gitUrl, 
-			String gitCommitHash, Map<String, String> originalCode,
-			String customClientClassName) throws Exception {
-	    if (packageParent.equals("."))  // Special value meaning top level package.
-	        packageParent = "";
+	private static void outputData(
+			final JavaData data,
+			final FileSaver srcOutDir,
+			String packageParent, 
+			final boolean createServers,
+			final String gwtPackage,
+			final URL url,
+			final String clientAsyncVersion,
+			final String clientDynservVersion,
+			final String semanticVersion,
+			final String gitUrl, 
+			final String gitCommitHash,
+			final Map<String, String> originalCode,
+			final String customClientClassName
+			) throws Exception {
+		if (packageParent.equals(".")) {  // Special value meaning top level package.
+			packageParent = "";
+		}
 		generatePojos(data, srcOutDir, packageParent);
 		generateTupleClasses(data,srcOutDir, packageParent);
 		generateClientClass(data, srcOutDir, packageParent, url, clientAsyncVersion, 
-		        clientDynservVersion, customClientClassName);
+				clientDynservVersion, customClientClassName);
 		if (createServers)
 			generateServerClass(data, srcOutDir, packageParent, semanticVersion, gitUrl, 
-			        gitCommitHash, originalCode);
-		List<String> jars = checkLibs(libOutDir, createServers, buildXml);
-		generateBuildXml(data, jars, createServers, buildXml, clientAsyncVersion);
+					gitCommitHash, originalCode);
 		if (gwtPackage != null) {
 			GwtGenerator.generate(data, srcOutDir, gwtPackage);
 		}
@@ -1216,165 +1243,6 @@ public class JavaTypeGenerator {
 		}
 	}
 
-	private static List<String> checkLibs(
-			final FileSaver libOutDir,
-			final boolean createServers,
-			final FileSaver buildXml)
-			throws Exception {
-		// TODO CODECLEANUP remove this method and figure out some other way of handling test deps
-		if (libOutDir == null && buildXml == null)
-			return null;
-		List<String> jars = new ArrayList<String>();
-		jars.add(checkLib(libOutDir, "jackson-annotations-2.2.3"));
-		jars.add(checkLib(libOutDir, "jackson-core-2.2.3"));
-		jars.add(checkLib(libOutDir, "jackson-databind-2.2.3"));
-		jars.add(checkLib(libOutDir, "kbase-auth-0.4.4"));
-		jars.add(checkLib(libOutDir, "kbase-common"));
-		jars.add(checkLib(libOutDir, "javax.annotation-api-1.3.2"));
-		if (createServers) {
-			jars.add(checkLib(libOutDir, "servlet-api-2.5"));
-			jars.add(checkLib(libOutDir, "jetty-all-7.0.0"));
-			jars.add(checkLib(libOutDir, "ini4j-0.5.2"));
-			jars.add(checkLib(libOutDir, "syslog4j-0.9.46"));
-			jars.add(checkLib(libOutDir, "jna-3.4.0"));
-			jars.add(checkLib(libOutDir, "joda-time-2.2"));
-			jars.add(checkLib(libOutDir, "logback-core-1.1.2"));
-			jars.add(checkLib(libOutDir, "logback-classic-1.1.2"));
-			jars.add(checkLib(libOutDir, "slf4j-api-1.7.7"));
-		}
-		return jars;
-	}
-
-	private static void generateBuildXml(
-			final JavaData data,
-			final List<String> jars,
-			final boolean createServers,
-			final FileSaver buildXml,
-			final String clientAsyncVersion
-			) throws Exception {
-		if (buildXml != null) {
-			JavaModule module = data.getModules().get(0);
-			List<String> lines = new ArrayList<String>(Arrays.asList(
-					"<project name=\"Generated automatically\" default=\"compile\" basedir=\".\">",
-					"  <property environment=\"env\"/>",
-					"  <property name=\"src\"     location=\"src\"/>",
-					"  <property name=\"classes\" location=\"classes\"/>",
-					"  <property name=\"dist\"    location=\"dist\"/>",
-					"  <property name=\"lib\"     location=\"${env.KB_TOP}/modules/jars/lib/jars/\"/>",
-					"  <property name=\"module\"  value=\"" + module.getModuleName() + "\"/>",
-					"  <property name=\"jar.file\" value=\"${module}.jar\"/>",
-					"",
-					"  <path id=\"compile.classpath\">",
-					"    <fileset dir=\"${lib}\">"
-					));
-			for (String jar : jars)
-				if (!new File(jar).isAbsolute())
-					lines.add("      <include name=\"" + jar + "\"/>");
-
-			lines.add("    </fileset>");
-			for (String jar : jars)
-				if (new File(jar).isAbsolute())
-					lines.addAll(Arrays.asList(
-							"    <fileset dir=\"" + new File(jar).getParent() + "\">",
-							"      <include name=\"" + new File(jar).getName() + "\"/>",
-							"    </fileset>"
-							));
-			lines.addAll(Arrays.asList(
-					"  </path>",
-					"",
-					"  <target name=\"compile\" description=\"compile the source\">",
-					"    <mkdir dir=\"${classes}\"/>",
-					"    <javac srcdir=\"${src}\" destdir=\"${classes}\" includeantruntime=\"false\" debug=\"true\" classpathref=\"compile.classpath\"/>",
-					"    <copy todir=\"${classes}\">",
-					"      <fileset dir=\"${src}\">",
-					"        <patternset>",
-					"          <include name=\"**/*\"/>",
-					"        </patternset>",
-					"      </fileset>",
-					"    </copy>",
-					"    <jar destfile=\"${dist}/${jar.file}\" basedir=\"${classes}\">",
-					"      <manifest>",
-					"        <!-- attribute name=\"Main-Class\" value=\"us.kbase." + module.getModulePackage() + "." + module.getModuleName() + "\"/ -->",
-					"      </manifest>",
-					"    </jar>",
-					"    <delete dir=\"${classes}\"/>",
-					"  </target>",
-					"",
-					"  <target name=\"preparejunitreportdir\" if=\"env.JENKINS_REPORT_DIR\">",
-					"    <delete dir=\"${env.JENKINS_REPORT_DIR}\"/>",
-					"    <mkdir dir=\"${env.JENKINS_REPORT_DIR}\"/>",
-					"  </target>",
-					"",
-					"  <target name=\"test\" depends=\"compile, preparejunitreportdir\" description=\"run all tests\">",
-					"    <!-- Define absolute path to main jar file-->",
-					"    <junit printsummary=\"yes\" haltonfailure=\"yes\" fork=\"true\">",
-					"      <classpath>",
-					"        <pathelement location=\"${dist}/${jar.file}\"/>",
-					"        <path refid=\"compile.classpath\"/>",
-					"      </classpath>",
-					"      <formatter type=\"plain\" usefile=\"false\" />",
-					"      <formatter type=\"xml\" usefile=\"true\" if=\"env.JENKINS_REPORT_DIR\"/>",
-					"      <batchtest todir=\"${env.JENKINS_REPORT_DIR}\">",
-					"        <fileset dir=\"${src}\">",
-					"          <include name=\"**/test/**/**Test.java\"/>",
-					"        </fileset>",
-					"      </batchtest>",
-					"    </junit>",
-					"  </target>"
-					));
-			if (createServers) {
-				if (clientAsyncVersion != null) {
-					String shellFileName = "run_" + module.getModuleName() + "_async_job.sh";
-					lines.addAll(Arrays.asList(
-							"",
-							"  <target name=\"make_async_job_script\" depends=\"compile\" description=\"make batch script for async job running\">",
-							"    <property name=\"jar.absolute.path\" location=\"${dist}/${jar.file}\"/>",
-							"    <pathconvert targetos=\"unix\" property=\"lib.classpath\" refid=\"compile.classpath\"/>",
-							"    <echo file=\"${dist}/" + shellFileName + "\">#!/bin/bash",
-							"java -cp ${jar.absolute.path}:${lib.classpath} us.kbase." + module.getModulePackage() + "." + module.getModuleName() + "Server" + " $1 $2 $3",
-							"    </echo>",
-							"<chmod file=\"${dist}/" + shellFileName + "\" perm=\"a+x\"/>",
-							"  </target>"
-							));
-				}
-			}
-			lines.addAll(Arrays.asList(
-					"</project>"
-					));
-			Writer w = buildXml.openWriter("*");
-			for (String l : lines)
-				w.write(l + "\n");
-			w.close();
-		}
-	}
-
-	public static String checkLib(FileSaver libDir, String libName) throws Exception {
-		// TODO CODECLEANUP try to eliminate this method entirely. It seems to be used to move
-		//                  urls to the lib directory which is never specified unless the
-		//                  --javalib argument is used with compile, which I wasn't even aware of
-		//                  and is never used in kbase AFAICT
-		File libFile = null;
-		final String classpath = System.getProperty("java.class.path");
-		final String sep = System.getProperty("path.separator");
-		for (final String cp: classpath.split(sep)) {
-			final File maybelibFile = new File(cp);
-			if (maybelibFile.isFile() && maybelibFile.getName().startsWith(libName) && 
-					maybelibFile.getName().endsWith(".jar"))
-				libFile = maybelibFile;
-		}
-		if (libFile == null)
-			throw new KidlParseException("Can't find lib-file for: " + libName);
-		if (libDir != null) {
-		    InputStream is = new FileInputStream(libFile);
-		    OutputStream os = libDir.openStream(libFile.getName());
-		    TextUtils.copyStreams(is, os);
-		}
-		String ret = libFile.getCanonicalPath();
-		if (ret.contains("lib/jars/"))
-		    ret = ret.substring(ret.lastIndexOf("lib/jars/") + 9);
-		return ret;
-	}
-	
 	private static void writeJsonSchema(OutputStream jsonFile, String packageParent, JavaType type, 
 			Set<Integer> tupleTypes) throws Exception {
 		LinkedHashMap<String, Object> tree = new LinkedHashMap<String, Object>();

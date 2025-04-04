@@ -2,10 +2,12 @@ package us.kbase.test.sdk.scripts;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
@@ -47,6 +49,7 @@ import us.kbase.common.service.ServerException;
 import us.kbase.common.service.UObject;
 import us.kbase.kidl.KbFuncdef;
 import us.kbase.kidl.KbService;
+import us.kbase.kidl.KidlParseException;
 import us.kbase.kidl.KidlParser;
 import us.kbase.mobu.compiler.JavaData;
 import us.kbase.mobu.compiler.JavaFunc;
@@ -55,7 +58,7 @@ import us.kbase.mobu.compiler.JavaTypeGenerator;
 import us.kbase.mobu.compiler.PrevCodeParser;
 import us.kbase.mobu.compiler.RunCompileCommand;
 import us.kbase.mobu.util.DiskFileSaver;
-import us.kbase.mobu.util.OneFileSaver;
+import us.kbase.mobu.util.FileSaver;
 import us.kbase.mobu.util.ProcessHelper;
 import us.kbase.mobu.util.TextUtils;
 
@@ -225,9 +228,10 @@ public class TypeGeneratorTest extends Assert {
 		File libDir = new File(workDir, "lib");
 		String gwtPackageName = getGwtPackageName(testNum);
         // Test for empty server file
+		setUpTestJars(new DiskFileSaver(libDir), true);
 		try {
 			JavaTypeGenerator.processSpec(new File(workDir, testFileName),
-					srcDir, testPackage, true, libDir, gwtPackageName, null);
+					srcDir, testPackage, true, gwtPackageName, null);
 		} catch (Exception ex) {
 			boolean key = ex.getMessage().contains("Missing header in original file");
 			if (!key)
@@ -243,7 +247,7 @@ public class TypeGeneratorTest extends Assert {
         // Test for full server file
 		JavaData parsingData = JavaTypeGenerator.processSpec(
 				new File(workDir, testFileName), srcDir, testPackage,
-				true, libDir, gwtPackageName, null);
+				true, gwtPackageName, null);
 		List<URL> cpUrls = new ArrayList<URL>();
 		String classPath = prepareClassPath(libDir, cpUrls);
 		File binDir = new File(workDir, "bin");
@@ -465,7 +469,7 @@ public class TypeGeneratorTest extends Assert {
         pySrvManualCorr.put("get_prov", "returnVal = [{'service':ctx['provenance'][0]['service'],'method':ctx['provenance'][0]['method']}]");
         if (!libDir.exists())
             libDir.mkdirs();
-        JavaTypeGenerator.checkLib(new DiskFileSaver(libDir), "WorkspaceClient");
+        checkLib(new DiskFileSaver(libDir), "WorkspaceClient");
         JavaData parsingData = prepareJavaCode(testNum, workDir, testPackage, libDir, binDir,
                 portNum, true, false, false, javaSrvManualCorr
         );
@@ -819,8 +823,6 @@ public class TypeGeneratorTest extends Assert {
 				false,                   // javaServerSide
 				null,                    // javaPackageParent
 				null,                    // javaSrcPath
-				null,                    // javaLibPath
-				false,                   // withJavaBuildXml
 				null,                    // javaGwtPackage
 				false,                   // rClientSide
 				null,                    // rClientName
@@ -858,8 +860,6 @@ public class TypeGeneratorTest extends Assert {
 				false,                   // javaServerSide
 				null,                    // javaPackageParent
 				null,                    // javaSrcPath
-				null,                    // javaLibPath
-				false,                   // withJavaBuildXml
 				null,                    // javaGwtPackage
 				false,                   // rClientSide
 				null,                    // rClientName
@@ -947,15 +947,63 @@ public class TypeGeneratorTest extends Assert {
 			final boolean isDynamic,
 			final boolean isAsync
 			) throws Exception {
+		setUpTestJars(new DiskFileSaver(libDir), true);
 		File specFile = new File(workDir, testFileName);
 		List<KbService> services = KidlParser.parseSpec(specFile, null);
 		JavaData parsingData = JavaTypeGenerator.processSpec(services, new DiskFileSaver(srcDir), 
-				testPackage, true, new DiskFileSaver(libDir), gwtPackageName, defaultUrl, 
-				new OneFileSaver(new File(workDir, "build.xml")), 
+				testPackage, true, gwtPackageName, defaultUrl, 
 				isAsync ? "dev": null, isDynamic ? "dev" : null, null, null, null);
 		return parsingData;
 	}
+	
+	private static void setUpTestJars(
+			final FileSaver libOutDir,
+			final boolean createServers
+			) throws Exception {
+		// TODO TEST CLEANUP remove this method and figure out some other way of handling test deps
+		//                   maybe convert to gradle and run gradle deps
+		checkLib(libOutDir, "jackson-annotations-2.2.3");
+		checkLib(libOutDir, "jackson-core-2.2.3");
+		checkLib(libOutDir, "jackson-databind-2.2.3");
+		checkLib(libOutDir, "kbase-auth-0.4.4");
+		checkLib(libOutDir, "kbase-common");
+		checkLib(libOutDir, "javax.annotation-api-1.3.2");
+		if (createServers) {
+			checkLib(libOutDir, "servlet-api-2.5");
+			checkLib(libOutDir, "jetty-all-7.0.0");
+			checkLib(libOutDir, "ini4j-0.5.2");
+			checkLib(libOutDir, "syslog4j-0.9.46");
+			checkLib(libOutDir, "jna-3.4.0");
+			checkLib(libOutDir, "joda-time-2.2");
+			checkLib(libOutDir, "logback-core-1.1.2");
+			checkLib(libOutDir, "logback-classic-1.1.2");
+			checkLib(libOutDir, "slf4j-api-1.7.7");
+		}
+	}
 
+	private static String checkLib(FileSaver libDir, String libName) throws Exception {
+		// TODO TEST CLEANUP try to eliminate this method entirely
+		File libFile = null;
+		final String classpath = System.getProperty("java.class.path");
+		final String sep = System.getProperty("path.separator");
+		for (final String cp: classpath.split(sep)) {
+			final File maybelibFile = new File(cp);
+			if (maybelibFile.isFile()
+					&& maybelibFile.getName().startsWith(libName)
+					&& maybelibFile.getName().endsWith(".jar"))
+			{
+				libFile = maybelibFile;
+			}
+		}
+		if (libFile == null) {
+			throw new KidlParseException("Can't find lib-file for: " + libName);
+		}
+		InputStream is = new FileInputStream(libFile);
+		OutputStream os = libDir.openStream(libFile.getName());
+		TextUtils.copyStreams(is, os);
+		return libFile.getCanonicalPath();
+	}
+	
 	private static String getGwtPackageName(int testNum) {
 		return rootPackageName + ".gwt";
 	}
@@ -983,7 +1031,7 @@ public class TypeGeneratorTest extends Assert {
 
 	private static String prepareClassPath(File libDir, List<URL> cpUrls)
 			throws Exception {
-		JavaTypeGenerator.checkLib(new DiskFileSaver(libDir), "junit-4.9");
+		checkLib(new DiskFileSaver(libDir), "junit-4.9");
 		StringBuilder classPathSB = new StringBuilder();
 		for (File jarFile : libDir.listFiles()) {
 			if (!jarFile.getName().endsWith(".jar"))
