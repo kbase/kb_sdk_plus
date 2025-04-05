@@ -15,7 +15,6 @@
 	<classpathentry kind="lib" path="../jars/lib/jars/jetty/jetty-all-7.0.0.jar"/>
 	<classpathentry kind="lib" path="../jars/lib/jars/google/jsonschema2pojo-core-0.3.6.jar"/>
 	<classpathentry kind="lib" path="../jars/lib/jars/jna/jna-3.4.0.jar"/>
-	<classpathentry kind="lib" path="../jars/lib/jars/junit/junit-4.9.jar"/>
 	<classpathentry kind="lib" path="../jars/lib/jars/apache_commons/commons-lang-2.4.jar"/>
 	<classpathentry kind="lib" path="../jars/lib/jars/servlet/servlet-api-2.5.jar"/>
 	<classpathentry kind="lib" path="../jars/lib/jars/syslog4j/syslog4j-0.9.46.jar"/>
@@ -34,5 +33,7 @@
 	<classpathentry kind="lib" path="../jars/lib/jars/kbase/common/kbase-common-0.0.23.jar"/>
 	<classpathentry kind="lib" path="../jars/lib/jars/kbase/auth/kbase-auth-0.4.4.jar"/>
 	<classpathentry kind="lib" path="/jars/lib/jars/annotation/javax.annotation-api-1.3.2.jar"/>
+	<classpathentry kind="lib" path="/jars/lib/jars/junit/junit-4.12.jar"/>
+	<classpathentry kind="lib" path="/jars/lib/jars/hamcrest/hamcrest-core-1.3.jar"/>
 	<classpathentry kind="output" path="eclipse-classes"/>
 </classpath>
