@@ -1,3 +1,4 @@
+# TODO CLI replace the CLI interface with picocli and use its shell completion feature to replace this file
 # file: sdk-completion.sh
 # Setup parameter completion for kb-sdk
 
@@ -31,15 +32,12 @@ _SetupSDKCompletion ()
                       # no further filtering and we can show all the options again
                       "--out") COMPREPLY=($(compgen -d -- "${cur}"));;
                       #"--java") COMPREPLY=();;
-                      #"--javabuildxml") COMPREPLY=();;
                       #"--javagwt") COMPREPLY=();;
-                      "--javalib") COMPREPLY=($(compgen -d -- "${cur}"));;
                       "--javapackage") COMPREPLY=();;
                       "--javasrc") COMPREPLY=($(compgen -d -- "${cur}"));;
                       #"--js") COMPREPLY=();;
                       "--jsclname") COMPREPLY=($(compgen -f -- "${cur}"));;
                       "--jsonschema") COMPREPLY=($(compgen -d -- "${cur}"));;
-                      #"--makefile") COMPREPLY=();;
                       #"--pl") COMPREPLY=();;
                       "--plclname") COMPREPLY=();;
                       #"--plenableretries") COMPREPLY=();;
@@ -62,14 +60,13 @@ _SetupSDKCompletion ()
                         local xpat='!*.spec'
                         # ideally here we would detect which commands were already used and hide those
                         COMPREPLY=(
-                          $(compgen -W "--java --javabuildxml --javagwt --javalib --javapackage --javasrc" -- ${cur})
+                          $(compgen -W "--java --javagwt --javapackage --javasrc" -- ${cur})
                           $(compgen -W "--js --jsclname" -- ${cur})
                           $(compgen -W "--pl --plclname --plenableretries --plimplname --plpsginame --plsrv --plsrvname" -- ${cur})
                           $(compgen -W "--py --pyclname --pyimplname --pysrv --pysrvname" -- ${cur})
                           $(compgen -W "--r --rclname --rimplname --rsrv --rsrvname" -- ${cur})
 
                           $(compgen -W "--url" -- ${cur})
-                          $(compgen -W "--makefile" -- ${cur})
                           $(compgen -W "--jsonschema" -- ${cur})
                           $(compgen -W "--out" -- ${cur})
                           $(compgen -f -X "$xpat" -- "${cur}")
@@ -160,5 +157,4 @@ _SetupSDKCompletion ()
   return 0
 }
 
-complete -F _SetupSDKCompletion -o filenames kb-mobu
 complete -F _SetupSDKCompletion -o filenames kb-sdk

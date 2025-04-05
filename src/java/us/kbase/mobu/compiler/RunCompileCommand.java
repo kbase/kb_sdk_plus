@@ -28,32 +28,50 @@ import us.kbase.mobu.compiler.report.CompilationReporter;
 import us.kbase.mobu.compiler.report.SpecFile;
 import us.kbase.mobu.util.DiskFileSaver;
 import us.kbase.mobu.util.FileSaver;
-import us.kbase.mobu.util.OneFileSaver;
 
 public class RunCompileCommand {
 
-    public static void generate(File specFile, String url, boolean jsClientSide, 
-            String jsClientName, boolean perlClientSide, String perlClientName, 
-            boolean perlServerSide, String perlServerName, String perlImplName, 
-            String perlPsgiName, boolean perlEnableRetries, boolean pyClientSide, 
-            String pyClientName, boolean pyServerSide, String pyServerName, 
-            String pyImplName, boolean javaClientSide, boolean javaServerSide, 
-            String javaPackageParent, String javaSrcPath, String javaLibPath, 
-            boolean withJavaBuildXml, String javaGwtPackage, boolean rClientSide, 
-            String rClientName, boolean rServerSide, String rServerName, 
-            String rImplName, File outDir, String jsonSchemaPath, 
-            String clientAsyncVer, String dynservVer,
-            boolean html, String semanticVersion, String gitUrl,
-            String gitCommitHash)
-            throws Exception {
+    public static void generate(
+            // this is repulsive and needs a builder
+            final File specFile,
+            final String url,
+            final boolean jsClientSide, 
+            final String jsClientName,
+            final boolean perlClientSide,
+            final String perlClientName, 
+            boolean perlServerSide,
+            final String perlServerName,
+            final String perlImplName, 
+            final String perlPsgiName,
+            final boolean perlEnableRetries,
+            final boolean pyClientSide, 
+            final String pyClientName,
+            boolean pyServerSide,
+            final String pyServerName, 
+            final String pyImplName,
+            boolean javaClientSide,
+            final boolean javaServerSide, 
+            final String javaPackageParent,
+            final String javaSrcPath,
+            final String javaGwtPackage,
+            final boolean rClientSide, 
+            final String rClientName,
+            boolean rServerSide,
+            final String rServerName, 
+            final String rImplName,
+            final File outDir,
+            final String jsonSchemaPath, 
+            final String clientAsyncVer,
+            final String dynservVer,
+            final boolean html,
+            final String semanticVersion,
+            final String gitUrl,
+            final String gitCommitHash
+            ) throws Exception {
     	
         FileSaver javaSrcDir = null;
         if (javaSrcPath != null)
             javaSrcDir = new DiskFileSaver(correctRelativePath(javaSrcPath, outDir));
-        FileSaver javaLibDir = null;
-        if (javaLibPath != null) {
-            javaLibDir = new DiskFileSaver(correctRelativePath(javaLibPath, outDir));
-        }
         final File dir = specFile.getCanonicalFile().getParentFile();
         final List<SpecFile> specFiles = new ArrayList<SpecFile>();
         SpecFile mainSpec = new SpecFile();
@@ -98,11 +116,6 @@ public class RunCompileCommand {
                         output);
             }
         }
-        if (withJavaBuildXml && new File(outDir, "build.xml").exists()) {
-            System.err.println("Warning: build.xml file already exists, generation is skipped for it");
-            withJavaBuildXml = false;
-        }
-        FileSaver javaBuildXml = withJavaBuildXml ? new OneFileSaver(output, "build.xml") : null;
         FileSaver jsonSchemas = null;
         if (jsonSchemaPath != null) {
             jsonSchemas = new DiskFileSaver(correctRelativePath(jsonSchemaPath, outDir));
@@ -131,8 +144,8 @@ public class RunCompileCommand {
         if (javaClientSide) {
             //TODO DYNSERV add dynamic service client generation to all clients except Python
             javaParsingData = JavaTypeGenerator.processSpec(services, javaSrcDir, 
-                    javaPackageParent, javaServerSide, javaLibDir, javaGwtPackage, 
-                    url == null ? null : new URL(url), javaBuildXml,
+                    javaPackageParent, javaServerSide, javaGwtPackage, 
+                    url == null ? null : new URL(url),
                     clientAsyncVer, dynservVer, semanticVersion, gitUrl, gitCommitHash);
         }
         TemplateBasedGenerator.generate(services, url, jsClientSide, jsClientName, 

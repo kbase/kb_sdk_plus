@@ -286,8 +286,8 @@ public class ModuleBuilder {
                     a.perlClientName, a.perlServerSide, a.perlServerName, a.perlImplName, 
                     a.perlPsgiName, a.perlEnableRetries, a.pyClientSide, a.pyClientName, 
                     a.pyServerSide, a.pyServerName, a.pyImplName, a.javaClientSide, 
-                    a.javaServerSide, a.javaPackageParent, a.javaSrcDir, a.javaLibDir, 
-                    a.javaBuildXml, a.javaGwtPackage, a.rClientSide, a.rClientName, 
+                    a.javaServerSide, a.javaPackageParent, a.javaSrcDir, 
+                    a.javaGwtPackage, a.rClientSide, a.rClientName, 
                     a.rServerSide, a.rServerName, a.rImplName, outDir, a.jsonSchema, 
                     a.clAsyncVer, a.dynservVer, a.html,
                     semanticVersion, gitUrl, gitCommitHash);
@@ -542,11 +542,6 @@ public class ModuleBuilder {
         		//"<java-src-dir>")
         String javaSrcDir = "src";
 
-    	@Parameter(names="--javalib",description="Set the output folder for jar files (if defined then --java will be " +
-        		"treated as true automatically)")//, metaVar = 
-        		//"<java-lib-dir>")
-        String javaLibDir = null;
-
     	@Parameter(names="--url", description="Set the default url for the service in generated client code")//, metaVar = "<url>")
         String url = null;
 
@@ -590,10 +585,6 @@ public class ModuleBuilder {
     	@Parameter(names="--jsonschema",description="Generate JSON schema documents for the types in the output folder specified.")//, metaVar="<json-schema>")
         String jsonSchema = null;
 
-    	
-    	@Parameter(names="--javabuildxml",description="Will generate build.xml template for Ant")
-        boolean javaBuildXml;
-    	
         @Parameter(names="--clasyncver",description="Will set in client code version of service for asyncronous calls " +
         		"(it could be git commit hash of version registered in catalog or one of version tags: dev/beta/release)")
         String clAsyncVer = null;
