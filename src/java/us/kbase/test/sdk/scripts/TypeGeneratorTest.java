@@ -1031,7 +1031,8 @@ public class TypeGeneratorTest extends Assert {
 
 	private static String prepareClassPath(File libDir, List<URL> cpUrls)
 			throws Exception {
-		checkLib(new DiskFileSaver(libDir), "junit-4.9");
+		checkLib(new DiskFileSaver(libDir), "junit-4.12");
+		checkLib(new DiskFileSaver(libDir), "hamcrest-core-1.3");
 		StringBuilder classPathSB = new StringBuilder();
 		for (File jarFile : libDir.listFiles()) {
 			if (!jarFile.getName().endsWith(".jar"))

@@ -32,7 +32,7 @@ public class TestUtils {
 			boolean ignoreMissing)
 			throws Exception {
 		final Path workdir = moduleRoot.resolve("test_local/workdir");
-		final Path lclTarget = workdir.resolve(target).toRealPath();
+		final Path lclTarget = workdir.resolve(target).toAbsolutePath();
 		if (ignoreMissing && (!Files.exists(lclTarget) || !Files.isDirectory(lclTarget))) {
 			return;
 		}

@@ -28,6 +28,7 @@
     <include name="codemodel/codemodel-2.4.1.jar"/>
     <include name="google/guava-18.0.jar"/>
     <include name="google/jsonschema2pojo-core-0.3.6.jar"/>
+  	<include name="hamcrest/hamcrest-core-1.3.jar"/>
     <include name="ini4j/ini4j-0.5.2.jar"/>
     <include name="j2html/j2html-0.7.jar"/>
     <include name="jackson/jackson-annotations-2.2.3.jar"/>
@@ -37,7 +38,7 @@
     <include name="jetty/jetty-all-7.0.0.jar"/>
     <include name="jna/jna-3.4.0.jar"/>
     <include name="joda/joda-time-2.2.jar"/>
-    <include name="junit/junit-4.9.jar"/>
+    <include name="junit/junit-4.12.jar"/>
     <include name="logback/logback-classic-1.1.2.jar"/>
     <include name="logback/logback-core-1.1.2.jar"/>
     <include name="servlet/servlet-api-2.5.jar"/>
@@ -74,7 +75,15 @@ giturl=${git.url}
 branch=${git.branch}
 commit=${git.commit}</echo>
     <echo>Compiling with jar directory: ${jardir}</echo>
-    <javac destdir="${classes}" srcdir="${src}" includeantruntime="false" debug="true" classpathref="compile.classpath" target="1.7" source="1.7" />
+    <javac
+      destdir="${classes}"
+      srcdir="${src}"
+      includeantruntime="false"
+      debug="true"
+      classpathref="compile.classpath"
+      target="11"
+      source="11"
+    />
     <!-- Copy resource files-->
     <copy todir="${classes}">
       <fileset dir="${src}">
