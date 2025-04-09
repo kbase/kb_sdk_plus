@@ -12,6 +12,7 @@ import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Enumeration;
@@ -24,6 +25,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import name.fraser.neil.plaintext.diff_match_patch;
 import name.fraser.neil.plaintext.diff_match_patch.Diff;
@@ -50,8 +53,8 @@ public class HTMLGenTest {
 	
 	@BeforeClass
 	public static void beforeClass() throws Exception {
-		HTML_FILES = listFiles();
 		CSS_FILE = getFile(CSS);
+		HTML_FILES = listFiles();
 	}
 	
 	public static String getFile(final String filename) throws Exception {
@@ -241,10 +244,13 @@ public class HTMLGenTest {
 	private static List<String> listFiles() throws Exception {
 
 		//this is totally stupid.
-		final List<String> files = new LinkedList<String>();
+		final List<String> files;
 		final File jarFile = new File(HTMLGenTest.class.getProtectionDomain()
 				.getCodeSource().getLocation().getPath());
-		if(jarFile.isFile()) {  // Run with JAR file
+		if (jarFile.isFile()) {  // Run with JAR file (ant test)
+			// TODO GRADLE remove when ant is removed
+			files = new LinkedList<String>();
+			System.out.println("Collecting HTML files via JAR contents");
 			String path = HTMLGenTest.class.getCanonicalName();
 			path = path.replace(".", "/");
 			path = Paths.get(path).getParent().toString();
@@ -259,15 +265,20 @@ public class HTMLGenTest {
 					}
 				}
 			}
-		} else { // Run outside jar
-			final URL url = HTMLGenTest.class.getResource(".");
-			final File dir = new File(url.toURI());
-			for (final File nextFile : dir.listFiles()) {
-				if (nextFile.toString().endsWith(".html")) {
-					files.add(nextFile.toPath().getFileName().toString());
-				}
+		} else { // Run outside jar (Eclipse & Gradle test)
+			System.out.println("Collecting HTML files via resources");
+			// trying to get "." doesn't work here
+			final URL url = HTMLGenTest.class.getResource(CSS);
+			final Path dir = Paths.get(url.toURI()).getParent();
+			try (Stream<Path> stream = Files.list(dir)) {
+				files = stream
+					.filter(file -> file.toString().endsWith(".html"))
+					.map(file -> file.getFileName().toString())
+					.collect(Collectors.toList());
 			}
 		}
+		System.out.println("Found files:");
+		System.out.println(files);
 		return files;
 	}
 }
