@@ -22,7 +22,7 @@ import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.Test;
 import org.xml.sax.SAXException;

@@ -22,6 +22,7 @@ import us.kbase.kidl.KbModuleComp;
 import us.kbase.kidl.KbParameter;
 import us.kbase.kidl.KbService;
 import us.kbase.kidl.KbTypedef;
+import us.kbase.mobu.GitCommit;
 import us.kbase.mobu.ModuleBuilder;
 import us.kbase.mobu.compiler.JavaData;
 import us.kbase.mobu.compiler.JavaModule;
@@ -39,7 +40,7 @@ public class CompilationReporter {
             boolean javaServerSide, String javaPackageParent, String javaSrcPath, 
             JavaData javaParsingData, List<SpecFile> specFiles, File reportFile) throws Exception {
         String sdkVersion = ModuleBuilder.VERSION;
-        String sdkGitCommit = ModuleBuilder.getGitCommit();
+        String sdkGitCommit = GitCommit.COMMIT;
         String moduleName = null;
         KbModule module = null;
         for (KbService srv : services)

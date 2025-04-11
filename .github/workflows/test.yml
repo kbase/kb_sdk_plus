@@ -56,6 +56,9 @@ jobs:
         cd ..
 
         # set up jars
+        # still need jars because ant is used to build the sdk in the tests for some reason
+        # also might be needed to run tests on java sdk modules, since they use ant
+        # TODO GRADLE after the ant build file is removed, see if jars is still needed
         git clone https://github.com/kbase/jars
         
         # set up test config
@@ -66,7 +69,7 @@ jobs:
 
     - name: Run tests
       shell: bash
-      run: make test
+      run: ./gradlew test
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
