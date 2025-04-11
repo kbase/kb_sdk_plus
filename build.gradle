@@ -6,6 +6,7 @@ plugins {
 }
 
 // TODO NEXT build script - how include built jar
+// TODO NEXT update dockerfile
 // TODO NEXT remove ant & makefile
 // TODO NEXT move to standard gradle locations
 // TODO NEXT run tests from Eclipse w/o specifying classpath manually & remove sourceSets & classpath
@@ -62,6 +63,21 @@ jacocoTestReport {
 	reports {
 		xml.required = true
 		csv.required = true
+	}
+	
+	// Exclude specific directories or files from coverage
+	afterEvaluate {
+		classDirectories.setFrom(
+			files(classDirectories.files.collect {
+				fileTree(dir: it, exclude: [
+					"**/fraser/neil/**",
+					"**/common/executionengine/**",
+					"**/common/service/**",
+					"**/catalog/**",
+					"**/narrativemethodstore/**",
+				])
+			})
+		)
 	}
 }
 
