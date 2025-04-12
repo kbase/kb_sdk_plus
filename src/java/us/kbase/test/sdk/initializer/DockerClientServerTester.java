@@ -98,16 +98,11 @@ public class DockerClientServerTester {
             final File implFile = moduleDir.resolve(implFileRelative).toFile();
             FileUtils.writeStringToFile(implFile, implInitText);
         }
-        // Making <kb_sdk>/bin/kb-sdk executable
-        // TODO TEST this seems bizarre. Why are we running make in the kb_sdk repo root?
-        //           looks like this should just recompile kb_sdk
-        if (ProcessHelper.cmd("make").exec(new File(".")).getExitCode() != 0)
-            throw new IllegalStateException("Error making kb-sdk");
-        // Running make for repo with adding <kb_sdk>/bin/kb-sdk into PATH
+        // Running make for new repo with adding <kb_sdk>/bin/kb-sdk into PATH
         File shellFile = new File(moduleDir.toFile(), "run_make.sh");
         String pathToSdk = new File(".").getCanonicalPath();
         List<String> lines = new ArrayList<String>(Arrays.asList("#!/bin/bash"));
-        lines.add("export PATH=" + pathToSdk + "/bin:$PATH");
+        lines.add("export PATH=" + pathToSdk + "/build:$PATH");
         lines.add("which kb-sdk");
         lines.add("make");
         TextUtils.writeFileLines(lines, shellFile);
