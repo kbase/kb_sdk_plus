@@ -39,3 +39,9 @@ src/java/us/kbase/mobu/git.properties
 /junit*.properties
 /temp_kbsdkplus_test/
 /test_kidl/
+
+# Ignore Gradle project-specific cache directory
+.gradle
+
+# Ignore Gradle build output directory
+build

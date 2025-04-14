@@ -15,7 +15,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import us.kbase.mobu.initializer.ModuleInitializer;
 import us.kbase.test.sdk.TestUtils;
 import us.kbase.test.sdk.scripts.TestConfigHelper;

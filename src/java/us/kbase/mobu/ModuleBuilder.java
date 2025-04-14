@@ -2,7 +2,6 @@ package us.kbase.mobu;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -11,7 +10,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
 import org.yaml.snakeyaml.Yaml;
@@ -352,22 +350,9 @@ public class ModuleBuilder {
     }
 
     private static void printVersion() {
-        String gitCommit = getGitCommit();
-        System.out.println("KBase SDK version " + VERSION + (gitCommit == null ? "" : (" (commit " + gitCommit + ")")));
+        System.out.println("KBase SDK version " + VERSION + " (commit " + GitCommit.COMMIT + ")");
     }
 
-    public static String getGitCommit() {
-        String gitCommit = null;
-        try {
-            Properties gitProps = new Properties();
-            InputStream is = ModuleBuilder.class.getResourceAsStream("git.properties");
-            gitProps.load(is);
-            is.close();
-            gitCommit = gitProps.getProperty("commit");
-        } catch (Exception ignore) {}
-        return gitCommit;
-    }
-    
     private static int runVersionCommand(VersionCommandArgs testArgs, JCommander jc) {
         printVersion();
         return 0;

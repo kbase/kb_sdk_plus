@@ -1,0 +1,190 @@
+plugins {
+	id 'java'
+	id 'war'
+	id 'jacoco'
+	id 'org.ajoberstar.grgit' version '4.1.1'
+}
+
+// TODO NEXT build script - how include built jar
+// TODO NEXT update dockerfile
+// TODO NEXT remove ant & makefile
+// TODO NEXT move to standard gradle locations
+// TODO NEXT run tests from Eclipse w/o specifying classpath manually & remove sourceSets & classpath
+// TODO NEXT use jitpack jars vs pulling from repo
+
+// TODO TEST DEPS TypeGeneratorTest has a hard coded list of jars it uses for tests
+//           Need to figure out a better way
+// TODO TEST add a test that starts the SDK in a docker container and checks some simple cmds
+// TODO DEPS make JitPack jars for catalog and NMS and use them
+
+repositories {
+	mavenCentral()
+	maven {  // for syslog4j
+		name = "Clojars"
+		url = "https://repo.clojars.org/"
+	}
+}
+
+task buildGitCommitFile {
+	doLast {
+		def commitId = grgit.head().id
+		// is there a variable for builddir/classes/java/main?
+		file("$buildDir/classes/java/main/us/kbase/mobu/gitcommit").text = commitId
+	}
+}
+
+compileJava {
+	options.release = 11
+	finalizedBy buildGitCommitFile
+}
+
+task pythonTest(type: Exec) {
+	description = 'Runs Python tests using pytest'
+	environment 'PYTHONPATH', './src/java/us/kbase/templates'
+	commandLine 'pytest',
+		'--cov=authclient', '--cov-report=xml', '--cov-report=html', 'test_scripts/py_module_tests'
+	doFirst {
+		println "Running: ${commandLine.join(' ')}"
+	}
+}
+
+test {
+	dependsOn pythonTest
+	
+	maxHeapSize = "3G"
+	testLogging {
+		exceptionFormat = 'full'
+		showStandardStreams = true
+	}
+	finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+	reports {
+		xml.required = true
+		csv.required = true
+	}
+	
+	// Exclude specific directories or files from coverage
+	afterEvaluate {
+		classDirectories.setFrom(
+			files(classDirectories.files.collect {
+				fileTree(dir: it, exclude: [
+					"**/fraser/neil/**",
+					"**/common/executionengine/**",
+					"**/common/service/**",
+					"**/catalog/**",
+					"**/narrativemethodstore/**",
+				])
+			})
+		)
+	}
+}
+
+// Custom java project layout
+sourceSets {
+	main {
+		java {
+			srcDirs = ["src/java/"]
+			exclude "**/test/**"
+		}
+		resources {
+			srcDirs = ["src/java/"]
+			include "**/gitcommit"
+			include "**/*.css"
+			include "**/*.properties"
+			include "**/*.py"
+			exclude "**/test**"
+		}
+	}
+	test {
+		java {
+			srcDirs = ["src/java/"]
+			include "**/test/**"
+		}
+		resources {
+			srcDirs = ["src/java/"]
+			include "**/test/**/*.properties"
+			include "**/test/**/*.css"
+			include "**/test/**/*.spec"
+			include "**/test/**/*.html"
+		}
+	}
+}
+
+configurations {
+	// can't directly access testImplementation, so extend and access
+	testimpl.extendsFrom testImplementation
+}
+
+def fromURL = { url, name ->
+	File file = new File("$buildDir/download/${name}.jar")
+	file.parentFile.mkdirs()
+	if (!file.exists()) {
+		new URL(url).withInputStream { downloadStream ->
+			file.withOutputStream { fileOut ->
+				fileOut << downloadStream
+			}
+		}
+	}
+	files(file.absolutePath)
+}
+
+dependencies {
+
+	compileOnly 'javax.servlet:servlet-api:2.5'
+
+	implementation fromURL(
+		'https://github.com/kbase/jars/raw/master/lib/jars/kbase/auth/kbase-auth-0.4.4.jar',
+		'kbase-auth-0.4.4'
+	)
+	implementation fromURL(
+		'https://github.com/kbase/jars/raw/master/lib/jars/kbase/workspace/WorkspaceClient-0.6.0.jar',
+		'WorkspaceClient-0.6.0'
+	)
+	implementation fromURL(
+		'https://github.com/kbase/jars/raw/master/lib/jars/kbase/common/kbase-common-0.0.23.jar',
+		'kbase-common-0.0.23'
+	)
+	
+	implementation 'org.ini4j:ini4j:0.5.2'
+	implementation 'org.apache.commons:commons-lang3:3.1'
+	implementation 'com.google.guava:guava:18.0'
+	implementation 'org.yaml:snakeyaml:1.11'
+	implementation 'com.beust:jcommander:1.48'
+	implementation 'org.apache.velocity:velocity:1.7'
+	implementation 'com.sun.codemodel:codemodel:2.4.1'
+	implementation 'com.googlecode.jsonschema2pojo:jsonschema2pojo-core:0.3.6'
+	implementation 'com.j2html:j2html:0.7'
+	// TODO DEPS a lot of these are required due to a) the callback server code and b)
+	//           tests that mock service wizard and the callback service. See if they can be
+	//           moved to a test implementation if we swap the callback service for the
+	//           python docker image
+	// TODO DEPS Some of these are transitive dependencies of kbase-common and the workspace
+	//           and could be removed when switching to a jitpacked jar
+	implementation 'commons-io:commons-io:2.4'
+	implementation 'ch.qos.logback:logback-classic:1.1.2'
+	implementation 'org.slf4j:slf4j-api:1.7.7'
+	implementation "com.fasterxml.jackson.core:jackson-annotations:2.2.3"
+	implementation "com.fasterxml.jackson.core:jackson-databind:2.2.3"
+	implementation 'javax.annotation:javax.annotation-api:1.3.2'
+	implementation 'joda-time:joda-time:2.2'
+	// this is OOOOOOLD. But that probably means updating java_common
+	implementation 'org.eclipse.jetty.aggregate:jetty-all:7.0.0.v20091005'
+	// TODO DEPS Need to rework the java common logger to not use syslog4j at all since it's
+	// abandonware and has a ton of CVEs, even in the newer versions.
+	// Note that the java SDK modules use syslog4j, so we'll need to figure something out
+	// there. I doubt any of the apps actually use the logging code that triggers it though
+	implementation "org.syslog4j:syslog4j:0.9.46"
+	// needed for syslog4j
+	implementation 'net.java.dev.jna:jna:3.4.0'
+	
+	testImplementation 'junit:junit:4.12'
+	testImplementation 'org.hamcrest:hamcrest-core:1.3'
+}
+
+task showTestClassPath {
+	doLast {
+		configurations.testimpl.each { println it }
+	}
+}

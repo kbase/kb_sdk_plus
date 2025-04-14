@@ -6,7 +6,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
