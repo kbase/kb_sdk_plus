@@ -100,7 +100,7 @@ sourceSets {
 	test {
 		java {
 			srcDirs = ["src/java/"]
-			include '**/test/**'
+			include "**/test/**"
 		}
 		resources {
 			srcDirs = ["src/java/"]
@@ -174,7 +174,7 @@ dependencies {
 	// TODO DEPS Need to rework the java common logger to not use syslog4j at all since it's
 	// abandonware and has a ton of CVEs, even in the newer versions.
 	// Note that the java SDK modules use syslog4j, so we'll need to figure something out
-	// there. I doubt any of the apps actually use the logging code that triggers it rhough
+	// there. I doubt any of the apps actually use the logging code that triggers it though
 	implementation "org.syslog4j:syslog4j:0.9.46"
 	// needed for syslog4j
 	implementation 'net.java.dev.jna:jna:3.4.0'
