@@ -5,7 +5,6 @@ plugins {
 	id 'org.ajoberstar.grgit' version '4.1.1'
 }
 
-// TODO NEXT build script - how include built jar
 // TODO NEXT update dockerfile
 // TODO NEXT remove ant & makefile
 // TODO NEXT move to standard gradle locations
@@ -38,6 +37,29 @@ compileJava {
 	finalizedBy buildGitCommitFile
 }
 
+
+task kb_sdk_plusScript {
+	dependsOn compileJava
+	doLast {
+		def dependencies = configurations.runtimeClasspath.collect { File file ->
+			file.absolutePath
+		}
+	
+		def classpath = dependencies.join(':')
+	
+		def scriptContent = """#!/bin/sh
+
+CLASSPATH=$classpath
+MOD=us.kbase.mobu.ModuleBuilder
+
+java -cp $buildDir/classes/java/main:$buildDir/resources/main:\$CLASSPATH \$MOD \$@
+"""
+		def outfile = "$buildDir/kb-sdk"
+		file(outfile).text = scriptContent
+		file(outfile).setExecutable(true)
+	}
+}
+
 task pythonTest(type: Exec) {
 	description = 'Runs Python tests using pytest'
 	environment 'PYTHONPATH', './src/java/us/kbase/templates'
@@ -49,6 +71,7 @@ task pythonTest(type: Exec) {
 }
 
 test {
+	dependsOn kb_sdk_plusScript  // tests use script to compile sdk modules
 	dependsOn pythonTest
 	
 	maxHeapSize = "3G"
