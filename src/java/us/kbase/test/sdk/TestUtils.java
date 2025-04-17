@@ -39,6 +39,7 @@ public class TestUtils {
 		final Path tgt = Paths.get("/kb/module/work").resolve(target);
 		final int exitCode = ProcessHelper.cmd(
 				"docker", "run",
+				"--rm",
 				"-v", workdir.toRealPath().toString() + ":/kb/module/work",
 				"--entrypoint", "chmod",
 				// use an image that'll be used for the tests anyway
