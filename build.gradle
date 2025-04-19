@@ -5,14 +5,14 @@ plugins {
 	id 'org.ajoberstar.grgit' version '4.1.1'
 }
 
-// TODO NEXT update dockerfile
-// TODO NEXT remove ant & makefile
 // TODO NEXT move to standard gradle locations
 // TODO NEXT run tests from Eclipse w/o specifying classpath manually & remove sourceSets & classpath
 // TODO NEXT use jitpack jars vs pulling from repo
 
 // TODO BUILD look into GraalVM native compilation vs. dockerizing kb-sdk
 //             https://github.com/oracle/graal/issues/407#issuecomment-2573704305
+// TODO GENSCRIPT need to update genscript if we don't switch to GraalVM. Need to release to get
+//                a latest tag
 
 // TODO TEST DEPS TypeGeneratorTest has a hard coded list of jars it uses for tests
 //           Need to figure out a better way
@@ -68,6 +68,7 @@ task prepareRunnableDir {
 	// like kb_sdk_plusScript but localizes all the jars and the script
 	// into a directory for easy copying
 	// Note requires bash vs just sh
+	dependsOn jar
 	def runnableDir = file("$buildDir/runnable")
 	def runnerScript = new File(runnableDir, "kb-sdk")
 
