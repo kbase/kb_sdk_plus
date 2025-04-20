@@ -79,6 +79,7 @@ public class TypeGeneratorTest extends Assert {
 	// probably best way is with a mock service wizard that returns a url to
 	// the running service
 	//TODO TESTING pep8 test? Not really sure about this.
+	// TODO TESTDEPS there's a junit-4.9.properties file in resources, is that needed?
 
 	private static final String rootPackageName = "us.kbase";
 	private static final String SERVICE_WIZARD = "ServiceWizard";
@@ -674,7 +675,7 @@ public class TypeGeneratorTest extends Assert {
 					"if [ ! -d biokbase ]; then",
 					"  mkdir -p ./biokbase",
 					// TODO TESTCODE this is bonkers, need a better way of reffing files
-					"  cp -r ../../../../src/java/us/kbase/templates/log.py ./biokbase/",
+					"  cp -r ../../../../src/main/resources/us/kbase/templates/log.py ./biokbase/",
 					"fi"
 					));
 			if (serverPortNum != null) {

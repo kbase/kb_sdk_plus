@@ -103,7 +103,7 @@ public class ModuleTesterTest {
 		final Path moduleDir = init(lang, moduleName);
 		// TODO TESTHACK remove this when there's a base image that deploys the authclient correctly
 		FileUtils.copyFile(
-				new File("./src/java/us/kbase/templates/authclient.py"),
+				new File("./src/main/resources/us/kbase/templates/authclient.py"),
 				moduleDir.resolve(Paths.get("lib", moduleName, "/authclient.py")).toFile()
 				);
 		// TODO TESTHACK PYTEST upgrade to pytest and remove this stuff assuming that works
