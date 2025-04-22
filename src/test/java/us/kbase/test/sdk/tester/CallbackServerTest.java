@@ -58,10 +58,10 @@ import us.kbase.common.service.JacksonTupleModule;
 import us.kbase.common.service.JsonClientException;
 import us.kbase.common.service.ServerException;
 import us.kbase.common.service.UObject;
-import us.kbase.common.test.controllers.ControllerCommon;
 import us.kbase.mobu.tester.DockerMountPoints;
 import us.kbase.mobu.tester.SDKCallbackServer;
 import us.kbase.test.sdk.scripts.TestConfigHelper;
+import us.kbase.testutils.controllers.ControllerCommon;
 import us.kbase.workspace.ProvenanceAction;
 import us.kbase.workspace.SubAction;
 
@@ -152,7 +152,7 @@ public class CallbackServerTest {
         Files.write(rundocker, Arrays.asList("#!/bin/bash", "docker $@"),
                 StandardCharsets.UTF_8);
         Files.setPosixFilePermissions(rundocker, perms);
-        URL authUrl = new URL(TestConfigHelper.getAuthServiceUrl());
+        URL authUrl = new URL(TestConfigHelper.getAuthServiceUrlLegacy());
         String authUrlInsecure = TestConfigHelper.getAuthServiceUrlInsecure();
         final CallbackServerConfig cbcfg =
                 new CallbackServerConfigBuilder(new URL(TestConfigHelper.getKBaseEndpoint()),

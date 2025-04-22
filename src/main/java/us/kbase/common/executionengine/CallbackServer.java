@@ -35,7 +35,6 @@ import com.google.common.cache.CacheBuilder;
 
 import us.kbase.auth.AuthException;
 import us.kbase.auth.AuthToken;
-import us.kbase.auth.ConfigurableAuthService;
 import us.kbase.common.executionengine.CallbackServerConfigBuilder.CallbackServerConfig;
 import us.kbase.common.service.JacksonTupleModule;
 import us.kbase.common.service.JsonClientException;
@@ -122,7 +121,7 @@ public abstract class CallbackServer extends JsonServerServlet {
     }
     
     @Override
-    protected ConfigurableAuthService getAuth(final Map<String, String> config) {
+    protected AuthenticationHandler getAuth(final Map<String, String> config) {
         /* see comments for startupFailed() above. Auth isn't needed, so we can skip trying to
          * contact the auth server.
          */

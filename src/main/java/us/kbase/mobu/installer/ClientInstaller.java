@@ -286,7 +286,7 @@ public class ClientInstaller {
             String customClientClassName = TextUtils.capitalize(clientName) + "Client";
             URL urlEndpoint = url == null ? null : new URL(url);
             JavaTypeGenerator.processSpec(services, javaSrcDir, javaPackageParent, false, 
-                    null, urlEndpoint, clientAsyncVer, dynservVer, semanticVersion, 
+                    urlEndpoint, clientAsyncVer, dynservVer, semanticVersion, 
                     gitUrl, gitCommitHash, null, customClientClassName);
         } else {
             String perlClientName = null;

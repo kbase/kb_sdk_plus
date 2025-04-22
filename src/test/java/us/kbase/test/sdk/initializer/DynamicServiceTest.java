@@ -77,7 +77,7 @@ public class DynamicServiceTest extends DockerClientServerTester {
         ProcessHelper.cmd("bash", runDockerPath, "run", "-d", "-p", port + ":5000",
                 "--dns", "8.8.8.8", "-v", workDirPath + ":/kb/module/work", 
                 "--name", containerName, "-e", "KBASE_ENDPOINT=" + endPoint, "-e", 
-                "AUTH_SERVICE_URL=" + TestConfigHelper.getAuthServiceUrl(), "-e", 
+                "AUTH_SERVICE_URL=" + TestConfigHelper.getAuthServiceUrlLegacy(), "-e", 
                 "AUTH_SERVICE_URL_ALLOW_INSECURE=" + TestConfigHelper.getAuthServiceUrlInsecure(),
                 imageName).exec(tlDir);
         return containerName;

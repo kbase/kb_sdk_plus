@@ -76,12 +76,11 @@ public class JavaTypeGenerator {
 			final File srcOutDir,
 			final String packageParent, 
 			final boolean createServer,
-			final String gwtPackage,
 			final URL url
 			) throws Exception {
 		List<KbService> services = KidlParser.parseSpec(specFile, null);
 		return processSpec(services, new DiskFileSaver(srcOutDir), packageParent, createServer,
-				gwtPackage, url, null, null, null, null, null, null, null);
+				url, null, null, null, null, null, null, null);
 	}
 
 	public static JavaData processSpec(
@@ -89,7 +88,6 @@ public class JavaTypeGenerator {
 			final FileSaver srcOut,
 			final String packageParent, 
 			final boolean createServer,
-			final String gwtPackage,
 			final URL url,
 			final String clientAsyncVersion,
 			final String clientDynservVersion,
@@ -97,7 +95,7 @@ public class JavaTypeGenerator {
 			final String gitUrl,
 			final String gitCommitHash
 			) throws Exception {
-		return processSpec(services, srcOut, packageParent, createServer, gwtPackage, url,
+		return processSpec(services, srcOut, packageParent, createServer, url,
 				clientAsyncVersion, clientDynservVersion, semanticVersion,
 				gitUrl, gitCommitHash, null, null);
 	}
@@ -107,7 +105,6 @@ public class JavaTypeGenerator {
 			final FileSaver srcOut, 
 			final String packageParent,
 			final boolean createServer,
-			final String gwtPackage,
 			final URL url,
 			final String clientAsyncVersion,
 			final String clientDynservVersion,
@@ -118,7 +115,7 @@ public class JavaTypeGenerator {
 			final String customClientClassName
 		) throws Exception {
 		JavaData data = prepareDataStructures(services);
-		outputData(data, srcOut, packageParent, createServer, gwtPackage, url,
+		outputData(data, srcOut, packageParent, createServer, url,
 				clientAsyncVersion, clientDynservVersion, semanticVersion, gitUrl,
 				gitCommitHash, originalCode, customClientClassName);
 		return data;
@@ -185,7 +182,6 @@ public class JavaTypeGenerator {
 			final FileSaver srcOutDir,
 			String packageParent, 
 			final boolean createServers,
-			final String gwtPackage,
 			final URL url,
 			final String clientAsyncVersion,
 			final String clientDynservVersion,
@@ -202,11 +198,9 @@ public class JavaTypeGenerator {
 		generateTupleClasses(data,srcOutDir, packageParent);
 		generateClientClass(data, srcOutDir, packageParent, url, clientAsyncVersion, 
 				clientDynservVersion, customClientClassName);
-		if (createServers)
+		if (createServers) {
 			generateServerClass(data, srcOutDir, packageParent, semanticVersion, gitUrl, 
 					gitCommitHash, originalCode);
-		if (gwtPackage != null) {
-			GwtGenerator.generate(data, srcOutDir, gwtPackage);
 		}
 	}
 

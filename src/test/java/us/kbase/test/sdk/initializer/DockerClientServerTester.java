@@ -167,7 +167,7 @@ public class DockerClientServerTester {
         String testCfgText = ""+
                 "test_token=" + token.getToken() + "\n" +
                 "kbase_endpoint=" + TestConfigHelper.getKBaseEndpoint() + "\n" +
-                "auth_service_url=" + TestConfigHelper.getAuthServiceUrl() + "\n" +
+                "auth_service_url=" + TestConfigHelper.getAuthServiceUrlLegacy() + "\n" +
                 "auth_service_url_allow_insecure=" + 
                 TestConfigHelper.getAuthServiceUrlInsecure() + "\n";
         FileUtils.writeStringToFile(testCfgFile, testCfgText);

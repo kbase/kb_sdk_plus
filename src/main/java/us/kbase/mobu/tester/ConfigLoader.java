@@ -2,15 +2,15 @@ package us.kbase.mobu.tester;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
 
-import us.kbase.auth.AuthConfig;
 import us.kbase.auth.AuthToken;
-import us.kbase.auth.ConfigurableAuthService;
+import us.kbase.auth.client.AuthClient;
 import us.kbase.common.executionengine.CallbackServerConfigBuilder;
 import us.kbase.common.executionengine.CallbackServerConfigBuilder.CallbackServerConfig;
 import us.kbase.common.executionengine.LineLogger;
@@ -39,37 +39,22 @@ public class ConfigLoader {
             throw new IllegalStateException("Error: 'auth_service_url' parameter is not set in " +
                     configPathInfo);
         String testPrefix = testMode ? "test_" : "";
-        String user = props.getProperty(testPrefix + "user");
-        if (user != null && user.trim().isEmpty()) {
-            user = null;
-        }
-        String password = props.getProperty(testPrefix + "password");
         String tokenString = props.getProperty(testPrefix + "token");
         if (tokenString != null && tokenString.trim().isEmpty()) {
             tokenString = null;
         }
-        if (user == null && tokenString == null) {
+        if (tokenString == null) {
             throw new IllegalStateException("Error: KBase account credentials are not set in " +
                     configPathInfo);
         }
         authAllowInsecure = props.getProperty("auth_service_url_allow_insecure");
-        ConfigurableAuthService auth = new ConfigurableAuthService(
-                new AuthConfig().withKBaseAuthServerURL(new URL(authUrl))
-                .withAllowInsecureURLs("true".equals(authAllowInsecure)));
-        if (tokenString != null) {
-            token = auth.validateToken(tokenString);
-        } else {
-            if (password == null || password.trim().isEmpty()) {
-                System.out.println("You haven't preset your password in " +configPathInfo + 
-                        " file. Please enter it now.");
-                password = new String(System.console().readPassword("Password: "));
-            }
-            token = auth.login(user.trim(), password.trim()).getToken();
-        }
+        final AuthClient auth = AuthClient.from(new URI(authUrl.split("api/")[0]));
+        token = auth.validateToken(tokenString);
         endPoint = props.getProperty("kbase_endpoint");
-        if (endPoint == null)
+        if (endPoint == null) {
             throw new IllegalStateException("Error: KBase services end-point is not set in " +
                     configPathInfo);
+        }
         jobSrvUrl = getConfigUrl(props, "job_service_url", endPoint, "userandjobstate");
         wsUrl = getConfigUrl(props, "workspace_url", endPoint, "ws");
         shockUrl = getConfigUrl(props, "shock_url", endPoint, "shock-api");

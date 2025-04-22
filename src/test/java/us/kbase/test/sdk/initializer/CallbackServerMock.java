@@ -240,7 +240,7 @@ public class CallbackServerMock extends JsonServerServlet {
                     ProcessHelper.cmd("bash", runDockerPath, "run", "-v", 
                             jobDir.getCanonicalPath() + ":/kb/module/work", 
                             "--name", containerName, "-e", "KBASE_ENDPOINT=" + kbaseEndpoint,
-                            "-e", "AUTH_SERVICE_URL=" + TestConfigHelper.getAuthServiceUrl(),
+                            "-e", "AUTH_SERVICE_URL=" + TestConfigHelper.getAuthServiceUrlLegacy(),
                             "-e", "AUTH_SERVICE_URL_ALLOW_INSECURE=" + 
                                     TestConfigHelper.getAuthServiceUrlInsecure(),
                                     dockerImage, "async").exec(jobDir, 

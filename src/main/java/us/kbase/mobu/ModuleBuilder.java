@@ -285,7 +285,7 @@ public class ModuleBuilder {
                     a.perlPsgiName, a.perlEnableRetries, a.pyClientSide, a.pyClientName, 
                     a.pyServerSide, a.pyServerName, a.pyImplName, a.javaClientSide, 
                     a.javaServerSide, a.javaPackageParent, a.javaSrcDir, 
-                    a.javaGwtPackage, a.rClientSide, a.rClientName, 
+                    a.rClientSide, a.rClientName, 
                     a.rServerSide, a.rServerName, a.rImplName, outDir, a.jsonSchema, 
                     a.clAsyncVer, a.dynservVer, a.html,
                     semanticVersion, gitUrl, gitCommitHash);
@@ -537,10 +537,6 @@ public class ModuleBuilder {
 
     	@Parameter(names="--javasrv", description="Generate Java server code in the directory set by --javasrc")
         boolean javaServerSide = false;
-
-    	@Parameter(names="--javagwt",description="Generate a GWT client Java package (useful if you need " +
-        		"copies of generated classes for GWT clients)")//, metaVar="<java-gwt-pckg>")     
-        String javaGwtPackage = null;
 
         @Parameter(names="--r", description="DEPRECATED Generate a R client with a standard default name")
         boolean rClientSide = false;

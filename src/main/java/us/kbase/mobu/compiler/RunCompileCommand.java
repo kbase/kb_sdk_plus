@@ -53,7 +53,6 @@ public class RunCompileCommand {
             final boolean javaServerSide, 
             final String javaPackageParent,
             final String javaSrcPath,
-            final String javaGwtPackage,
             final boolean rClientSide, 
             final String rClientName,
             boolean rServerSide,
@@ -138,13 +137,11 @@ public class RunCompileCommand {
         }
         if (javaServerSide)
             javaClientSide = true;
-        if (javaGwtPackage != null)
-            javaClientSide = true;
         JavaData javaParsingData = null;
         if (javaClientSide) {
             //TODO DYNSERV add dynamic service client generation to all clients except Python
             javaParsingData = JavaTypeGenerator.processSpec(services, javaSrcDir, 
-                    javaPackageParent, javaServerSide, javaGwtPackage, 
+                    javaPackageParent, javaServerSide, 
                     url == null ? null : new URL(url),
                     clientAsyncVer, dynservVer, semanticVersion, gitUrl, gitCommitHash);
         }
