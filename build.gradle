@@ -11,6 +11,9 @@ plugins {
 // TODO NEXT run tests from Eclipse w/o specifying classpath manually & remove sourceSets & classpath
 // TODO NEXT use jitpack jars vs pulling from repo
 
+// TODO BUILD look into GraalVM native compilation vs. dockerizing kb-sdk
+//             https://github.com/oracle/graal/issues/407#issuecomment-2573704305
+
 // TODO TEST DEPS TypeGeneratorTest has a hard coded list of jars it uses for tests
 //           Need to figure out a better way
 // TODO TEST add a test that starts the SDK in a docker container and checks some simple cmds
@@ -39,24 +42,64 @@ compileJava {
 
 
 task kb_sdk_plusScript {
-	dependsOn compileJava
+	// creates a kb-sdk script based on the jars in their default locations
+	dependsOn jar
 	doLast {
 		def dependencies = configurations.runtimeClasspath.collect { File file ->
 			file.absolutePath
 		}
 	
-		def classpath = dependencies.join(':')
+		def buildjar = "$buildDir/libs/${project.name}.jar"
+		def classpath = buildjar + ":" + dependencies.join(':')
 	
 		def scriptContent = """#!/bin/sh
 
 CLASSPATH=$classpath
-MOD=us.kbase.mobu.ModuleBuilder
 
-java -cp $buildDir/classes/java/main:$buildDir/resources/main:\$CLASSPATH \$MOD \$@
+java -cp \$CLASSPATH us.kbase.mobu.ModuleBuilder \$@
 """
 		def outfile = "$buildDir/kb-sdk"
 		file(outfile).text = scriptContent
 		file(outfile).setExecutable(true)
+	}
+}
+
+task prepareRunnableDir {
+	// like kb_sdk_plusScript but localizes all the jars and the script
+	// into a directory for easy copying
+	// Note requires bash vs just sh
+	def runnableDir = file("$buildDir/runnable")
+	def runnerScript = new File(runnableDir, "kb-sdk")
+
+	doFirst {
+		// Clean and recreate runnable dir
+		delete runnableDir
+		mkdir runnableDir
+
+		// Copy all runtime jars
+		configurations.runtimeClasspath.each { File dep ->
+			copy {
+				from dep
+				into runnableDir
+			}
+		}
+
+		// Copy the project's jar
+		def jarFile = file("$buildDir/libs/${project.name}.jar")
+		copy {
+			from jarFile
+			into runnableDir
+		}
+
+		// Write the runner script
+		runnerScript.text = """#!/bin/bash
+
+SCRIPT_DIR="\$(cd "\$(dirname "\${BASH_SOURCE[0]}")" && pwd)"
+CLASSPATH="\$(ls \$SCRIPT_DIR/*.jar | tr '\\n' ':')"
+
+java -cp \$CLASSPATH us.kbase.mobu.ModuleBuilder \$@
+"""
+		runnerScript.setExecutable(true)
 	}
 }
 
@@ -115,6 +158,7 @@ sourceSets {
 		java {
 			srcDirs = ["src/java/"]
 			exclude "**/test/**"
+			exclude "**/fraser/neil/**"
 		}
 		resources {
 			srcDirs = ["src/java/"]
@@ -129,6 +173,7 @@ sourceSets {
 		java {
 			srcDirs = ["src/java/"]
 			include "**/test/**"
+			include "**/fraser/neil/**"
 		}
 		resources {
 			srcDirs = ["src/java/"]
