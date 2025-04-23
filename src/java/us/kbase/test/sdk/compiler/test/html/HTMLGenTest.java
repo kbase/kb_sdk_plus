@@ -15,7 +15,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -23,8 +22,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -242,43 +239,16 @@ public class HTMLGenTest {
 	}
 	
 	private static List<String> listFiles() throws Exception {
-
-		//this is totally stupid.
+		// trying to get "." doesn't work here
+		final URL url = HTMLGenTest.class.getResource(CSS);
+		final Path dir = Paths.get(url.toURI()).getParent();
 		final List<String> files;
-		final File jarFile = new File(HTMLGenTest.class.getProtectionDomain()
-				.getCodeSource().getLocation().getPath());
-		if (jarFile.isFile()) {  // Run with JAR file (ant test)
-			// TODO GRADLE remove when ant is removed
-			files = new LinkedList<String>();
-			System.out.println("Collecting HTML files via JAR contents");
-			String path = HTMLGenTest.class.getCanonicalName();
-			path = path.replace(".", "/");
-			path = Paths.get(path).getParent().toString();
-			try (final JarFile jar = new JarFile(jarFile)) {
-				// returns every fucking file in the jar
-				final Enumeration<JarEntry> entries = jar.entries();
-				while(entries.hasMoreElements()) {
-					final String name = entries.nextElement().getName();
-					if (name.startsWith(path) && name.endsWith(".html")) {
-						final Path p = Paths.get(name);
-						files.add(p.getFileName().toString());
-					}
-				}
-			}
-		} else { // Run outside jar (Eclipse & Gradle test)
-			System.out.println("Collecting HTML files via resources");
-			// trying to get "." doesn't work here
-			final URL url = HTMLGenTest.class.getResource(CSS);
-			final Path dir = Paths.get(url.toURI()).getParent();
-			try (Stream<Path> stream = Files.list(dir)) {
-				files = stream
-					.filter(file -> file.toString().endsWith(".html"))
-					.map(file -> file.getFileName().toString())
-					.collect(Collectors.toList());
-			}
+		try (final Stream<Path> stream = Files.list(dir)) {
+			files = stream
+				.filter(file -> file.toString().endsWith(".html"))
+				.map(file -> file.getFileName().toString())
+				.collect(Collectors.toList());
 		}
-		System.out.println("Found files:");
-		System.out.println(files);
 		return files;
 	}
 }

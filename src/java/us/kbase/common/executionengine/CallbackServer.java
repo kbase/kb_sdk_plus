@@ -516,7 +516,7 @@ public abstract class CallbackServer extends JsonServerServlet {
             throws SocketException {
         if (networkInterfaces == null || networkInterfaces.length == 0) {
             networkInterfaces = new String[] {"docker0", "vboxnet0", "vboxnet1",
-                    "VirtualBox Host-Only Ethernet Adapter", "en0"};
+                    "VirtualBox Host-Only Ethernet Adapter", "eth0", "en0"};
         }
         final List<String> hostIps = NetUtils.findNetworkAddresses(
                 networkInterfaces);
