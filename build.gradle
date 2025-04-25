@@ -23,6 +23,10 @@ repositories {
 		name = "Clojars"
 		url = "https://repo.clojars.org/"
 	}
+	maven {
+		name = "Jitpack"
+		url = 'https://jitpack.io'
+	}
 }
 
 task buildGitCommitFile {
@@ -186,6 +190,7 @@ dependencies {
 		'kbase-common-0.0.23'
 	)
 	
+	implementation 'com.github.kbase:java_kidl:0.2.0'
 	implementation 'org.ini4j:ini4j:0.5.2'
 	implementation 'org.apache.commons:commons-lang3:3.1'
 	implementation 'com.google.guava:guava:18.0'
