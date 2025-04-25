@@ -1,4 +1,4 @@
-package us.kbase.test.sdk.compiler.test.html;
+package us.kbase.test.sdk.compiler.html;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;

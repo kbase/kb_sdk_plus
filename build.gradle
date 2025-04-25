@@ -5,8 +5,6 @@ plugins {
 	id 'org.ajoberstar.grgit' version '4.1.1'
 }
 
-// TODO NEXT move to standard gradle locations
-// TODO NEXT run tests from Eclipse w/o specifying classpath manually & remove sourceSets & classpath
 // TODO NEXT use jitpack jars vs pulling from repo
 
 // TODO BUILD look into GraalVM native compilation vs. dockerizing kb-sdk
@@ -106,7 +104,7 @@ java -cp \$CLASSPATH us.kbase.mobu.ModuleBuilder \$@
 
 task pythonTest(type: Exec) {
 	description = 'Runs Python tests using pytest'
-	environment 'PYTHONPATH', './src/java/us/kbase/templates'
+	environment 'PYTHONPATH', './src/main/resources/us/kbase/templates'
 	// Gradle is an absolute hygine product and appears to not necessarily use the same environment
 	// as the calling context. Wrapping the command in a new shell fixes that for some reason
 	// I don't quite understand.
@@ -150,39 +148,6 @@ jacocoTestReport {
 				])
 			})
 		)
-	}
-}
-
-// Custom java project layout
-sourceSets {
-	main {
-		java {
-			srcDirs = ["src/java/"]
-			exclude "**/test/**"
-			exclude "**/fraser/neil/**"
-		}
-		resources {
-			srcDirs = ["src/java/"]
-			include "**/gitcommit"
-			include "**/*.css"
-			include "**/*.properties"
-			include "**/*.py"
-			exclude "**/test**"
-		}
-	}
-	test {
-		java {
-			srcDirs = ["src/java/"]
-			include "**/test/**"
-			include "**/fraser/neil/**"
-		}
-		resources {
-			srcDirs = ["src/java/"]
-			include "**/test/**/*.properties"
-			include "**/test/**/*.css"
-			include "**/test/**/*.spec"
-			include "**/test/**/*.html"
-		}
 	}
 }
 
