@@ -70,16 +70,12 @@ import us.kbase.mobu.util.TextUtils;
  */
 public class TypeGeneratorTest extends Assert {
 
-	// TODO TEST seems like the 2 TODOs below are done, but not entirely sure
+	// TODO TEST seems like the TODO below is done, but not entirely sure
 	//           the tests work correctly. Verify then remove
-	//TODO TESTING test client with python3.
-	// might be as simple as running the client test script with python3 vs
-	// python.
 	//TODO TESTING test python client with dynamic services
 	// probably best way is with a mock service wizard that returns a url to
 	// the running service
 	//TODO TESTING pep8 test? Not really sure about this.
-	// TODO TESTDEPS there's a junit-4.9.properties file in resources, is that needed?
 
 	private static final String rootPackageName = "us.kbase";
 	private static final String SERVICE_WIZARD = "ServiceWizard";
