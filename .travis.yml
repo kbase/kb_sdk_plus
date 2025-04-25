@@ -1,3 +1,7 @@
+# BEFORE REMOVING THIS FILE
+# add tests to GHA that excercise the docker image / graal binaries similar to the below
+# but more extensive
+
 language: java
 
 python:

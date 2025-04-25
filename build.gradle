@@ -5,8 +5,6 @@ plugins {
 	id 'org.ajoberstar.grgit' version '4.1.1'
 }
 
-// TODO NEXT use jitpack jars vs pulling from repo
-
 // TODO BUILD look into GraalVM native compilation vs. dockerizing kb-sdk
 //             https://github.com/oracle/graal/issues/407#issuecomment-2573704305
 // TODO GENSCRIPT need to update genscript if we don't switch to GraalVM. Need to release to get
@@ -144,7 +142,6 @@ jacocoTestReport {
 		classDirectories.setFrom(
 			files(classDirectories.files.collect {
 				fileTree(dir: it, exclude: [
-					"**/fraser/neil/**",
 					"**/common/executionengine/**",
 					"**/common/service/**",
 					"**/catalog/**",
@@ -160,37 +157,30 @@ configurations {
 	testimpl.extendsFrom testImplementation
 }
 
-def fromURL = { url, name ->
-	File file = new File("$buildDir/download/${name}.jar")
-	file.parentFile.mkdirs()
-	if (!file.exists()) {
-		new URL(url).withInputStream { downloadStream ->
-			file.withOutputStream { fileOut ->
-				fileOut << downloadStream
-			}
-		}
+configurations.all {
+	// not sure why, but couldn't get an exclusion on the auth2 client to work, which
+	// was upgrading slf4j and breaking tests
+	resolutionStrategy {
+		force 'org.slf4j:slf4j-api:1.7.7'
 	}
-	files(file.absolutePath)
 }
 
 dependencies {
 
 	compileOnly 'javax.servlet:servlet-api:2.5'
 
-	implementation fromURL(
-		'https://github.com/kbase/jars/raw/master/lib/jars/kbase/auth/kbase-auth-0.4.4.jar',
-		'kbase-auth-0.4.4'
-	)
-	implementation fromURL(
-		'https://github.com/kbase/jars/raw/master/lib/jars/kbase/workspace/WorkspaceClient-0.6.0.jar',
-		'WorkspaceClient-0.6.0'
-	)
-	implementation fromURL(
-		'https://github.com/kbase/jars/raw/master/lib/jars/kbase/common/kbase-common-0.0.23.jar',
-		'kbase-common-0.0.23'
-	)
-	
+	implementation("com.github.kbase:auth2_client_java:0.5.0") {
+		exclude group: 'com.fasterxml.jackson.core'  // don't upgrade yet, breaks tests
+	}
+	implementation("com.github.kbase:java_common:0.3.1") {
+		exclude group: 'com.fasterxml.jackson.core'  // don't upgrade yet, breaks tests
+	}
 	implementation 'com.github.kbase:java_kidl:0.2.0'
+	// TODO DEPS see if this can be removed after switching to the python callback server
+	//           Provenance classes are used in various callback server related classes and tests
+	implementation('com.github.kbase.workspace_deluxe:workspace-client:0.15.0') {
+		exclude group: 'com.fasterxml.jackson.core'  // don't upgrade yet, breaks tests
+	}
 	implementation 'org.ini4j:ini4j:0.5.2'
 	implementation 'org.apache.commons:commons-lang3:3.1'
 	implementation 'com.google.guava:guava:18.0'
@@ -223,6 +213,9 @@ dependencies {
 	// needed for syslog4j
 	implementation 'net.java.dev.jna:jna:3.4.0'
 	
+	testImplementation ('com.github.kbase:java_test_utilities:0.1.0') {
+		exclude group: 'com.fasterxml.jackson.core'  // don't upgrade yet, breaks tests
+	}
 	testImplementation 'junit:junit:4.12'
 	testImplementation 'org.hamcrest:hamcrest-core:1.3'
 }

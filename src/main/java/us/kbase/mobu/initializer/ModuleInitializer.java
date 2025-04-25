@@ -210,7 +210,7 @@ public class ModuleInitializer {
                 String javaPackageParent = (String)moduleContext.get("java_package_parent");
                 File serverJavaFile = new File(srcDir, modulePackage.replace('.', '/') + "/" + javaModuleName + "Server.java");
                 fillTemplate(moduleContext, "module_java_impl", serverJavaFile.toPath());
-                JavaTypeGenerator.processSpec(new File(moduleDir, specFile), srcDir, javaPackageParent, true, null, null);
+                JavaTypeGenerator.processSpec(new File(moduleDir, specFile), srcDir, javaPackageParent, true, null);
                 //templateFiles.put("module_start_java_server", Paths.get(moduleDir, "scripts", "start_server.sh"));
                 // start_server script is now made in Makefile
                 break;

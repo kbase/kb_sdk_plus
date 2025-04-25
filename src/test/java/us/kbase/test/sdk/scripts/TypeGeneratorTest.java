@@ -227,12 +227,11 @@ public class TypeGeneratorTest extends Assert {
         serverJavaFile.getParentFile().mkdirs();
         serverJavaFile.createNewFile();
 		File libDir = new File(workDir, "lib");
-		String gwtPackageName = getGwtPackageName(testNum);
         // Test for empty server file
 		setUpTestJars(new DiskFileSaver(libDir), true);
 		try {
 			JavaTypeGenerator.processSpec(new File(workDir, testFileName),
-					srcDir, testPackage, true, gwtPackageName, null);
+					srcDir, testPackage, true, null);
 		} catch (Exception ex) {
 			boolean key = ex.getMessage().contains("Missing header in original file");
 			if (!key)
@@ -247,8 +246,8 @@ public class TypeGeneratorTest extends Assert {
         TextUtils.copyStreams(testClassIS, new FileOutputStream(serverJavaFile));
         // Test for full server file
 		JavaData parsingData = JavaTypeGenerator.processSpec(
-				new File(workDir, testFileName), srcDir, testPackage,
-				true, gwtPackageName, null);
+				new File(workDir, testFileName), srcDir, testPackage, true, null
+		);
 		List<URL> cpUrls = new ArrayList<URL>();
 		String classPath = prepareClassPath(libDir, cpUrls);
 		File binDir = new File(workDir, "bin");
@@ -320,12 +319,9 @@ public class TypeGeneratorTest extends Assert {
         Assert.assertEquals("text3", prevCode.get(PrevCodeParser.CONSTRUCTOR).trim());
         Assert.assertEquals("text4", prevCode.get(PrevCodeParser.METHOD + "m1").trim());
 	}
-
-	@Test
-	public void testGwtTransform() throws Exception {
-		startTest(9, false);
-	}
-
+	
+	// Test9 was removed as obsolete
+	
 	@Test
 	public void testComments() throws Exception {
 		startTest(10, false);
@@ -374,7 +370,7 @@ public class TypeGeneratorTest extends Assert {
 					));
 			TextUtils.writeFileLines(lines, new File(workDir, "run_" + moduleName + "_async_job.sh"));
 			runPythonServerTest(testNum, true, workDir, testPackage, libDir, binDir, 
-					parsingData, serverOutDir, cbsMockPort, null, null);
+					parsingData, serverOutDir, cbsMockPort, null);
 			//////////////////////////////////////// Java server ///////////////////////////////////////////
 			lines = new ArrayList<String>(Arrays.asList("#!/bin/bash"));
 			lines.addAll(Arrays.asList(
@@ -396,6 +392,8 @@ public class TypeGeneratorTest extends Assert {
 
     @Test
     public void testRpcContext() throws Exception {
+        // TODO CRUFT remove call stack and all the other cruft from RpcContext in java_common
+        //           and delete this test and remove serverManualCorrections from prepareJavaCode
         int testNum = 14;
         File workDir = prepareWorkDir(testNum);
         System.out.println();
@@ -450,36 +448,7 @@ public class TypeGeneratorTest extends Assert {
                 binDir, parsingData, null, findFreePort());
     }
 
-    @Test
-    public void testProvenance() throws Exception {
-        ////////////////////////////////////// Java ///////////////////////////////////////
-        int testNum = 18;
-        File workDir = prepareWorkDir(testNum);
-        System.out.println();
-        System.out.println("Test " + testNum + " (testProvenance) is staring in directory: " + workDir.getName());
-        String testPackage = rootPackageName + ".test" + testNum;
-        File libDir = new File(workDir, "lib");
-        File binDir = new File(workDir, "bin");
-        int portNum = findFreePort();
-        Map<String, String> javaSrvManualCorr = new HashMap<String, String>();
-        javaSrvManualCorr.put("get_prov", "us.kbase.workspace.ProvenanceAction pa = " +
-        		"((java.util.List<us.kbase.workspace.ProvenanceAction>)jsonRpcContext.getProvenance()).get(0); " +
-        		"returnVal = new UObject(new java.util.ArrayList<us.kbase.workspace.ProvenanceAction>(" +
-        		"java.util.Arrays.asList(new us.kbase.workspace.ProvenanceAction().withService(pa.getService()).withMethod(pa.getMethod()))))");
-        Map<String, String> pySrvManualCorr = new HashMap<String, String>();
-        pySrvManualCorr.put("get_prov", "returnVal = [{'service':ctx['provenance'][0]['service'],'method':ctx['provenance'][0]['method']}]");
-        if (!libDir.exists())
-            libDir.mkdirs();
-        checkLib(new DiskFileSaver(libDir), "WorkspaceClient");
-        JavaData parsingData = prepareJavaCode(testNum, workDir, testPackage, libDir, binDir,
-                portNum, true, false, false, javaSrvManualCorr
-        );
-        File serverOutDir = preparePerlAndPyServerCode(testNum, workDir);
-        int pyPort = findFreePort();
-        runPythonServerTest(testNum, true, workDir, testPackage, libDir, binDir, parsingData, 
-                serverOutDir, pyPort, pyPort, pySrvManualCorr);
-        runJavaServerTest(testNum, true, workDir, testPackage, libDir, binDir, parsingData, serverOutDir, portNum);
-    }
+    // Test 18 was removed as obsolete
 
     @Test
     public void testStatus() throws Exception {
@@ -556,7 +525,7 @@ public class TypeGeneratorTest extends Assert {
 			int serviceWizardPort = jettyServer.getConnectors()[0].getLocalPort();  // Clients should use it for URL lookup
 			serverPortHolder[0] = findFreePort();
 			runPythonServerTest(testNum, true, workDir, testPackage, libDir, binDir, parsingData, 
-					serverOutDir, serviceWizardPort, serverPortHolder[0], null);
+					serverOutDir, serviceWizardPort, serverPortHolder[0]);
 			serverPortHolder[0] = findFreePort();
 			runJavaServerTest(testNum, true, workDir, testPackage, libDir,
 					binDir, parsingData, serverOutDir, serviceWizardPort, serverPortHolder[0]);
@@ -644,7 +613,7 @@ public class TypeGeneratorTest extends Assert {
 	        File libDir, File binDir, JavaData parsingData, File serverOutDir,
 	        int portNum) throws IOException, Exception {
 	    runPythonServerTest(testNum, needClientServer, workDir, testPackage, libDir, 
-	            binDir, parsingData, serverOutDir, portNum, portNum, null);
+	            binDir, parsingData, serverOutDir, portNum, portNum);
 	}
 
 	protected static void runPythonServerTest(
@@ -657,12 +626,11 @@ public class TypeGeneratorTest extends Assert {
 			final JavaData parsingData,
 			final File serverOutDir,
 			final int clientPortNum,
-			final Integer serverPortNum,
-			final Map<String, String> serverManualCorrections
+			final Integer serverPortNum
 			) throws Exception {
 		String serverType = "Python";
 		File pidFile = new File(serverOutDir, "pid.txt");
-		pythonServerCorrection(serverOutDir, parsingData, serverManualCorrections);
+		pythonServerCorrection(serverOutDir, parsingData);
 		try {
 			File cfgFile = prepareDeployCfg(workDir, getModuleName(parsingData));
 			File serverFile = findPythonServerScript(serverOutDir);
@@ -778,7 +746,7 @@ public class TypeGeneratorTest extends Assert {
 		if (!cfgFile.exists()) {
 			List<String> lines = new ArrayList<String>(Arrays.asList(
 					"[" + moduleName + "]",
-					"auth-service-url = " + TestConfigHelper.getAuthServiceUrl(),
+					"auth-service-url = " + TestConfigHelper.getAuthServiceUrlLegacy(),
 					"auth-service-url-allow-insecure = "
 							+ TestConfigHelper.getAuthServiceUrlInsecure()
 			));
@@ -824,7 +792,6 @@ public class TypeGeneratorTest extends Assert {
 				false,                   // javaServerSide
 				null,                    // javaPackageParent
 				null,                    // javaSrcPath
-				null,                    // javaGwtPackage
 				false,                   // rClientSide
 				null,                    // rClientName
 				false,                   // rServerSide
@@ -861,7 +828,6 @@ public class TypeGeneratorTest extends Assert {
 				false,                   // javaServerSide
 				null,                    // javaPackageParent
 				null,                    // javaSrcPath
-				null,                    // javaGwtPackage
 				false,                   // rClientSide
 				null,                    // rClientName
 				false,                   // rServerSide
@@ -903,16 +869,15 @@ public class TypeGeneratorTest extends Assert {
 		String testFileName = "test" + testNum + ".spec";
 		extractSpecFiles(testNum, workDir, testFileName);
 		File srcDir = new File(workDir, "src");
-		String gwtPackageName = getGwtPackageName(testNum);
 		URL defaultUrl = defaultUrlPort == null ? null :
 			new URL("http://localhost:" + defaultUrlPort);
 		parsingData = processSpec(workDir, testPackage, libDir, testFileName,
-				srcDir, gwtPackageName, defaultUrl, isDynamic, isAsync);
+				srcDir, defaultUrl, isDynamic, isAsync);
 		if (needJavaServerCorrection) {
 			javaServerCorrection(srcDir, testPackage, parsingData, serverManualCorrections);
 		}
 		parsingData = processSpec(workDir, testPackage, libDir, testFileName,
-				srcDir, gwtPackageName, defaultUrl, isDynamic, isAsync);
+				srcDir, defaultUrl, isDynamic, isAsync);
 		List<URL> cpUrls = new ArrayList<URL>();
 		String classPath = prepareClassPath(libDir, cpUrls);
 		cpUrls.add(binDir.toURI().toURL());
@@ -943,7 +908,6 @@ public class TypeGeneratorTest extends Assert {
 			final File libDir,
 			final String testFileName,
 			final File srcDir,
-			final String gwtPackageName,
 			final URL defaultUrl,
 			final boolean isDynamic,
 			final boolean isAsync
@@ -952,7 +916,7 @@ public class TypeGeneratorTest extends Assert {
 		File specFile = new File(workDir, testFileName);
 		List<KbService> services = KidlParser.parseSpec(specFile, null);
 		JavaData parsingData = JavaTypeGenerator.processSpec(services, new DiskFileSaver(srcDir), 
-				testPackage, true, gwtPackageName, defaultUrl, 
+				testPackage, true, defaultUrl, 
 				isAsync ? "dev": null, isDynamic ? "dev" : null, null, null, null);
 		return parsingData;
 	}
@@ -962,12 +926,12 @@ public class TypeGeneratorTest extends Assert {
 			final boolean createServers
 			) throws Exception {
 		// TODO TEST CLEANUP remove this method and figure out some other way of handling test deps
-		//                   maybe convert to gradle and run gradle deps
+		//                   maybe mark deps in gradle?
 		checkLib(libOutDir, "jackson-annotations-2.2.3");
 		checkLib(libOutDir, "jackson-core-2.2.3");
 		checkLib(libOutDir, "jackson-databind-2.2.3");
-		checkLib(libOutDir, "kbase-auth-0.4.4");
-		checkLib(libOutDir, "kbase-common");
+		checkLib(libOutDir, "auth2_client_java-0.5.0.jar");
+		checkLib(libOutDir, "java_common-0.3.1.jar");
 		checkLib(libOutDir, "javax.annotation-api-1.3.2");
 		if (createServers) {
 			checkLib(libOutDir, "servlet-api-2.5");
@@ -1003,10 +967,6 @@ public class TypeGeneratorTest extends Assert {
 		OutputStream os = libDir.openStream(libFile.getName());
 		TextUtils.copyStreams(is, os);
 		return libFile.getCanonicalPath();
-	}
-	
-	private static String getGwtPackageName(int testNum) {
-		return rootPackageName + ".gwt";
 	}
 	
 	private static File findPythonServerScript(File dir) {
@@ -1325,8 +1285,8 @@ public class TypeGeneratorTest extends Assert {
         }
 	}
 
-	private static void pythonServerCorrection(File serverOutDir, JavaData parsingData,
-	        Map<String, String> serverManualCorrections) throws IOException {
+	private static void pythonServerCorrection(File serverOutDir, JavaData parsingData
+			) throws IOException {
 		for (JavaModule module : parsingData.getModules()) {
             Map<String, JavaFunc> origNameToFunc = new HashMap<String, JavaFunc>();
             for (JavaFunc func : module.getFuncs()) {
@@ -1338,10 +1298,7 @@ public class TypeGeneratorTest extends Assert {
             	String line = pyServerLines.get(pos);
             	if (line.startsWith("        #BEGIN ")) {
             		String origFuncName = line.substring(line.lastIndexOf(' ') + 1);
-                    if (serverManualCorrections != null && serverManualCorrections.containsKey(origFuncName)) {
-                        pos++;
-                        pyServerLines.add(pos, "        " + serverManualCorrections.get(origFuncName));                     
-                    } else if (origNameToFunc.containsKey(origFuncName)) {
+                    if (origNameToFunc.containsKey(origFuncName)) {
             			KbFuncdef origFunc = origNameToFunc.get(origFuncName).getOriginal();
             			int paramCount = origFunc.getParameters().size();
                         if (origFuncName.equals("throw_error_on_server_side")) {

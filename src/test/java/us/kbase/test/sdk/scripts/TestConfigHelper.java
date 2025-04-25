@@ -1,13 +1,12 @@
 package us.kbase.test.sdk.scripts;
 
 import java.io.File;
-import java.net.URL;
+import java.net.URI;
 
 import org.ini4j.Ini;
 
-import us.kbase.auth.AuthConfig;
 import us.kbase.auth.AuthToken;
-import us.kbase.auth.ConfigurableAuthService;
+import us.kbase.auth.client.AuthClient;
 
 public class TestConfigHelper {
     public static final String TEST_CFG = "kb_sdk_test";
@@ -43,6 +42,10 @@ public class TestConfigHelper {
         return ret == null ? defaultValue : ret;
     }
     
+    public static String getAuthServiceUrlLegacy() throws Exception {
+        return getAuthServiceUrl().replaceAll("/+$", "") + "/api/legacy/KBase/Sessions/Login";
+    }
+    
     public static String getAuthServiceUrl() throws Exception {
         return getTestConfigParam("test.auth-service-url", true);
     }
@@ -51,14 +54,12 @@ public class TestConfigHelper {
         return getTestConfigParam("test.auth-service-url-allow-insecure", "false");
     }
     
-    private static ConfigurableAuthService getAuthService() throws Exception {
-        return new ConfigurableAuthService(
-                new AuthConfig().withKBaseAuthServerURL(new URL(getAuthServiceUrl()))
-                .withAllowInsecureURLs("true".equals(getAuthServiceUrlInsecure())));
+    private static AuthClient getAuthService() throws Exception {
+        return AuthClient.from(new URI(getAuthServiceUrl()));
     }
     
     public static AuthToken getToken() throws Exception {
-        ConfigurableAuthService authService = getAuthService();
+        final AuthClient authService = getAuthService();
         if (token1 == null) {
             String tokenString = getTestConfigParam("test.token", true);
             token1 = authService.validateToken(tokenString);
@@ -67,7 +68,7 @@ public class TestConfigHelper {
     }
 
     public static AuthToken getToken2() throws Exception {
-        ConfigurableAuthService authService = getAuthService();
+        final AuthClient authService = getAuthService();
         if (token2 == null) {
             String tokenString = getTestConfigParam("test.token2", true);
             token2 = authService.validateToken(tokenString);

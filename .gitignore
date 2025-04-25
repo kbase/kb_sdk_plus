@@ -26,19 +26,14 @@
 
 /.pytest_cache/
 __pycache__
-src/java/us/kbase/mobu/git.properties
 /bin
-/dist
-/lib/kbase_module_builder2.jar
 /test.cfg
-/.coverage
-/coverage.xml
-/htmlcov/
-/classes/
-/reports/
 /junit*.properties
 /temp_kbsdkplus_test/
-/test_kidl/
+
+# python coverage files
+/.coverage
+/coverage.xml
 
 # Ignore Gradle project-specific cache directory
 .gradle

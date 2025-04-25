@@ -33,7 +33,7 @@ class TestAuth(unittest.TestCase):
         print('Loading test config from ' + configfile)
         cfg = _ConfigParser()
         cfg.read(configfile)
-        authurl = cfg.get(cls.CFG_SEC, cls.AUTHURL)
+        authurl = cfg.get(cls.CFG_SEC, cls.AUTHURL) + "/api/legacy/KBase/Sessions/Login"
         cls.token1 = cfg.get(cls.CFG_SEC, cls.TOKEN1)
         cls.token2 = cfg.get(cls.CFG_SEC, cls.TOKEN2)
         if not authurl:
