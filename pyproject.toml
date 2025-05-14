@@ -3,7 +3,7 @@ name = "kb-sdk-plus"
 version = "0.1.0"
 description = "KB-SDK but +"
 readme = "README.md"
-requires-python = "==3.8.10"
+requires-python = ">=3.8.10"
 dependencies = [
     "jsonrpcbase>=0.2.0",
     "requests>=2.32.3",
