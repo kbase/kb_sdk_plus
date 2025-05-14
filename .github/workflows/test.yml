@@ -21,7 +21,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - python-version: "3.8"
+          - python-version: "3.8.10"
             java-version: "11"
 
     steps:
@@ -52,7 +52,7 @@ jobs:
 
         # set up python dependencies
         export UV_PROJECT_ENVIRONMENT="${pythonLocation}"
-        uv sync --locked
+        uv sync --locked --no-managed-python
 
         # set up test config
         cp test.cfg.example test.cfg
