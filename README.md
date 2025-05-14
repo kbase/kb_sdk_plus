@@ -8,11 +8,11 @@ Documentation in this readme is for developing the SDK codebase itself. If you w
 
 ## Running the tests
 
-Requires [uv](https://docs.astral.sh/uv/) and Java 11.
+Requires [uv](https://docs.astral.sh/uv/) and Java 17.
 
 * Copy `test.cfg.example` to `test.cfg` and fill it in appropriately.
 * `uv sync  --dev`
-    * This only needs to be run prior to the first test run or when the uv depencencies change.
+    * This only needs to be run prior to the first test run or when the uv dependencies change.
 * `uv run ./gradlew test`
 
 ## Notes and references
