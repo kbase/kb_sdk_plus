@@ -30,10 +30,12 @@ __pycache__
 /test.cfg
 /junit*.properties
 /temp_kbsdkplus_test/
+/.venv/
 
 # python coverage files
 /.coverage
 /coverage.xml
+/htmlcov/
 
 # Ignore Gradle project-specific cache directory
 .gradle

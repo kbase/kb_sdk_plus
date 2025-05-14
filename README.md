@@ -8,10 +8,12 @@ Documentation in this readme is for developing the SDK codebase itself. If you w
 
 ## Running the tests
 
+Requires [uv](https://docs.astral.sh/uv/) and Java 11.
+
 * Copy `test.cfg.example` to `test.cfg` and fill it in appropriately.
-* `pipenv sync  --dev`
-    * This only needs to be run prior to the first test run or when the Pipfile contents change.
-* `pipenv run make test`
+* `uv sync  --dev`
+    * This only needs to be run prior to the first test run or when the uv depencencies change.
+* `uv run ./gradlew test`
 
 ## Notes and references
 

@@ -2,17 +2,14 @@
 
 This document describes the the file structure of the `kb_sdk` codebase.
 
+TODO DOCS either redo or remove this. Is it really necessary?
+
 #### Root level
 
-* `build.xml` - main Ant build configuration file for compiling, running tests, etc.
-* `bin/` - holds the executable files generated on compilation (most importantly, `kb-sdk`)
 * `doc/` - additional documentation about this codebase
 * `Dockerfile` - the docker configuration for the container that runs the SDK
 * `entrypoint` - the entrypoint bash script that is run for the SDK docker container
-* `javacc/` - shell scripts used to generate code related to parsing KIDL specs
-* `Makefile` - commands for compiling, building docker images, and initializing submodules
-* `Pipfile` and `Pipfile.lock` - python dependencies for pipenv
-* `reports/` - files generated for JaCoCo test coverage reports
+* `pyproject.toml` and `uv.lock` - python dependencies for `uv`
 * `src/` - the main source code for this project; see below
 * `test_scripts/` - test helpers in perl, python, and js
 
