@@ -1,5 +1,7 @@
 # Test Dependencies
 
+TODO DOCS redo all this. Test setup is much simpler now. Use SDKMAN for java
+
 All of the following commands were used to set up the VirtualBox/Vagrant image that is used for tests and development. You don't need to do any of this on your own machine if you run tests through Vagrant. This is only kept here as a record of all the required steps in case we ever need to rebuild our image.
 
 ## Basics
@@ -98,3 +100,5 @@ Must force RPC::Any, Moose updates cause XML tests to fail.
 ## Misc
 
 With the new auth2 clients and server we may no longer need rsa, paramiko, Crypt::OpenSSL::RSA, Convert::PEM
+
+* "New" auth2 was released in 2017...
