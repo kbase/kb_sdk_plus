@@ -27,6 +27,7 @@ import org.apache.commons.io.FileUtils;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.productivity.java.syslog4j.SyslogIF;
 import org.yaml.snakeyaml.Yaml;
 
 import us.kbase.common.executionengine.CallbackServer;
@@ -36,6 +37,7 @@ import us.kbase.common.executionengine.ModuleRunVersion;
 import us.kbase.common.executionengine.CallbackServerConfigBuilder.CallbackServerConfig;
 import us.kbase.common.service.JsonServerServlet;
 import us.kbase.common.service.JsonServerSyslog;
+import us.kbase.common.service.JsonServerSyslog.SyslogOutput;
 import us.kbase.common.service.UObject;
 import us.kbase.common.utils.NetUtils;
 import us.kbase.mobu.initializer.ModuleInitializer;
@@ -181,10 +183,7 @@ public class ModuleTester {
         URL callbackUrl = CallbackServer.getCallbackUrl(callbackPort, callbackNetworks);
         Server jettyServer = null;
         if (callbackUrl != null) {
-            if( System.getProperty("os.name").startsWith("Windows") ) {
-                JsonServerSyslog.setStaticUseSyslog(false);
-                JsonServerSyslog.setStaticMlogFile("callback.log");
-            }
+            JsonServerSyslog.setStaticUseSyslog(false);
             CallbackServerConfig cfg = cfgLoader.buildCallbackServerConfig(callbackUrl, 
                     tlDir.toPath(), new LineLogger() {
                 @Override
@@ -207,6 +206,15 @@ public class ModuleTester {
             JsonServerServlet catalogSrv = new SDKCallbackServer(
                     cfgLoader.getToken(), cfg, runver, new ArrayList<UObject>(),
                     new ArrayList<String>(), mounts, localModuleToImage);
+            catalogSrv.changeSyslogOutput(new SyslogOutput() {
+                @Override
+                public void logToSystem(
+                       final SyslogIF log,
+                       final int level,
+                       final String message) {
+                   System.out.println(message);
+                }
+            });
             jettyServer = new Server(callbackPort);
             ServletContextHandler context = new ServletContextHandler(
                     ServletContextHandler.SESSIONS);
