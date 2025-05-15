@@ -23,6 +23,7 @@ import org.apache.commons.io.IOUtils;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.productivity.java.syslog4j.SyslogIF;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
@@ -36,6 +37,7 @@ import us.kbase.common.executionengine.ModuleRunVersion;
 import us.kbase.common.executionengine.CallbackServerConfigBuilder.CallbackServerConfig;
 import us.kbase.common.service.JsonServerServlet;
 import us.kbase.common.service.JsonServerSyslog;
+import us.kbase.common.service.JsonServerSyslog.SyslogOutput;
 import us.kbase.common.service.UObject;
 import us.kbase.common.utils.NetUtils;
 import us.kbase.mobu.ModuleBuilder;
@@ -193,11 +195,7 @@ public class ModuleRunner {
         URL callbackUrl = CallbackServer.getCallbackUrl(callbackPort, callbackNetworks);
         Server jettyServer = null;
         if (callbackUrl != null) {
-            if( System.getProperty("os.name").startsWith("Windows") ) {
-                JsonServerSyslog.setStaticUseSyslog(false);
-                JsonServerSyslog.setStaticMlogFile(
-                        new File(workDir, "callback.log").getCanonicalPath());
-            }
+            JsonServerSyslog.setStaticUseSyslog(false);
             // TODO: It will though an error because at least authUrl is required.
             CallbackServerConfig cfg = cfgLoader.buildCallbackServerConfig(callbackUrl, 
                     runDir.toPath(),new LineLogger() {
@@ -225,6 +223,15 @@ public class ModuleRunner {
             }
             JsonServerServlet catalogSrv = new SDKCallbackServer(
                     cfgLoader.getToken(), cfg, runver, params, inputWsObjects, mounts, null);
+            catalogSrv.changeSyslogOutput(new SyslogOutput() {
+                @Override
+                public void logToSystem(
+                       final SyslogIF log,
+                       final int level,
+                       final String message) {
+                   System.out.println(message);
+                }
+            });
             jettyServer = new Server(callbackPort);
             ServletContextHandler context = new ServletContextHandler(
                     ServletContextHandler.SESSIONS);

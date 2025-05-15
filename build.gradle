@@ -180,12 +180,14 @@ dependencies {
 	}
 	implementation("com.github.kbase:java_common:0.3.1") {
 		exclude group: 'com.fasterxml.jackson.core'  // don't upgrade yet, breaks tests
+		exclude group: 'net.java.dev.jna' // don't include in runtime path
 	}
 	implementation 'com.github.kbase:java_kidl:0.2.0'
 	// TODO DEPS see if this can be removed after switching to the python callback server
 	//           Provenance classes are used in various callback server related classes and tests
 	implementation('com.github.kbase.workspace_deluxe:workspace-client:0.15.0') {
 		exclude group: 'com.fasterxml.jackson.core'  // don't upgrade yet, breaks tests
+		exclude group: 'net.java.dev.jna' // don't include in runtime path
 	}
 	implementation 'com.beust:jcommander:1.48'
 	implementation "com.fasterxml.jackson.core:jackson-annotations:2.2.3"
@@ -220,10 +222,10 @@ dependencies {
 	// Note that the java SDK modules use syslog4j, so we'll need to figure something out
 	// there. I doubt any of the apps actually use the logging code that triggers it though
 	implementation "org.syslog4j:syslog4j:0.9.46"
-	// TODO DEPS change callback server and the other JsonServerServlet subclasses in tests
-	//           to not use JNA. JNA is still required for java test modules (see above)
-	// needed for syslog4j
-	implementation 'net.java.dev.jna:jna:3.4.0'
+
+	// needed for syslog4j. Used in java test modules and JsonServerServlet subclasses in tests
+	// but not in SDK code proper.
+	testImplementation 'net.java.dev.jna:jna:3.4.0'
 	
 	testImplementation ('com.github.kbase:java_test_utilities:0.1.0') {
 		exclude group: 'com.fasterxml.jackson.core'  // don't upgrade yet, breaks tests
