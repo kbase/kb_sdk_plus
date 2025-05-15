@@ -250,33 +250,15 @@ public class ClientInstaller {
         if (lang == null)
             lang = language;
         lang = lang.toLowerCase();
-        boolean isPerl = false;
         boolean isPython = false;
         boolean isJava = false;
-        boolean isR = false;
-        boolean isJS = false;
-        String[] perlNames = {"perl", ".pl", "pl"};
-        if (Arrays.asList(perlNames).contains(lang)) {
-            isPerl = true;
+        String[] pythonNames = {"python", ".py", "py"};
+        if (Arrays.asList(pythonNames).contains(lang)) {
+            isPython = true;
         } else {
-            String[] pythonNames = {"python", ".py", "py"};
-            if (Arrays.asList(pythonNames).contains(lang)) {
-                isPython = true;
-            } else {
-                String[] javaNames = {"java", ".java"};
-                if (Arrays.asList(javaNames).contains(lang)) {
-                    isJava = true;
-                } else {
-                    String[] rNames = {"r", ".r"};
-                    if (Arrays.asList(rNames).contains(lang)) {
-                        isR = true;
-                    } else {
-                        String[] jsNames = {"js", ".js", "javascript"};
-                        if (Arrays.asList(jsNames).contains(lang)) {
-                            isJS = true;
-                        }
-                    }
-                }
+            String[] javaNames = {"java", ".java"};
+            if (Arrays.asList(javaNames).contains(lang)) {
+                isJava = true;
             }
         }
         File libDir = new File(moduleDir, libDirName == null ? "lib" : libDirName);
@@ -289,23 +271,13 @@ public class ClientInstaller {
                     urlEndpoint, clientAsyncVer, dynservVer, semanticVersion, 
                     gitUrl, gitCommitHash, null, customClientClassName);
         } else {
-            String perlClientName = null;
-            if (isPerl)
-                perlClientName = "installed_clients::" + clientName + "Client";
             String pyClientName = null;
             if (isPython)
                 pyClientName = "installed_clients." + clientName + "Client";
-            String rClientName = null;
-            if (isR)
-                rClientName = "installed_clients/" + clientName + "Client";
-            String jsClientName = null;
-            if (isJS)
-                jsClientName = "installed_clients/" + clientName + "Client";
             FileSaver output = new DiskFileSaver(libDir);
-            TemplateBasedGenerator.generate(services, url, isJS, jsClientName, isPerl, 
-                    perlClientName, false, null, null, null, isPython, pyClientName, false, null,
-                    null, isR, rClientName, false, null, null, false, ip, output,
-                    clientAsyncVer, dynservVer, semanticVersion, gitUrl, gitCommitHash);
+            TemplateBasedGenerator.generate(services, url, isPython, pyClientName, false, null,
+                    null, ip, output, clientAsyncVer, dynservVer, semanticVersion, gitUrl,
+                    gitCommitHash);
         }
         // Now let's add record about this client to dependencies.json file
         boolean isSdk = dynamic || async;

@@ -279,14 +279,10 @@ public class ModuleBuilder {
             }
         }
         try {
-            RunCompileCommand.generate(specFile, a.url, a.jsClientSide, a.jsClientName, a.perlClientSide, 
-                    a.perlClientName, a.perlServerSide, a.perlServerName, a.perlImplName, 
-                    a.perlPsgiName, a.perlEnableRetries, a.pyClientSide, a.pyClientName, 
+            RunCompileCommand.generate(specFile, a.url, a.pyClientSide, a.pyClientName, 
                     a.pyServerSide, a.pyServerName, a.pyImplName, a.javaClientSide, 
                     a.javaServerSide, a.javaPackageParent, a.javaSrcDir, 
-                    a.rClientSide, a.rClientName, 
-                    a.rServerSide, a.rServerName, a.rImplName, outDir, a.jsonSchema, 
-                    a.clAsyncVer, a.dynservVer, a.html,
+                    outDir, a.jsonSchema, a.clAsyncVer, a.dynservVer, a.html,
                     semanticVersion, gitUrl, gitCommitHash);
         } catch (Throwable e) {
             System.err.println("Error compiling KIDL specfication:");
@@ -431,7 +427,7 @@ public class ModuleBuilder {
     	boolean example = false;
     	
     	@Parameter(names={"-l","--language"}, description="Choose a language for developing " + 
-    			" code in your module. You can currently choose from Python, Perl, and Java " + 
+    			" code in your module. You can currently choose from Python and Java " + 
     			"(default=Python)")
     	String language = ModuleInitializer.DEFAULT_LANGUAGE;
     	
@@ -455,45 +451,6 @@ public class ModuleBuilder {
     			//, metaVar="<out-dir>")
         String outDir = null;
         
-    	@Parameter(names="--js", description="Generate a JavaScript client with a standard default name")
-        boolean jsClientSide = false;
-
-    	@Parameter(names="--jsclname", description="Generate a JavaScript client with the name provided by this option" +
-    			"(overrides --js option)")//, metaVar = "<js-client-name>")
-        String jsClientName = null;
-
-    	@Parameter(names="--pl", description="Generate a Perl client with the default name")
-        boolean perlClientSide = false;
-
-    	@Parameter(names="--plclname", description="Generate a Perl client with the name provided optionally " +
-        		"prefixed by subdirectories separated by :: as in the standard perl module syntax (e.g. "+
-    			"Bio::KBase::MyModule::Client, overrides the --pl option)")//, metaVar = "<perl-client-name>")
-        String perlClientName = null;
-
-    	@Parameter(names="--plsrv", description="Generate a Perl server with a " +
-    			"standard default name.  If set, Perl clients will automatically be generated too.")
-        boolean perlServerSide = false;
-
-    	@Parameter(names="--plsrvname", description="Generate a Perl server with with the " +
-    			"name provided, optionally prefixed by subdirectories separated by :: as "+
-    			"in the standard perl module syntax (e.g. Bio::KBase::MyModule::Server, "+
-    			"overrides the --plserv option).  If set, Perl clients will be generated too.")
-    			//, metaVar = "<perl-server-name>")
-        String perlServerName = null;
-
-    	@Parameter(names="--plimplname", description="Generate a Perl server implementation with the " +
-    			"name provided, optionally prefixed by subdirectories separated by :: as "+
-    			"in the standard Perl module syntax (e.g. Bio::KBase::MyModule::Impl). "+
-    			"If set, Perl server and client code will be generated too.")//, metaVar = "<perl-impl-name>")
-        String perlImplName = null;
-
-    	@Parameter(names="--plpsginame", description="Generate a perl PSGI file with the name provided.")//, metaVar = "<perl-psgi-name>")
-        String perlPsgiName = null;
-
-    	@Parameter(names="--plenableretries", description="When set, generated Perl client code will enable "+
-        		"reconnection retries with the server")
-        boolean perlEnableRetries = false;
-
     	@Parameter(names="--py", description="Generate a Python client with a standard default name")
         boolean pyClientSide = false;
 
@@ -536,31 +493,6 @@ public class ModuleBuilder {
 
     	@Parameter(names="--javasrv", description="Generate Java server code in the directory set by --javasrc")
         boolean javaServerSide = false;
-
-        @Parameter(names="--r", description="DEPRECATED Generate a R client with a standard default name")
-        boolean rClientSide = false;
-
-        @Parameter(names="--rclname", description="DEPRECATED Generate an R client with with the " +
-                "name provided, optionally prefixed by subdirectories separated by '/' as "+
-                "in the standard file path syntax (e.g. biokbase/mymodule/client,"+
-                "overrides the --r option).")
-        String rClientName = null;
-
-        @Parameter(names="--rsrv", description="DEPRECATED Generate an R server with a " +
-                "standard default name.  If set, Python clients will automatically be generated too.")
-        boolean rServerSide = false;
-
-        @Parameter(names="--rsrvname", description="DEPRECATED Generate an R server with the " +
-                "name provided, optionally prefixed by subdirectories separated by '/' as "+
-                "in the standard file path syntax (e.g. biokbase/mymodule/server,"+
-                "overrides the --rsrv option).")
-        String rServerName = null;
-
-        @Parameter(names="--rimplname", description="DEPRECATED Generate an R server implementation with the " +
-                "name provided, optionally prefixed by subdirectories separated by '/' as "+
-                "in the standard file path syntax (e.g. biokbase/mymodule/impl)." +
-                " If set, R server and client code will be generated too.")
-        String rImplName = null;
 
     	@Parameter(names="--jsonschema",description="Generate JSON schema documents for the types in the output folder specified.")//, metaVar="<json-schema>")
         String jsonSchema = null;

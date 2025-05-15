@@ -88,14 +88,8 @@ public class ModuleInitializer {
 		}
 
 		List<String> subdirList = new ArrayList<String>(Arrays.asList(subdirs));
-		if (example && this.language.equals("r")) {
-			subdirList.add("ui/narrative/methods/count_contigs_in_set");
-			subdirList.add("ui/narrative/methods/count_contigs_in_set/img");
-		}
-		else {
-			subdirList.add("ui/narrative/methods/run_" + this.moduleName);
-			subdirList.add("ui/narrative/methods/run_" + this.moduleName + "/img");
-		}
+		subdirList.add("ui/narrative/methods/run_" + this.moduleName);
+		subdirList.add("ui/narrative/methods/run_" + this.moduleName + "/img");
 	
 		// 1. build dir with moduleName
 		initDirectory(Paths.get(moduleDir), !this.dirExists);
@@ -169,29 +163,12 @@ public class ModuleInitializer {
             templateFiles.put("module_test_python_client", Paths.get(moduleDir, "test", this.moduleName + "_server_test.py"));
             templateFiles.put("module_tox", Paths.get(moduleDir, "tox.ini"));
             break;
-        case "perl":
-            templateFiles.put("module_test_perl_client", Paths.get(moduleDir, "test", this.moduleName + "_server_test.pl"));
-            break;
-        case "r":
-            templateFiles.put("module_test_r_client", Paths.get(moduleDir, "test", this.moduleName + "_server_test.r"));
-            break;
 		}
 		
-		if (example && this.language.equals("r")) {
-			templateFiles.put("module_method_spec_json", Paths.get(moduleDir, "ui", "narrative", "methods", "count_contigs_in_set", "spec.json"));
-			templateFiles.put("module_method_spec_yaml", Paths.get(moduleDir, "ui", "narrative", "methods", "count_contigs_in_set", "display.yaml"));
-		} else {
-            templateFiles.put("module_method_spec_json", Paths.get(moduleDir, "ui", "narrative", "methods", "run_"+this.moduleName, "spec.json"));
-            templateFiles.put("module_method_spec_yaml", Paths.get(moduleDir, "ui", "narrative", "methods", "run_"+this.moduleName, "display.yaml"));
-        }
+        templateFiles.put("module_method_spec_json", Paths.get(moduleDir, "ui", "narrative", "methods", "run_"+this.moduleName, "spec.json"));
+        templateFiles.put("module_method_spec_yaml", Paths.get(moduleDir, "ui", "narrative", "methods", "run_"+this.moduleName, "display.yaml"));
 
         switch(this.language) {
-            // Perl just needs an impl file and a start server script
-            case "perl":
-                //templateFiles.put("module_start_perl_server", Paths.get(moduleDir, "scripts", "start_server.sh"));
-                // start_server script is now made in Makefile
-                templateFiles.put("module_perl_impl", Paths.get(moduleDir, "lib", this.moduleName, this.moduleName + "Impl.pm"));
-                break;
             // Python needs some empty __init__.py files and the impl file (Done, see TemplateBasedGenerator.initPyhtonPackages)
             case "python":
                 initDirectory(Paths.get(moduleDir, "lib", this.moduleName), false);
@@ -199,9 +176,6 @@ public class ModuleInitializer {
                 templateFiles.put("module_python_impl", Paths.get(moduleDir, "lib", this.moduleName, this.moduleName + "Impl.py"));
                 //templateFiles.put("module_start_python_server", Paths.get(moduleDir, "scripts", "start_server.sh"));
                 // start_server script is now made in Makefile
-                break;
-            case "r":
-                templateFiles.put("module_r_impl", Paths.get(moduleDir, "lib", this.moduleName, this.moduleName + "Impl.r"));
                 break;
             case "java":
                 File srcDir = new File(moduleDir, "lib/src");
@@ -304,19 +278,15 @@ public class ModuleInitializer {
 	}
 	
 	/**
-	 * Takes a language string and returns a "qualified" form. E.g. "perl", "Perl", "pl", ".pl", should all 
-	 * return "perl", "Python", "python", ".py", and "py" should all return Python, etc.
+	 * Takes a language string and returns a "qualified" form. E.g. "Python", "python",
+	 * ".py", and "py" should all return Python, etc.
 	 * 
-	 * Right now, we support Perl, Python and Java for implementation languages
+	 * Right now, we support Python and Java for implementation languages
 	 * @param language
 	 * @return
 	 */
 	public static String qualifyLanguage(String language) {
 		String lang = language.toLowerCase();
-		
-		String[] perlNames = {"perl", ".pl", "pl"};
-		if (Arrays.asList(perlNames).contains(lang))
-			return "perl";
 		
 		String[] pythonNames = {"python", ".py", "py"};
 		if (Arrays.asList(pythonNames).contains(lang))
@@ -326,16 +296,7 @@ public class ModuleInitializer {
 		if (Arrays.asList(javaNames).contains(lang))
 			return "java";
 		
-		String[] rNames = {"r", ".r"};
-		if (Arrays.asList(rNames).contains(lang)) {
-			System.out.println(
-					"************************************************************************\n" +
-					"WARNING: R support is deprecated and will be removed in a future release\n" +
-					"************************************************************************");
-			return "r";
-		}
-		
 		// If we get here, then we don't recognize it! throw a runtime exception
-		throw new RuntimeException("Unrecognized language: " + language + "\n\tWe currently only support Python, Perl, and Java.");
+		throw new RuntimeException("Unrecognized language: " + language + "\n\tWe currently only support Python and Java.");
 	}
 }

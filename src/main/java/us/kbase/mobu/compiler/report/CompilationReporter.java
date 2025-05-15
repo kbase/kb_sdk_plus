@@ -35,8 +35,7 @@ import us.kbase.mobu.util.TextUtils;
 public class CompilationReporter {
 
     public static void prepareCompileReport(File codeDir, List<KbService> services,
-            boolean perlServerSide, String perlImplName, boolean pyServerSide, 
-            String pyImplName, boolean rServerSide, String rImplName,
+            boolean pyServerSide, String pyImplName,
             boolean javaServerSide, String javaPackageParent, String javaSrcPath, 
             JavaData javaParsingData, List<SpecFile> specFiles, File reportFile) throws Exception {
         String sdkVersion = ModuleBuilder.VERSION;
@@ -49,22 +48,11 @@ public class CompilationReporter {
         FileSaver output = new DiskFileSaver(codeDir);
         File implFile = null;
         String comment = null;
-        if (perlServerSide) {
-            if (perlImplName == null)
-                perlImplName = moduleName + "Impl";
-            implFile = output.getAsFileOrNull(TemplateBasedGenerator.fixPath(
-                    perlImplName, "::") + ".pm");
-            comment = "#";
-        } else if (pyServerSide) {
+        if (pyServerSide) {
             if (pyImplName == null)
                 pyImplName = moduleName + "Impl";
             implFile = output.getAsFileOrNull(TemplateBasedGenerator.fixPath(
                     pyImplName, ".") + ".py");
-            comment = "#";
-        } else if (rServerSide) {
-            if (rImplName == null)
-                rImplName = moduleName + "Impl";
-            implFile = output.getAsFileOrNull(rImplName + ".r");
             comment = "#";
         } else if (javaServerSide) {
             if (javaPackageParent.equals("."))  // Special value meaning top level package.
