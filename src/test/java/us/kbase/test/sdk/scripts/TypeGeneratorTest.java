@@ -195,7 +195,7 @@ public class TypeGeneratorTest extends Assert {
 		// I have no idea why this line is run over and over with the same args
 		JavaData parsingData = prepareJavaCode(testNum, workDir, testPackage, libDir, binDir, portNum, true);
 		parsingData = prepareJavaCode(testNum, workDir, testPackage, libDir, binDir, portNum, true);
-		final File serverOutDir = preparePerlAndPyServerCode(testNum, workDir);
+		final File serverOutDir = preparePyServerCode(testNum, workDir);
 		runPythonServerTest(testNum, true, workDir, testPackage, libDir, binDir, parsingData, serverOutDir, portNum);
 		portNum = findFreePort();
 		parsingData = prepareJavaCode(testNum, workDir, testPackage, libDir, binDir, portNum, true);
@@ -259,24 +259,14 @@ public class TypeGeneratorTest extends Assert {
 		Assert.assertTrue(text.contains("myValue = 2;"));
         Assert.assertTrue(text.contains("myValue = 3;"));
         Assert.assertTrue(text.contains("myValue = 4;"));
-		/////////////////////////////// Perl and python ////////////////////////////////////
+		/////////////////////////////// Python ////////////////////////////////////
         {
-            File serverOutDir = preparePerlAndPyServerCode(testNum, workDir);
+            File serverOutDir = preparePyServerCode(testNum, workDir);
             String implName = parsingData.getModules().get(0).getOriginal().getModuleName() + "Impl";
-            File perlImplFile = new File(serverOutDir, implName + ".pm");
-            TextUtils.copyStreams(TypeGeneratorTest.class.getResourceAsStream(
-                    "Test" + testNum + ".perl.properties"), new FileOutputStream(perlImplFile));
             File pythonImplFile = new File(serverOutDir, implName + ".py");
             TextUtils.copyStreams(TypeGeneratorTest.class.getResourceAsStream(
                     "Test" + testNum + ".python.properties"), new FileOutputStream(pythonImplFile));
-            preparePerlAndPyServerCode(testNum, workDir);
-            text = TextUtils.readFileText(perlImplFile);
-            Assert.assertTrue(text.contains("# Header comment."));
-            Assert.assertTrue(text.contains("myValue = -1"));
-            Assert.assertTrue(text.contains("myValue = 1"));
-            Assert.assertTrue(text.contains("myValue = 2"));
-            Assert.assertTrue(text.contains("myValue = 3"));
-            Assert.assertTrue(text.contains("myValue = 4"));
+            preparePyServerCode(testNum, workDir);
             text = TextUtils.readFileText(pythonImplFile);
             Assert.assertTrue(text.contains("# Header comment."));
             Assert.assertTrue(text.contains("# Class header comment."));
@@ -353,7 +343,7 @@ public class TypeGeneratorTest extends Assert {
 			for (File f : libDir.listFiles()) {
 				cp.append(":").append(f.getAbsolutePath());
 			}
-			File serverOutDir = preparePerlAndPyServerCode(testNum, workDir, false, true);
+			File serverOutDir = preparePyServerCode(testNum, workDir, false, true);
 			List<String> lines = null;
 			System.setProperty("KB_JOB_CHECK_WAIT_TIME", "100");
 			File cfgFile = prepareDeployCfg(workDir, getModuleName(parsingData));
@@ -423,7 +413,7 @@ public class TypeGeneratorTest extends Assert {
         File libDir = new File(workDir, "lib");
         File binDir = new File(workDir, "bin");
         JavaData parsingData = prepareJavaCode(testNum, workDir, testPackage, libDir, binDir, null, true);
-        File serverOutDir = preparePerlAndPyServerCode(testNum, workDir);
+        File serverOutDir = preparePyServerCode(testNum, workDir);
         runPythonServerTest(testNum, true, workDir, testPackage, libDir, binDir, parsingData, 
                 serverOutDir, findFreePort());
         runJavaServerTest(testNum, true, workDir, testPackage, libDir,
@@ -456,7 +446,7 @@ public class TypeGeneratorTest extends Assert {
         File libDir = new File(workDir, "lib");
         File binDir = new File(workDir, "bin");
         JavaData parsingData = prepareJavaCode(testNum, workDir, testPackage, libDir, binDir, null, true);
-        File serverOutDir = preparePerlAndPyServerCode(testNum, workDir);
+        File serverOutDir = preparePyServerCode(testNum, workDir);
         JavaModule module = parsingData.getModules().get(0);
         File javaServerImpl = new File(workDir, "src/" + testPackage.replace('.', '/') + "/" + 
                 module.getModulePackage() +"/" + getServerClassName(module) + ".java");
@@ -484,7 +474,7 @@ public class TypeGeneratorTest extends Assert {
         File libDir = new File(workDir, "lib");
         File binDir = new File(workDir, "bin");
         JavaData parsingData = prepareJavaCode(testNum, workDir, testPackage, libDir, binDir, null, true);
-        File serverOutDir = preparePerlAndPyServerCode(testNum, workDir);
+        File serverOutDir = preparePyServerCode(testNum, workDir);
         JavaModule module = parsingData.getModules().get(0);
         File javaServerImpl = new File(workDir, "src/" + testPackage.replace('.', '/') + "/" + 
                 module.getModulePackage() +"/" + getServerClassName(module) + ".java");
@@ -509,7 +499,7 @@ public class TypeGeneratorTest extends Assert {
 		JavaData parsingData = prepareJavaCode(
 				testNum, workDir, testPackage, libDir, binDir, null, true, true, false, null
 		);
-		File serverOutDir = preparePerlAndPyServerCode(testNum, workDir, true, false);
+		File serverOutDir = preparePyServerCode(testNum, workDir, true, false);
 		// TODO TESTSIMPLICITY not sure why serverPortHolder is needed
 		final int[] serverPortHolder = new int[] {-1};  // Servers should startup on this port
 		// Starting up service wizard
@@ -589,7 +579,7 @@ public class TypeGeneratorTest extends Assert {
 		JavaData parsingData = prepareJavaCode(testNum, workDir, testPackage, libDir, binDir, 
 		        null, needClientServer);
 		if (needClientServer) {
-            File serverOutDir = preparePerlAndPyServerCode(testNum, workDir);
+            File serverOutDir = preparePyServerCode(testNum, workDir);
             if (needPythonServer) {
 		        runPythonServerTest(testNum, needClientServer, workDir,
 		                testPackage, libDir, binDir, parsingData, serverOutDir, 
@@ -751,11 +741,11 @@ public class TypeGeneratorTest extends Assert {
 		return cfgFile;
 	}
 
-	protected static File preparePerlAndPyServerCode(int testNum, File workDir) throws Exception {
-	    return preparePerlAndPyServerCode(testNum, workDir, false, false);
+	protected static File preparePyServerCode(int testNum, File workDir) throws Exception {
+	    return preparePyServerCode(testNum, workDir, false, false);
 	}
 	
-	protected static File preparePerlAndPyServerCode(
+	protected static File preparePyServerCode(
 			final int testNum,
 			final File workDir, 
 			final boolean isClientDynamic,
@@ -770,15 +760,6 @@ public class TypeGeneratorTest extends Assert {
 		RunCompileCommand.generate(
 				testFile,                // specFile
 				null,                    // url
-				true,                    // jsClientSide
-				null,                    // jsClientName
-				true,                    // perlClientSide
-				null,                    // perlClientName
-				true,                    // perlServerSide
-				null,                    // perlServerName
-				null,                    // perlImplName
-				"service.psgi",          // perlPsgiName
-				false,                   // perlEnableRetries
 				true,                    // pyClientSide
 				null,                    // pyClientName
 				true,                    // pyServerSide
@@ -788,11 +769,6 @@ public class TypeGeneratorTest extends Assert {
 				false,                   // javaServerSide
 				null,                    // javaPackageParent
 				null,                    // javaSrcPath
-				false,                   // rClientSide
-				null,                    // rClientName
-				false,                   // rServerSide
-				null,                    // rServerName
-				null,                    // rImplName
 				serverOutDir,            // outDir
 				null,                    // jsonSchemaPath
 				null,                    // clientAsyncVer
@@ -806,15 +782,6 @@ public class TypeGeneratorTest extends Assert {
 		RunCompileCommand.generate(
 				testFile,                // specFile
 				null,                    // url
-				true,                    // jsClientSide
-				null,                    // jsClientName
-				true,                    // perlClientSide
-				null,                    // perlClientName
-				false,                   // perlServerSide
-				null,                    // perlServerName
-				null,                    // perlImplName
-				null,                    // perlPsgiName
-				false,                   // perlEnableRetries
 				true,                    // pyClientSide
 				null,                    // pyClientName
 				false,                   // pyServerSide
@@ -824,11 +791,6 @@ public class TypeGeneratorTest extends Assert {
 				false,                   // javaServerSide
 				null,                    // javaPackageParent
 				null,                    // javaSrcPath
-				false,                   // rClientSide
-				null,                    // rClientName
-				false,                   // rServerSide
-				null,                    // rServerName
-				null,                    // rImplName
 				serverOutDir,            // outDir
 				null,                     // jsonSchemaPath
 				isClientAsync ? "dev" : null,  // clientAsyncVer

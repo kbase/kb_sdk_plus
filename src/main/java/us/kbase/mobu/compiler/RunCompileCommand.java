@@ -35,15 +35,6 @@ public class RunCompileCommand {
             // this is repulsive and needs a builder
             final File specFile,
             final String url,
-            final boolean jsClientSide, 
-            final String jsClientName,
-            final boolean perlClientSide,
-            final String perlClientName, 
-            boolean perlServerSide,
-            final String perlServerName,
-            final String perlImplName, 
-            final String perlPsgiName,
-            final boolean perlEnableRetries,
             final boolean pyClientSide, 
             final String pyClientName,
             boolean pyServerSide,
@@ -53,11 +44,6 @@ public class RunCompileCommand {
             final boolean javaServerSide, 
             final String javaPackageParent,
             final String javaSrcPath,
-            final boolean rClientSide, 
-            final String rClientName,
-            boolean rServerSide,
-            final String rServerName, 
-            final String rImplName,
             final File outDir,
             final String jsonSchemaPath, 
             final String clientAsyncVer,
@@ -145,27 +131,18 @@ public class RunCompileCommand {
                     url == null ? null : new URL(url),
                     clientAsyncVer, dynservVer, semanticVersion, gitUrl, gitCommitHash);
         }
-        TemplateBasedGenerator.generate(services, url, jsClientSide, jsClientName, 
-                perlClientSide, perlClientName, perlServerSide, perlServerName, 
-                perlImplName, perlPsgiName, pyClientSide, pyClientName, 
-                pyServerSide, pyServerName, pyImplName, rClientSide, rClientName, 
-                rServerSide, rServerName, rImplName, perlEnableRetries,
-                ip, output, clientAsyncVer,
+        TemplateBasedGenerator.generate(services, url, pyClientSide, pyClientName, 
+                pyServerSide, pyServerName, pyImplName, ip, output, clientAsyncVer,
                 dynservVer, semanticVersion, gitUrl, gitCommitHash);
         String reportFile = System.getenv("KB_SDK_COMPILE_REPORT_FILE");
         if (reportFile == null || reportFile.isEmpty())
             reportFile = System.getProperty("KB_SDK_COMPILE_REPORT_FILE");
         if (reportFile != null && !reportFile.isEmpty()) {
-            perlServerSide = TemplateBasedGenerator.genPerlServer(perlServerSide, 
-                    perlServerName, perlImplName, perlPsgiName);
             pyServerSide = TemplateBasedGenerator.genPythonServer(pyServerSide, 
                     pyServerName, pyImplName);
-            rServerSide = TemplateBasedGenerator.genPythonServer(rServerSide, 
-                    rServerName, rImplName);
             try {
                 CompilationReporter.prepareCompileReport(outDir, services, 
-                        perlServerSide, perlImplName, 
-                        pyServerSide, pyImplName, rServerSide, rImplName, 
+                        pyServerSide, pyImplName, 
                         javaServerSide, javaPackageParent, javaSrcPath, 
                         javaParsingData, specFiles, new File(reportFile));
             } catch (Exception ex) {
@@ -181,6 +158,4 @@ public class RunCompileCommand {
             javaSrcDir = new File(outDir, javaSrcPath);
         return javaSrcDir;
     }
-    
-    
 }
