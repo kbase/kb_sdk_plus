@@ -40,7 +40,6 @@ public class ModuleBuilder {
     private static final String VERSION_COMMAND  = "version";
     private static final String INSTALL_COMMAND  = "install";
     private static final String RUN_COMMAND      = "run";
-    //private static final String SUBMIT_COMMAND   = "submit";
     
     public static final String GLOBAL_SDK_HOME_ENV_VAR = "KB_SDK_HOME";
     public static final String DEFAULT_METHOD_STORE_URL = "https://appdev.kbase.us/services/narrative_method_store/rpc";
