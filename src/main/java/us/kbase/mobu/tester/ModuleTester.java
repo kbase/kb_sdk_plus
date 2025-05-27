@@ -87,16 +87,20 @@ public class ModuleTester {
     
     public int runTests(String methodStoreUrl, boolean skipValidation, boolean allowSyncMethods)
             throws Exception {
+        // TODO CODE some of this code looks simnilar to that in the module runner, DRY possible
         if (skipValidation) {
             System.out.println("Validation step is skipped");
         } else {
-            ModuleValidator mv = new ModuleValidator(Arrays.asList(moduleDir.getCanonicalPath()), 
-                    false, methodStoreUrl, allowSyncMethods);
-            int returnCode = mv.validateAll();
+            ModuleValidator mv = new ModuleValidator(
+                    moduleDir.getCanonicalPath(), false, methodStoreUrl, allowSyncMethods
+            );
+            int returnCode = mv.validate();
             if (returnCode!=0) {
                 System.out.println("You can skip validation step using -s (or --skip_validation)" +
                 		" flag");
-                System.exit(returnCode);
+                // TODO CODE should be throwing exceptions, not returning return codes all over the
+                //           place
+                return returnCode;
             }
         }
         String testLocal = "test_local";

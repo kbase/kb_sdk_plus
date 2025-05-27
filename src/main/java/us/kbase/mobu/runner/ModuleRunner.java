@@ -68,14 +68,17 @@ public class ModuleRunner {
         File sdkCfgFile = new File(sdkHomeDir, "sdk.cfg");
         String sdkCfgPath = sdkCfgFile.getCanonicalPath();
         if (!sdkCfgFile.exists()) {
-            System.out.println("Warning: file " + sdkCfgFile.getAbsolutePath() + " will be " +
-                    "initialized (with 'kbase_endpoint'/'catalog_url' pointing to AppDev " +
-                    "environment, user and password will be prompted every time if not set)");
+            System.out.println("Warning: file " + sdkCfgFile.getAbsolutePath() + " will be "
+                    + "initialized (with 'kbase_endpoint'/'catalog_url'/'auth_service_url' "
+                    + "pointing to the AppDev environment). You will need to add your KBase "
+                    + "developer token to the file before running a method");
+            // TODO CODE client installer also writes the SDK config, plus several places in tests
             FileUtils.writeLines(sdkCfgFile, Arrays.asList(
                     "kbase_endpoint=https://appdev.kbase.us/services",
                     "catalog_url=https://appdev.kbase.us/services/catalog",
-                    "user=",
-                    "password=",
+                    "auth_service_url=https://appdev.kbase.us/services/auth/api/legacy/"
+                    + "KBase/Sessions/Login",
+                    "token=",
                     "### Please use next parameter to specify custom list of network",
                     "### interfaces used for callback IP address lookup:",
                     "#callback_networks=docker0,vboxnet0,vboxnet1,en0,en1,en2,en3"));

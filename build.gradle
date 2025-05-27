@@ -15,6 +15,10 @@ plugins {
 // TODO TEST add a test that starts the SDK in a docker container and checks some simple cmds
 // TODO DEPS make JitPack jars for catalog and NMS and use them
 
+// TODO CODE move all code under us.kbase.sdk
+
+group = 'us.kbase.sdk'
+
 repositories {
 	mavenCentral()
 	maven {  // for syslog4j
@@ -42,6 +46,8 @@ task buildGitCommitFile {
 }
 
 compileJava {
+	// tell annotation processors the project name to avoid name collisions
+	options.compilerArgs += ["-Aproject=${project.group}/${project.name}"]
 	options.release = 17
 	finalizedBy buildGitCommitFile
 }
@@ -173,6 +179,8 @@ configurations.all {
 
 dependencies {
 
+	// required for GraalVM native compilation
+	annotationProcessor 'info.picocli:picocli-codegen:4.7.7'
 	compileOnly 'javax.servlet:servlet-api:2.5'
 
 	implementation("com.github.kbase:auth2_client_java:0.5.0") {
@@ -189,7 +197,6 @@ dependencies {
 		exclude group: 'com.fasterxml.jackson.core'  // don't upgrade yet, breaks tests
 		exclude group: 'net.java.dev.jna' // don't include in runtime path
 	}
-	implementation 'com.beust:jcommander:1.48'
 	implementation "com.fasterxml.jackson.core:jackson-annotations:2.2.3"
 	implementation "com.fasterxml.jackson.core:jackson-databind:2.2.3"
 	implementation 'com.google.guava:guava:18.0'
@@ -198,6 +205,7 @@ dependencies {
 		exclude group: 'junit', module: 'junit' // bro
 	}
 	implementation 'commons-io:commons-io:2.4'
+	implementation 'info.picocli:picocli:4.7.7'
 	implementation 'org.apache.commons:commons-lang3:3.1'
 	implementation 'org.apache.velocity:velocity:1.7'
 	implementation 'org.ini4j:ini4j:0.5.2'

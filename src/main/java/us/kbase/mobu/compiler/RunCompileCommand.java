@@ -34,7 +34,7 @@ public class RunCompileCommand {
     public static void generate(
             // this is repulsive and needs a builder
             final File specFile,
-            final String url,
+            final URL url,
             final boolean pyClientSide, 
             final String pyClientName,
             boolean pyServerSide,
@@ -53,8 +53,10 @@ public class RunCompileCommand {
             final String gitUrl,
             final String gitCommitHash
             ) throws Exception {
-    	
+        // TODO CODE this looks similar to code in the client installer, might be duplicated
         FileSaver javaSrcDir = null;
+        // TODO CODE make javasrc path required if java processing is requested. Make a builder
+        //           Later spots in the code expect a non-null value for javaSrcDir
         if (javaSrcPath != null)
             javaSrcDir = new DiskFileSaver(correctRelativePath(javaSrcPath, outDir));
         final File dir = specFile.getCanonicalFile().getParentFile();
@@ -127,11 +129,11 @@ public class RunCompileCommand {
         if (javaClientSide) {
             //TODO DYNSERV add dynamic service client generation to all clients except Python
             javaParsingData = JavaTypeGenerator.processSpec(services, javaSrcDir, 
-                    javaPackageParent, javaServerSide, 
-                    url == null ? null : new URL(url),
+                    javaPackageParent, javaServerSide, url,
                     clientAsyncVer, dynservVer, semanticVersion, gitUrl, gitCommitHash);
         }
-        TemplateBasedGenerator.generate(services, url, pyClientSide, pyClientName, 
+        TemplateBasedGenerator.generate(services, url == null ? null : url.toString(),
+                pyClientSide, pyClientName, 
                 pyServerSide, pyServerName, pyImplName, ip, output, clientAsyncVer,
                 dynservVer, semanticVersion, gitUrl, gitCommitHash);
         String reportFile = System.getenv("KB_SDK_COMPILE_REPORT_FILE");
