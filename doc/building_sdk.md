@@ -1,6 +1,6 @@
 ## Building the SDK
 
-TODO DOCS: revamp / rework all of this. SDK is currently running on java 11
+TODO DOCS: revamp / rework all of this. SDK is currently running on java 17
 
 System Dependencies:
 
@@ -22,9 +22,8 @@ Pull dependencies and configure the SDK:
     cd kb_sdk
     make
 
-Add the kb-sdk tool to your PATH and enable command completion.  From the kb_sdk directory:
+Add the kb-sdk tool to your PATH.  From the kb_sdk directory:
 
     # for bash
     export PATH=$(pwd)/bin:$PATH
-    source src/sh/sdk-completion.sh
 

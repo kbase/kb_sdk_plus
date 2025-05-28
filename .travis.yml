@@ -38,6 +38,7 @@ script:
   - make
   - make sdkbase
   - export PATH=$(pwd)/bin:$PATH
+  # When porting CLI tests to GHA, try sourcing kb-sdk generate_completion as a test
   - source src/sh/sdk-completion.sh
   - kb-sdk help
   - cd ..

@@ -39,4 +39,3 @@ TODO DOCS either redo or remove this. Is it really necessary?
 #### Miscellania
 
 * `src/java/name/fraser/neil/plaintext/diff_match_patch.java` - A utility computing the difference between two texts to create a patch. This is used in `src/java/us/kbase/mobu/compiler/test/html/HTMLGenTest.java`.
-* `src/sh/sdk-completion.sh` - A parameter-completion bash script for the `kb-sdk` CLI.
