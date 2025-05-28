@@ -87,7 +87,7 @@ public class ModuleTester {
     
     public int runTests(String methodStoreUrl, boolean skipValidation, boolean allowSyncMethods)
             throws Exception {
-        // TODO CODE some of this code looks simnilar to that in the module runner, DRY possible
+        // TODO CODE some of this code looks similar to that in the module runner, DRY possible
         if (skipValidation) {
             System.out.println("Validation step is skipped");
         } else {
