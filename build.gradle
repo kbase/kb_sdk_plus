@@ -41,7 +41,7 @@ task buildGitCommitFile {
 	doLast {
 		def commitId = grgit.head().id
 		// is there a variable for builddir/classes/java/main?
-		file("$buildDir/classes/java/main/us/kbase/mobu/gitcommit").text = commitId
+		file("$buildDir/classes/java/main/us/kbase/sdk/gitcommit").text = commitId
 	}
 }
 
@@ -68,7 +68,7 @@ task kb_sdk_plusScript {
 
 CLASSPATH=$classpath
 
-java -cp \$CLASSPATH us.kbase.mobu.ModuleBuilder \$@
+java -cp \$CLASSPATH us.kbase.sdk.ModuleBuilder \$@
 """
 		def outfile = "$buildDir/kb-sdk"
 		file(outfile).text = scriptContent
@@ -110,7 +110,7 @@ task prepareRunnableDir {
 SCRIPT_DIR="\$(cd "\$(dirname "\${BASH_SOURCE[0]}")" && pwd)"
 CLASSPATH="\$(ls \$SCRIPT_DIR/*.jar | tr '\\n' ':')"
 
-java -cp \$CLASSPATH us.kbase.mobu.ModuleBuilder \$@
+java -cp \$CLASSPATH us.kbase.sdk.ModuleBuilder \$@
 """
 		runnerScript.setExecutable(true)
 	}
@@ -118,7 +118,7 @@ java -cp \$CLASSPATH us.kbase.mobu.ModuleBuilder \$@
 
 task pythonTest(type: Exec) {
 	description = 'Runs Python tests using pytest'
-	environment 'PYTHONPATH', './src/main/resources/us/kbase/templates'
+	environment 'PYTHONPATH', './src/main/resources/us/kbase/sdk/templates'
 	// Gradle is an absolute hygine product and appears to not necessarily use the same environment
 	// as the calling context. Wrapping the command in a new shell fixes that for some reason
 	// I don't quite understand.

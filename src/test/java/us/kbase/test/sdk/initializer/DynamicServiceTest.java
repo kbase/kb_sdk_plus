@@ -19,8 +19,8 @@ import org.junit.Test;
 import us.kbase.common.service.JsonClientException;
 import us.kbase.common.service.JsonServerMethod;
 import us.kbase.common.service.JsonServerServlet;
-import us.kbase.mobu.util.DirUtils;
-import us.kbase.mobu.util.ProcessHelper;
+import us.kbase.sdk.util.DirUtils;
+import us.kbase.sdk.util.ProcessHelper;
 import us.kbase.test.sdk.scripts.TestConfigHelper;
 import us.kbase.test.sdk.scripts.TypeGeneratorTest;
 

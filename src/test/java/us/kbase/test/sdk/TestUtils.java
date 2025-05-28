@@ -7,7 +7,7 @@ import java.nio.file.Paths;
 
 import org.apache.commons.io.FileUtils;
 
-import us.kbase.mobu.util.ProcessHelper;
+import us.kbase.sdk.util.ProcessHelper;
 import us.kbase.test.sdk.scripts.TestConfigHelper;
 
 /** Yes I know utility classes are bad etc etc */

@@ -17,9 +17,9 @@ import org.junit.Test;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 import us.kbase.common.service.UObject;
-import us.kbase.mobu.installer.ClientInstaller;
-import us.kbase.mobu.installer.Dependency;
-import us.kbase.mobu.util.DiskFileSaver;
+import us.kbase.sdk.installer.ClientInstaller;
+import us.kbase.sdk.installer.Dependency;
+import us.kbase.sdk.util.DiskFileSaver;
 import us.kbase.test.sdk.scripts.TestConfigHelper;
 
 public class DepsTest {

@@ -9,7 +9,7 @@ import org.junit.Test;
 import us.kbase.kidl.KbModule;
 import us.kbase.kidl.KbService;
 import us.kbase.kidl.KidlParser;
-import us.kbase.mobu.validator.ModuleValidator;
+import us.kbase.sdk.validator.ModuleValidator;
 
 public class ModuleValidatorTest {
     

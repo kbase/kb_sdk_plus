@@ -19,9 +19,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import us.kbase.auth.AuthToken;
-import us.kbase.mobu.ModuleBuilder;
-import us.kbase.mobu.initializer.ModuleInitializer;
-import us.kbase.mobu.tester.ModuleTester;
+import us.kbase.sdk.ModuleBuilder;
+import us.kbase.sdk.initializer.ModuleInitializer;
+import us.kbase.sdk.tester.ModuleTester;
 import us.kbase.test.sdk.TestUtils;
 import us.kbase.test.sdk.scripts.TestConfigHelper;
 
@@ -103,7 +103,7 @@ public class ModuleTesterTest {
 		final Path moduleDir = init(lang, moduleName);
 		// TODO TESTHACK remove this when there's a base image that deploys the authclient correctly
 		FileUtils.copyFile(
-				new File("./src/main/resources/us/kbase/templates/authclient.py"),
+				new File("./src/main/resources/us/kbase/sdk/templates/authclient.py"),
 				moduleDir.resolve(Paths.get("lib", moduleName, "/authclient.py")).toFile()
 				);
 		// TODO TESTHACK PYTEST upgrade to pytest and remove this stuff assuming that works
