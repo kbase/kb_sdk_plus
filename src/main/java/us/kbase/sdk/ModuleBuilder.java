@@ -201,8 +201,8 @@ public class ModuleBuilder implements Runnable{
 		@Option(
 				names = {"--clasyncver"},
 				description = """
-						Set the verion of code to run when making asynchronous calls via a \
-						client. Valid valus are a git commit hash or "dev", "beta", or "release". \
+						Set the version of code to run when making asynchronous calls via a \
+						client. Valid values are a git commit hash or "dev", "beta", or "release". \
 						The targeted version must be registered in the KBase Catalog.\
 						"""
 		)
@@ -214,7 +214,7 @@ public class ModuleBuilder implements Runnable{
 						Set clients to be built for use with KBase dynamic services \
 						(e.g. with URL lookup via the Service Wizard) with the specified \
 						dynamic service version. \
-						Valid valus are a git commit hash or "dev", "beta", or "release". \
+						Valid values are a git commit hash or "dev", "beta", or "release". \
 						The targeted version must be registered in the KBase Catalog.\
 						"""
 		)
@@ -250,7 +250,7 @@ public class ModuleBuilder implements Runnable{
 				paramLabel = "<py_client_name>",
 				names = {"--pyclname"},
 				description = """
-						Generate a Python client with with the \
+						Generate a Python client with the \
 						name provided, optionally prefixed by subdirectories separated by '.' \
 						as in the standard Python module syntax \
 						(e.g. biokbase.mymodule.client). Overrides the --py option.\
@@ -658,8 +658,8 @@ public class ModuleBuilder implements Runnable{
 				paramLabel = "<provenance_references>",
 				names = {"-r","--prov-refs"},
 				description = """
-						A comma separated list of KBase workspace object addresses in the format \
-						<numerical workspace ID>/<numerical object ID/<version>. \
+						A comma-separated list of KBase workspace object addresses in the format \
+						<numerical workspace ID>/<numerical object ID>/<version>. \
 						They will be included in the provenance of any saved workspace objects.\
 						"""
 		)
