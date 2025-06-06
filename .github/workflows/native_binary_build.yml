@@ -1,0 +1,54 @@
+name: Build Native Binaries
+
+# TODO NATIVE_COMPILATION add a yml for pushing binaries to a release
+
+# Currently no longer supporting windows. Can look into it if we get requests
+# Work around is to use a VM like VirtualBox and Linux
+
+on:
+  pull_request:
+    types:
+    - opened
+    - reopened
+    - synchronize
+    - ready_for_review
+  push:
+    # run workflow when merging to main or develop
+    branches:
+      - main
+      - master
+      - develop
+
+jobs:
+  build-native:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            label: linux-x64
+          - os: macos-14
+            label: macos-arm64
+          - os: macos-13
+            label: macos-x64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+
+      - uses: actions/checkout@v3
+
+      - name: Set up GraalVM
+        uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '17'
+          distribution: 'graalvm'
+          components: 'native-image'
+
+      - name: Build native image
+        run: ./gradlew nativeCompile
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kb-sdk-${{ matrix.label }}
+          path: build/native/nativeCompile/kb-sdk
