@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,39 +45,46 @@ public class ModuleValidator {
 	private static final String KBASE_YML_FILE = "kbase.yml";
 	
 	
-	protected List<String> modulePaths;
+	protected String modulePath;
 	protected boolean verbose;
 	protected String methodStoreUrl;
 	protected boolean allowSyncMethods;
-	
-	public ModuleValidator(List<String> modulePaths, boolean verbose, 
-	        String defaultMethodStoreUrl, boolean allowSyncMethods) throws Exception {
-		this.modulePaths = modulePaths;
+
+	public ModuleValidator(
+			final String modulePath,
+			final boolean verbose, 
+			final String defaultMethodStoreUrl,
+			final boolean allowSyncMethods
+			) throws Exception {
+		this.modulePath = modulePath;
 		this.verbose = verbose;
-		if (modulePaths.size() == 1) {
-		    File module = new File(modulePaths.get(0));
-		    File testCfg = new File(new File(module, "test_local"), "test.cfg");
-    		if (testCfg.exists()) {
-    	        Properties props = new Properties();
-    	        InputStream is = new FileInputStream(testCfg);
-    	        try {
-    	            props.load(is);
-    	        } finally {
-    	            is.close();
-    	        }
-    	        String endPoint = props.getProperty("kbase_endpoint");
-    	        if (endPoint != null)
-    	            this.methodStoreUrl = endPoint + "/narrative_method_store/rpc";
-    		}
+		File module = new File(modulePath);
+		// TODO CODE instead of all this protective code, just fail if the methodstore URL can't
+		//           be determined and remove the defaultMethodStoreURL.
+		//           The command line interface is misleading since unless the module is
+		//           corrupted it'll be ignored
+		File testCfg = new File(new File(module, "test_local"), "test.cfg");
+		if (testCfg.exists()) {
+			Properties props = new Properties();
+			InputStream is = new FileInputStream(testCfg);
+			try {
+				props.load(is);
+			} finally {
+				is.close();
+			}
+			String endPoint = props.getProperty("kbase_endpoint");
+			if (endPoint != null) {
+				this.methodStoreUrl = endPoint + "/narrative_method_store/rpc";
+			}
 		}
 		if (this.methodStoreUrl == null) {
-		    this.methodStoreUrl = defaultMethodStoreUrl;
-		    System.out.println("WARNING! 'kbase_endpoint' property was not found in " +
-		    		"<module>/test_local/test.cfg so validation is done against NMS in appdev");
+			this.methodStoreUrl = defaultMethodStoreUrl;
+			System.out.println("WARNING! 'kbase_endpoint' property was not found in " +
+					"<module>/test_local/test.cfg so validation is done against NMS in appdev");
 		}
 		this.allowSyncMethods = allowSyncMethods;
 	}
-	
+
     private static boolean isModuleDir(File dir) {
         return  new File(dir, "Dockerfile").exists() &&
                 new File(dir, "Makefile").exists() &&
@@ -87,11 +95,12 @@ public class ModuleValidator {
                 new File(dir, "ui").exists();
     }
 	
-	public int validateAll() {
+	public int validate() {
 		
 		int errors = 0;
 		
-		for(String modulePathString : modulePaths) {
+		// TODO CODE remove this crufty loop
+		for(String modulePathString : Arrays.asList(modulePath)) {
 			File module = new File(modulePathString);
 			System.out.println("\nValidating module in ("+module+")");
 			
@@ -178,23 +187,11 @@ public class ModuleValidator {
 			}
 			
 		}
-		
-		
-		
-		
-		if(errors>0) {
-			if(modulePaths.size()==1) {
-				System.out.println("\n\nThis module contains errors.\n");
-			} else {
-				System.out.println("\n\nErrors detected in "+errors +" of "+modulePaths.size()+" modules.\n");
-			}
+		if (errors > 0) {
+			System.out.println("\n\nThis module contains errors.\n");
 			return 1;
 		}
-		if(modulePaths.size()==1) {
-			System.out.println("\n\nCongrats- this module is valid.\n");
-		} else {
-			System.out.println("\n\nCongrats- all "+modulePaths.size()+" modules are valid.\n");
-		}
+		System.out.println("\n\nCongrats- this module is valid.\n");
 		return 0;
 	}
 	
@@ -220,9 +217,6 @@ public class ModuleValidator {
 			return 1;
 			
 		}
-		
-		
-		
 		return 0;
 	}
 

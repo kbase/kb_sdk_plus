@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import us.kbase.mobu.Language;
 import us.kbase.mobu.compiler.JavaData;
 import us.kbase.mobu.compiler.JavaModule;
 import us.kbase.mobu.compiler.JavaTypeGenerator;
@@ -17,7 +18,7 @@ import us.kbase.mobu.installer.ClientInstaller;
 import us.kbase.templates.TemplateFormatter;
 
 public class ModuleInitializer {
-	public static final String DEFAULT_LANGUAGE = "python";
+	public static final String DEFAULT_LANGUAGE = "" + Language.python;
 
 	private final String moduleName;
 	private final String userName;

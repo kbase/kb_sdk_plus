@@ -78,6 +78,7 @@ and runnable while we make changes to the forked codebase.
   * Not sure what the issues are here, need to investigate
 * Figure out how to support Argonne staff, where Docker Desktop is banned
   * Is the docker engine CLI not enough?
+* Try to get the module docker images to run without root in tests and in EE2
 
 ## Post general development release
 
