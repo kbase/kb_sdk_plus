@@ -88,7 +88,7 @@ public class ModuleTesterTest {
 				"auth_service_url_allow_insecure=" + 
 				TestConfigHelper.getAuthServiceUrlInsecure() + "\n";
 		FileUtils.writeStringToFile(testCfgFile, testCfgText);
-		int exitCode = new ModuleTester(moduleDir).runTests(skipValidation, false);
+		int exitCode = new ModuleTester(moduleDir).runTests(skipValidation);
 		System.out.println("Exit code: " + exitCode);
 		return exitCode;
 	}

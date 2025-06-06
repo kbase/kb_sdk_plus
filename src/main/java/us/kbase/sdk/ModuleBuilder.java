@@ -78,20 +78,8 @@ public class ModuleBuilder implements Runnable{
 		boolean verbose;
 	}
 	
-	public static class ValidationArgs extends Verbose {
-		
-		// TODO UX seems like this could be removed, not sure it's still relevant.
-		//         just looks for a specific value in the spec.json file. Check w/ Bill
-		@Option(
-				names = {"-a", "--allow_sync_method"},
-				description = "Allow synchronous methods (advanced).",
-				defaultValue = "false"
-		)
-		boolean allowSyncMethods;
-	}
-
 	@Command(name = "validate", description = "Validate a module.")
-	public static class ValidateCommand extends ValidationArgs implements Callable<Integer> {
+	public static class ValidateCommand extends Verbose implements Callable<Integer> {
 
 		@Parameters(
 				paramLabel = "<module_path>",
@@ -105,9 +93,7 @@ public class ModuleBuilder implements Runnable{
 		@Override
 		public Integer call() {
 			try {
-				final ModuleValidator mv = new ModuleValidator(
-						module.toString(), verbose, allowSyncMethods
-				);
+				final ModuleValidator mv = new ModuleValidator(module.toString(), verbose);
 				return mv.validate();
 			} catch (Exception e) {
 				showError("Error while validating module", e.getMessage());
@@ -450,7 +436,7 @@ public class ModuleBuilder implements Runnable{
 	 * Runs the module test command - this runs tests in a local docker container.
 	 */
 	@Command(name = "test", description = "Test a module with local Docker.")
-	public static class TestCommand extends ValidationArgs implements Callable<Integer> {
+	public static class TestCommand extends Verbose implements Callable<Integer> {
 		
 		@Option(
 				names = {"-s", "--skip_validation"},
@@ -463,7 +449,7 @@ public class ModuleBuilder implements Runnable{
 		public Integer call() {
 			try {
 				final ModuleTester tester = new ModuleTester();
-				return tester.runTests(skipValidation, allowSyncMethods);
+				return tester.runTests(skipValidation);
 			}
 			catch (Exception e) {
 				showError("Error while initializing module", e.getMessage());

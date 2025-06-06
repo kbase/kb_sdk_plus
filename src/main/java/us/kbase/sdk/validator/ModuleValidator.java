@@ -48,13 +48,8 @@ public class ModuleValidator {
 	protected String modulePath;
 	protected boolean verbose;
 	protected String methodStoreUrl;
-	protected boolean allowSyncMethods;
 
-	public ModuleValidator(
-			final String modulePath,
-			final boolean verbose, 
-			final boolean allowSyncMethods
-			) throws Exception {
+	public ModuleValidator(final String modulePath, final boolean verbose) throws Exception {
 		this.modulePath = modulePath;
 		this.verbose = verbose;
 		File module = new File(modulePath);
@@ -81,7 +76,6 @@ public class ModuleValidator {
 			);
 		}
 		this.methodStoreUrl = endPoint + "/narrative_method_store/rpc";
-		this.allowSyncMethods = allowSyncMethods;
 	}
 
     private static boolean isModuleDir(File dir) {
@@ -171,7 +165,7 @@ public class ModuleValidator {
 			        if (methodDir.isDirectory()) {
 			            System.out.println("\nValidating method in ("+methodDir+")");
 			            try {
-			                int status = validateMethodSpec(methodDir, parsedKidl, this.allowSyncMethods);
+			                int status = validateMethodSpec(methodDir, parsedKidl);
 			                if (status != 0) {
 			                    errors++; 
 			                    continue;
@@ -227,8 +221,7 @@ public class ModuleValidator {
     }
 	
 	
-	protected int validateMethodSpec(File methodDir, KbModule parsedKidl,
-	        boolean allowSyncMethods) throws IOException {
+	protected int validateMethodSpec(File methodDir, KbModule parsedKidl) throws IOException {
 	    NarrativeMethodStoreClient nms = new NarrativeMethodStoreClient(new URL(methodStoreUrl));
 	    nms.setAllSSLCertificatesTrusted(true);
 	    nms.setIsInsecureHttpConnectionAllowed(true);
@@ -251,7 +244,7 @@ public class ModuleValidator {
                         System.err.println("                (" + (num + 1) + ") " + warn);
                     }
                 }
-                validateMethodSpecMapping(spec, parsedKidl, allowSyncMethods);
+                validateMethodSpecMapping(spec, parsedKidl);
                 return 0;
             }
             System.err.println("  **ERROR** - method-spec validation failed:");
@@ -267,23 +260,17 @@ public class ModuleValidator {
         }
 	}
 
-	public static void validateMethodSpecMapping(String specText, KbModule parsedKidl,
-	        boolean allowSyncMethods) throws IOException {
-	    JsonNode spec = new ObjectMapper().readTree(specText);
+	public static void validateMethodSpecMapping(String specText, KbModule parsedKidl
+            ) throws IOException {
+        JsonNode spec = new ObjectMapper().readTree(specText);
         JsonNode behaviorNode = get("/", spec, "behavior");
-        if (behaviorNode.get("none") != null)
+        if (behaviorNode.get("none") != null) {
             return;  // Don't pay attention at viewer methods (since they don't use back-end)
-        if (!allowSyncMethods) {
-            String jobId = get("/", spec, "job_id_output_field").asText();
-            if (!jobId.equals("docker")) {
-                throw new IllegalStateException("  **ERROR** - can't find \"docker\" value within path " +
-                        "[job_id_output_field] in spec.json");
-            }
-        } else if (spec.get("job_id_output_field") == null ||
-                !spec.get("job_id_output_field").asText().equals("docker")) {
-            System.err.println("  **WARNINGS** - method is declared as synchronous and " +
-                    "will be skipped");
-            return;
+        }
+        final String jobId = get("/", spec, "job_id_output_field").asText();
+        if (!jobId.equals("docker")) { // tested manually
+            throw new IllegalStateException("  **ERROR** - can't find \"docker\" value within path " +
+                    "[job_id_output_field] in spec.json");
         }
         JsonNode parametersNode = get("/", spec, "parameters");
         Map<String, JsonNode> inputParamIdToType = new TreeMap<String, JsonNode>();

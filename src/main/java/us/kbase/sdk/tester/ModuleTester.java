@@ -85,15 +85,12 @@ public class ModuleTester {
         }
     }
     
-    public int runTests(final boolean skipValidation, final boolean allowSyncMethods)
-            throws Exception {
+    public int runTests(final boolean skipValidation) throws Exception {
         // TODO CODE some of this code looks similar to that in the module runner, DRY possible
         if (skipValidation) {
             System.out.println("Validation step is skipped");
         } else {
-            ModuleValidator mv = new ModuleValidator(
-                    moduleDir.getCanonicalPath(), false, allowSyncMethods
-            );
+            ModuleValidator mv = new ModuleValidator(moduleDir.getCanonicalPath(), false);
             int returnCode = mv.validate();
             if (returnCode!=0) {
                 System.out.println("You can skip validation step using -s (or --skip_validation)" +
