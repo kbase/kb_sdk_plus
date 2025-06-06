@@ -53,35 +53,34 @@ public class ModuleValidator {
 	public ModuleValidator(
 			final String modulePath,
 			final boolean verbose, 
-			final String defaultMethodStoreUrl,
 			final boolean allowSyncMethods
 			) throws Exception {
 		this.modulePath = modulePath;
 		this.verbose = verbose;
 		File module = new File(modulePath);
-		// TODO CODE instead of all this protective code, just fail if the methodstore URL can't
-		//           be determined and remove the defaultMethodStoreURL.
-		//           The command line interface is misleading since unless the module is
-		//           corrupted it'll be ignored
+		// TODO CODE don't hardcode file names and directories everywhere
 		File testCfg = new File(new File(module, "test_local"), "test.cfg");
-		if (testCfg.exists()) {
-			Properties props = new Properties();
-			InputStream is = new FileInputStream(testCfg);
-			try {
-				props.load(is);
-			} finally {
-				is.close();
-			}
-			String endPoint = props.getProperty("kbase_endpoint");
-			if (endPoint != null) {
-				this.methodStoreUrl = endPoint + "/narrative_method_store/rpc";
-			}
+		// everything except the happy path is currently tested manually
+		if (!testCfg.exists()) {
+			// TODO CODE IllegalStateException is used for everything - maybe not terrible in
+			//           a CLI?
+			throw new IllegalStateException(
+					"test_local/test.cfg file is missing from SDK module"
+			);
 		}
-		if (this.methodStoreUrl == null) {
-			this.methodStoreUrl = defaultMethodStoreUrl;
-			System.out.println("WARNING! 'kbase_endpoint' property was not found in " +
-					"<module>/test_local/test.cfg so validation is done against NMS in appdev");
+		final Properties props = new Properties();
+		try (final InputStream is = new FileInputStream(testCfg);) {
+			props.load(is);
+		} catch (Exception e) {
+			throw new IOException("Could not read test_local/test.cfg file: " + e.getMessage(), e);
 		}
+		final String endPoint = props.getProperty("kbase_endpoint");
+		if (endPoint == null) {
+			throw new IllegalStateException(
+					"test_local/test.cfg file is missing the kbase_endpoint property"
+			);
+		}
+		this.methodStoreUrl = endPoint + "/narrative_method_store/rpc";
 		this.allowSyncMethods = allowSyncMethods;
 	}
 
