@@ -47,7 +47,6 @@ public class TemplateBasedGenerator {
         KbService service = srvs.get(0);
         genPythonServer = genPythonServer(genPythonServer, pythonServerName, pythonImplName);
         if (genPythonServer) {
-            genPython = true;
             if (pythonServerName == null)
                 pythonServerName = service.getName() + "Server";
         }

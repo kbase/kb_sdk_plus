@@ -123,8 +123,6 @@ public class RunCompileCommand {
                 }
             }
         }
-        if (javaServerSide)
-            javaClientSide = true;
         JavaData javaParsingData = null;
         if (javaClientSide) {
             //TODO DYNSERV add dynamic service client generation to all clients except Python

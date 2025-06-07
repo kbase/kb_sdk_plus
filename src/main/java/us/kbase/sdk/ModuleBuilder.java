@@ -227,13 +227,8 @@ public class ModuleBuilder implements Runnable{
 		String pyClientName;
 		
 		@Option(
-				names = {"--pyserv"},
-				// TODO PYCLI I don't think we actually want to generate clients by default.
-				//            I think I restored it to get tests to pass
-				description = """
-						Generate a Python server with a default name. \
-						If set, Python clients will also be generated.\
-						""",
+				names = {"--pysrv"},
+				description = "Generate a Python server with a default name.",
 				defaultValue = "false"
 		)
 		boolean pyServerSide;
@@ -253,14 +248,12 @@ public class ModuleBuilder implements Runnable{
 		@Option(
 				paramLabel = "<py_implementation_name>",
 				names = {"--pyimplname"},
-				// TODO PYCLI I don't think we actually want client generation by default
-				//            I think I restored it to get tests to pass
 				description = """
 						Generate a Python server implementation with the \
 						name provided, optionally prefixed by subdirectories separated by '.' \
 						as in the standard Python module syntax \
 						(e.g. biokbase.mymodule.impl). \
-						If set, Python server and client code will also be generated.\
+						If set, Python server code will also be generated.\
 						"""
 		)
 		String pyImplName;
@@ -586,7 +579,7 @@ public class ModuleBuilder implements Runnable{
 	
 	@Command(
 			name = "run",
-			description = "Run a method of an SDK module registered in the KBase catalog locally."
+			description = "Run a SDK method locally."
 	)
 	public static class RunCommand extends TagAndVerbose implements Callable<Integer> {
 		
@@ -651,7 +644,8 @@ public class ModuleBuilder implements Runnable{
 				paramLabel = "<method_name>",
 				description = """
 						The fully qualified name of the method to run, e.g. \
-						"module_name.method_name".\
+						"module_name.method_name". The method must be registered in the KBase \
+						catalog.\
 						""",
 				arity = "1"
 		)
