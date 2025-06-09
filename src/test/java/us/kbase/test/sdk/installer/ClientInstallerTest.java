@@ -13,8 +13,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import us.kbase.mobu.initializer.ModuleInitializer;
-import us.kbase.mobu.installer.ClientInstaller;
+import us.kbase.sdk.initializer.ModuleInitializer;
+import us.kbase.sdk.installer.ClientInstaller;
 import us.kbase.test.sdk.TestUtils;
 import us.kbase.test.sdk.scripts.TestConfigHelper;
 

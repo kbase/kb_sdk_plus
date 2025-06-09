@@ -58,8 +58,8 @@ import us.kbase.common.service.JacksonTupleModule;
 import us.kbase.common.service.JsonClientException;
 import us.kbase.common.service.ServerException;
 import us.kbase.common.service.UObject;
-import us.kbase.mobu.tester.DockerMountPoints;
-import us.kbase.mobu.tester.SDKCallbackServer;
+import us.kbase.sdk.tester.DockerMountPoints;
+import us.kbase.sdk.tester.SDKCallbackServer;
 import us.kbase.test.sdk.scripts.TestConfigHelper;
 import us.kbase.testutils.controllers.ControllerCommon;
 import us.kbase.workspace.ProvenanceAction;
@@ -543,7 +543,7 @@ public class CallbackServerTest {
         System.out.println("Running badMethod in dir " + res.tempdir);
         failJob(res, "njs_sdk_test_1run", "foo",
                 "Can not find method [CallbackServer.njs_sdk_test_1run] " +
-                "in server class us.kbase.mobu.tester.SDKCallbackServer");
+                "in server class us.kbase.sdk.tester.SDKCallbackServer");
         failJob(res, "njs_sdk_test_1.r.un", "foo",
                 "Illegal method name: njs_sdk_test_1.r.un");
         res.server.stop();

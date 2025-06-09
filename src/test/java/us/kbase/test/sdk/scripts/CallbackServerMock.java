@@ -29,7 +29,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 
 import us.kbase.common.service.UObject;
-import us.kbase.mobu.util.ProcessHelper;
+import us.kbase.sdk.util.ProcessHelper;
 
 //END_HEADER
 

@@ -38,9 +38,9 @@ import us.kbase.jkidl.ParseException;
 import us.kbase.jkidl.SpecParser;
 import us.kbase.kidl.KbModule;
 import us.kbase.kidl.KidlParseException;
-import us.kbase.mobu.compiler.html.HTMLGenVisitor;
-import us.kbase.mobu.compiler.html.HTMLGenerator;
-import us.kbase.mobu.util.FileSaver;
+import us.kbase.sdk.compiler.html.HTMLGenVisitor;
+import us.kbase.sdk.compiler.html.HTMLGenerator;
+import us.kbase.sdk.util.FileSaver;
 
 public class HTMLGenTest {
 

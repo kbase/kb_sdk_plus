@@ -30,8 +30,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 
 import us.kbase.common.service.UObject;
-import us.kbase.mobu.util.DirUtils;
-import us.kbase.mobu.util.ProcessHelper;
+import us.kbase.sdk.util.DirUtils;
+import us.kbase.sdk.util.ProcessHelper;
 import us.kbase.test.sdk.scripts.TestConfigHelper;
 
 //END_HEADER

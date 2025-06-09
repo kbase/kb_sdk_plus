@@ -51,16 +51,16 @@ import us.kbase.kidl.KbFuncdef;
 import us.kbase.kidl.KbService;
 import us.kbase.kidl.KidlParseException;
 import us.kbase.kidl.KidlParser;
-import us.kbase.mobu.compiler.JavaData;
-import us.kbase.mobu.compiler.JavaFunc;
-import us.kbase.mobu.compiler.JavaModule;
-import us.kbase.mobu.compiler.JavaTypeGenerator;
-import us.kbase.mobu.compiler.PrevCodeParser;
-import us.kbase.mobu.compiler.RunCompileCommand;
-import us.kbase.mobu.util.DiskFileSaver;
-import us.kbase.mobu.util.FileSaver;
-import us.kbase.mobu.util.ProcessHelper;
-import us.kbase.mobu.util.TextUtils;
+import us.kbase.sdk.compiler.JavaData;
+import us.kbase.sdk.compiler.JavaFunc;
+import us.kbase.sdk.compiler.JavaModule;
+import us.kbase.sdk.compiler.JavaTypeGenerator;
+import us.kbase.sdk.compiler.PrevCodeParser;
+import us.kbase.sdk.compiler.RunCompileCommand;
+import us.kbase.sdk.util.DiskFileSaver;
+import us.kbase.sdk.util.FileSaver;
+import us.kbase.sdk.util.ProcessHelper;
+import us.kbase.sdk.util.TextUtils;
 
 /**
  * Main test class for JavaTypeGenerator. It contains 10 tests checking different cases 
@@ -629,7 +629,8 @@ public class TypeGeneratorTest extends Assert {
 					"if [ ! -d biokbase ]; then",
 					"  mkdir -p ./biokbase",
 					// TODO TESTCODE this is bonkers, need a better way of reffing files
-					"  cp -r ../../../../src/main/resources/us/kbase/templates/log.py ./biokbase/",
+					"  cp -r ../../../../src/main/resources/us/kbase/sdk/templates/log.py "
+					+ "./biokbase/",
 					"fi"
 					));
 			if (serverPortNum != null) {

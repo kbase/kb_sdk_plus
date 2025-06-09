@@ -12,11 +12,11 @@ import org.junit.Test;
 import us.kbase.kidl.KbModule;
 import us.kbase.kidl.KbService;
 import us.kbase.kidl.KidlParser;
-import us.kbase.mobu.compiler.report.CompilationReporter;
-import us.kbase.mobu.compiler.report.Function;
-import us.kbase.mobu.compiler.report.FunctionPlace;
-import us.kbase.mobu.compiler.report.Report;
-import us.kbase.mobu.compiler.report.SpecFile;
+import us.kbase.sdk.compiler.report.CompilationReporter;
+import us.kbase.sdk.compiler.report.Function;
+import us.kbase.sdk.compiler.report.FunctionPlace;
+import us.kbase.sdk.compiler.report.Report;
+import us.kbase.sdk.compiler.report.SpecFile;
 
 public class CompileReporterTest {
     
