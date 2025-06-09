@@ -680,8 +680,8 @@ public class ModuleBuilder implements Runnable{
 		@Parameters(
 				paramLabel = "<method_name>",
 				description = """
-						The fully qualified name of the method to run, e.g.
-						"module_name.method_name".
+						The fully qualified name of the method to run, e.g. \
+						"module_name.method_name".\
 						""",
 				arity = "1"
 		)
