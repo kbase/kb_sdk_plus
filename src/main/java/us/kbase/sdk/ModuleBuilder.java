@@ -12,6 +12,7 @@ import java.util.concurrent.Callable;
 
 import org.yaml.snakeyaml.Yaml;
 
+import picocli.AutoComplete.GenerateCompletion;
 import picocli.CommandLine;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
@@ -40,6 +41,7 @@ import us.kbase.sdk.validator.ModuleValidator;
 				ModuleBuilder.ValidateCommand.class,
 				ModuleBuilder.CompileCommand.class,
 				ModuleBuilder.RunCommand.class,
+				GenerateCompletion.class,
 				ModuleBuilder.VersionCommand.class,
 		}
 )
