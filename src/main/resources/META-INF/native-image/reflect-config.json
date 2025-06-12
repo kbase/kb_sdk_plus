@@ -1,0 +1,1096 @@
+[
+{
+  "name":"Long"
+},
+{
+  "name":"String"
+},
+{
+  "name":"[B"
+},
+{
+  "name":"[Lcom.fasterxml.jackson.databind.deser.Deserializers;"
+},
+{
+  "name":"[Lcom.fasterxml.jackson.databind.ser.Serializers;"
+},
+{
+  "name":"[Ljava.lang.String;"
+},
+{
+  "name":"[Lorg.eclipse.jetty.servlet.ServletHolder;"
+},
+{
+  "name":"[Lorg.eclipse.jetty.servlet.ServletMapping;"
+},
+{
+  "name":"[Lsun.security.pkcs.SignerInfo;"
+},
+{
+  "name":"ch.qos.logback.classic.pattern.DateConverter",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"ch.qos.logback.classic.pattern.LevelConverter",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"ch.qos.logback.classic.pattern.LineSeparatorConverter",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"ch.qos.logback.classic.pattern.LoggerConverter",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"ch.qos.logback.classic.pattern.MessageConverter",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"ch.qos.logback.classic.pattern.ThreadConverter",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.fasterxml.jackson.core.TreeNode",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"com.fasterxml.jackson.databind.JsonNode",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"com.sun.crypto.provider.AESCipher$General",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.sun.crypto.provider.ARCFOURCipher",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.sun.crypto.provider.ChaCha20Cipher$ChaCha20Poly1305",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.sun.crypto.provider.DESCipher",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.sun.crypto.provider.DESedeCipher",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.sun.crypto.provider.DHParameters",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.sun.crypto.provider.GaloisCounterMode$AESGCM",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.sun.crypto.provider.HmacCore$HmacSHA256",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.sun.crypto.provider.HmacCore$HmacSHA384",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.sun.crypto.provider.TlsMasterSecretGenerator",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"groovy.lang.Closure"
+},
+{
+  "name":"java.io.FilePermission"
+},
+{
+  "name":"java.io.Serializable",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.lang.Boolean",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.lang.Byte"
+},
+{
+  "name":"java.lang.CharSequence",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.lang.Character"
+},
+{
+  "name":"java.lang.Cloneable",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.lang.Comparable",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.lang.Double",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.lang.Float"
+},
+{
+  "name":"java.lang.Integer",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.lang.Iterable",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.lang.Long",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.lang.Number",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.lang.Object",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.lang.Runtime",
+  "methods":[{"name":"addShutdownHook","parameterTypes":["java.lang.Thread"] }]
+},
+{
+  "name":"java.lang.RuntimePermission"
+},
+{
+  "name":"java.lang.Short"
+},
+{
+  "name":"java.lang.String",
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"contains","parameterTypes":["java.lang.CharSequence"] }, {"name":"toLowerCase","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.Thread",
+  "fields":[{"name":"threadLocalRandomProbe"}]
+},
+{
+  "name":"java.lang.constant.Constable",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.lang.constant.ConstantDesc",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.math.BigInteger"
+},
+{
+  "name":"java.net.NetPermission"
+},
+{
+  "name":"java.net.SocketPermission"
+},
+{
+  "name":"java.net.URLPermission",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.String","java.lang.String"] }]
+},
+{
+  "name":"java.nio.file.Path"
+},
+{
+  "name":"java.nio.file.Paths",
+  "methods":[{"name":"get","parameterTypes":["java.lang.String","java.lang.String[]"] }]
+},
+{
+  "name":"java.security.AlgorithmParametersSpi"
+},
+{
+  "name":"java.security.AllPermission"
+},
+{
+  "name":"java.security.KeyStoreSpi"
+},
+{
+  "name":"java.security.SecureRandomParameters"
+},
+{
+  "name":"java.security.SecurityPermission"
+},
+{
+  "name":"java.security.interfaces.ECPrivateKey"
+},
+{
+  "name":"java.security.interfaces.ECPublicKey"
+},
+{
+  "name":"java.security.interfaces.RSAPrivateKey"
+},
+{
+  "name":"java.security.interfaces.RSAPublicKey"
+},
+{
+  "name":"java.sql.Connection"
+},
+{
+  "name":"java.sql.Driver"
+},
+{
+  "name":"java.sql.DriverManager",
+  "methods":[{"name":"getConnection","parameterTypes":["java.lang.String"] }, {"name":"getDriver","parameterTypes":["java.lang.String"] }]
+},
+{
+  "name":"java.sql.Time",
+  "methods":[{"name":"<init>","parameterTypes":["long"] }]
+},
+{
+  "name":"java.sql.Timestamp",
+  "methods":[{"name":"valueOf","parameterTypes":["java.lang.String"] }]
+},
+{
+  "name":"java.time.Duration",
+  "methods":[{"name":"parse","parameterTypes":["java.lang.CharSequence"] }]
+},
+{
+  "name":"java.time.Instant",
+  "methods":[{"name":"parse","parameterTypes":["java.lang.CharSequence"] }]
+},
+{
+  "name":"java.time.LocalDate",
+  "methods":[{"name":"parse","parameterTypes":["java.lang.CharSequence"] }]
+},
+{
+  "name":"java.time.LocalDateTime",
+  "methods":[{"name":"parse","parameterTypes":["java.lang.CharSequence"] }]
+},
+{
+  "name":"java.time.LocalTime",
+  "methods":[{"name":"parse","parameterTypes":["java.lang.CharSequence"] }]
+},
+{
+  "name":"java.time.MonthDay",
+  "methods":[{"name":"parse","parameterTypes":["java.lang.CharSequence"] }]
+},
+{
+  "name":"java.time.OffsetDateTime",
+  "methods":[{"name":"parse","parameterTypes":["java.lang.CharSequence"] }]
+},
+{
+  "name":"java.time.OffsetTime",
+  "methods":[{"name":"parse","parameterTypes":["java.lang.CharSequence"] }]
+},
+{
+  "name":"java.time.Period",
+  "methods":[{"name":"parse","parameterTypes":["java.lang.CharSequence"] }]
+},
+{
+  "name":"java.time.Year",
+  "methods":[{"name":"parse","parameterTypes":["java.lang.CharSequence"] }]
+},
+{
+  "name":"java.time.YearMonth",
+  "methods":[{"name":"parse","parameterTypes":["java.lang.CharSequence"] }]
+},
+{
+  "name":"java.time.ZoneId",
+  "methods":[{"name":"of","parameterTypes":["java.lang.String"] }]
+},
+{
+  "name":"java.time.ZoneOffset",
+  "methods":[{"name":"of","parameterTypes":["java.lang.String"] }]
+},
+{
+  "name":"java.time.ZonedDateTime",
+  "methods":[{"name":"parse","parameterTypes":["java.lang.CharSequence"] }]
+},
+{
+  "name":"java.util.AbstractCollection",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.AbstractList",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.AbstractMap",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.AbstractSequentialList",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.ArrayList",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"add","parameterTypes":["java.lang.Object"] }, {"name":"get","parameterTypes":["int"] }, {"name":"size","parameterTypes":[] }]
+},
+{
+  "name":"java.util.Arrays$ArrayList",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.util.Collection",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.Date"
+},
+{
+  "name":"java.util.Deque",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.HashMap",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.util.LinkedHashMap",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"get","parameterTypes":["java.lang.Object"] }]
+},
+{
+  "name":"java.util.LinkedList",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.util.List",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.util.Map",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"get","parameterTypes":["java.lang.Object"] }, {"name":"put","parameterTypes":["java.lang.Object","java.lang.Object"] }]
+},
+{
+  "name":"java.util.PropertyPermission"
+},
+{
+  "name":"java.util.Queue",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.RandomAccess",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.UUID",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.util.concurrent.ConcurrentHashMap",
+  "methods":[{"name":"<init>","parameterTypes":["int","float","int"] }]
+},
+{
+  "name":"java.util.concurrent.ForkJoinTask",
+  "fields":[{"name":"aux"}, {"name":"status"}]
+},
+{
+  "name":"java.util.concurrent.atomic.AtomicReference",
+  "fields":[{"name":"value"}]
+},
+{
+  "name":"java.util.concurrent.atomic.Striped64",
+  "fields":[{"name":"base"}, {"name":"cellsBusy"}]
+},
+{
+  "name":"javax.security.auth.x500.X500Principal",
+  "fields":[{"name":"thisX500Name"}],
+  "methods":[{"name":"<init>","parameterTypes":["sun.security.x509.X500Name"] }]
+},
+{
+  "name":"javax.servlet.ServletContext"
+},
+{
+  "name":"javax.smartcardio.CardPermission"
+},
+{
+  "name":"org.apache.commons.lang3.StringUtils",
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"join","parameterTypes":["java.lang.Iterable","java.lang.String"] }]
+},
+{
+  "name":"org.apache.velocity.runtime.ParserPoolImpl",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.velocity.runtime.directive.Break",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.velocity.runtime.directive.Define",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.velocity.runtime.directive.Evaluate",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.velocity.runtime.directive.Foreach",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.velocity.runtime.directive.Include",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.velocity.runtime.directive.Literal",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.velocity.runtime.directive.Macro",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.velocity.runtime.directive.Parse",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.velocity.runtime.directive.Stop",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.velocity.runtime.log.AvalonLogChute"
+},
+{
+  "name":"org.apache.velocity.runtime.log.CommonsLogLogChute",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.velocity.runtime.log.JdkLogChute",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.velocity.runtime.log.Log4JLogChute"
+},
+{
+  "name":"org.apache.velocity.runtime.log.ServletLogChute",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.velocity.runtime.resource.ResourceCacheImpl",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.velocity.runtime.resource.ResourceManagerImpl",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.velocity.runtime.resource.loader.FileResourceLoader",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.velocity.util.introspection.UberspectImpl",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"picocli.AutoComplete$GenerateCompletion",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"picocli.CommandLine$AutoHelpMixin",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"picocli.CommandLine$HelpCommand",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"sun.security.pkcs12.PKCS12KeyStore",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.pkcs12.PKCS12KeyStore$DualFormatPKCS12",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.provider.DSA$SHA224withDSA",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.provider.DSA$SHA256withDSA",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.provider.JavaKeyStore$DualFormatJKS",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.provider.JavaKeyStore$JKS",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.provider.NativePRNG",
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"<init>","parameterTypes":["java.security.SecureRandomParameters"] }]
+},
+{
+  "name":"sun.security.provider.SHA",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.provider.SHA2$SHA224",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.provider.SHA2$SHA256",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.provider.SHA5$SHA384",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.provider.SHA5$SHA512",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.provider.SecureRandom",
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"<init>","parameterTypes":["java.security.SecureRandomParameters"] }]
+},
+{
+  "name":"sun.security.provider.X509Factory",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.provider.certpath.PKIXCertPathValidator",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.rsa.PSSParameters",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.rsa.RSAKeyFactory$Legacy",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.rsa.RSAPSSSignature",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.rsa.RSASignature$SHA224withRSA",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.rsa.RSASignature$SHA256withRSA",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.rsa.RSASignature$SHA384withRSA",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.ssl.KeyManagerFactoryImpl$SunX509",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.ssl.SSLContextImpl$DefaultSSLContext",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.ssl.SSLContextImpl$TLSContext",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.ssl.TrustManagerFactoryImpl$PKIXFactory",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.util.ObjectIdentifier"
+},
+{
+  "name":"sun.security.x509.AuthorityInfoAccessExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.AuthorityKeyIdentifierExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.BasicConstraintsExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.CRLDistributionPointsExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.CertificateExtensions"
+},
+{
+  "name":"sun.security.x509.CertificatePoliciesExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.ExtendedKeyUsageExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.IssuerAlternativeNameExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.KeyUsageExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.NetscapeCertTypeExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.PrivateKeyUsageExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.SubjectAlternativeNameExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.SubjectKeyIdentifierExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"us.kbase.catalog.CompilationReport",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setFunctionPlaces","parameterTypes":["java.util.Map"] }, {"name":"setFunctions","parameterTypes":["java.util.Map"] }, {"name":"setImplFilePath","parameterTypes":["java.lang.String"] }, {"name":"setModuleName","parameterTypes":["java.lang.String"] }, {"name":"setSdkGitCommit","parameterTypes":["java.lang.String"] }, {"name":"setSdkVersion","parameterTypes":["java.lang.String"] }, {"name":"setSpecFiles","parameterTypes":["java.util.List"] }]
+},
+{
+  "name":"us.kbase.catalog.Function",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setComment","parameterTypes":["java.lang.String"] }, {"name":"setInput","parameterTypes":["java.util.List"] }, {"name":"setName","parameterTypes":["java.lang.String"] }, {"name":"setOutput","parameterTypes":["java.util.List"] }, {"name":"setPlace","parameterTypes":["us.kbase.catalog.FunctionPlace"] }]
+},
+{
+  "name":"us.kbase.catalog.FunctionPlace",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setEndLine","parameterTypes":["java.lang.Long"] }, {"name":"setStartLine","parameterTypes":["java.lang.Long"] }]
+},
+{
+  "name":"us.kbase.catalog.ModuleVersion",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setAdditionalProperties","parameterTypes":["java.lang.String","java.lang.Object"] }, {"name":"setCompilationReport","parameterTypes":["us.kbase.catalog.CompilationReport"] }, {"name":"setDockerImgName","parameterTypes":["java.lang.String"] }, {"name":"setDynamicService","parameterTypes":["java.lang.Long"] }, {"name":"setGitCommitHash","parameterTypes":["java.lang.String"] }, {"name":"setGitCommitMessage","parameterTypes":["java.lang.String"] }, {"name":"setGitUrl","parameterTypes":["java.lang.String"] }, {"name":"setModuleName","parameterTypes":["java.lang.String"] }, {"name":"setRegistrationId","parameterTypes":["java.lang.String"] }, {"name":"setReleaseTags","parameterTypes":["java.util.List"] }, {"name":"setReleased","parameterTypes":["java.lang.Long"] }, {"name":"setTimestamp","parameterTypes":["java.lang.Long"] }, {"name":"setVersion","parameterTypes":["java.lang.String"] }]
+},
+{
+  "name":"us.kbase.catalog.Parameter",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setComment","parameterTypes":["java.lang.String"] }, {"name":"setType","parameterTypes":["java.lang.String"] }]
+},
+{
+  "name":"us.kbase.catalog.SelectModuleVersion",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"getAdditionalProperties","parameterTypes":[] }, {"name":"getGitUrl","parameterTypes":[] }, {"name":"getIncludeCompilationReport","parameterTypes":[] }, {"name":"getIncludeModuleDescription","parameterTypes":[] }, {"name":"getModuleName","parameterTypes":[] }, {"name":"getVersion","parameterTypes":[] }]
+},
+{
+  "name":"us.kbase.catalog.SpecFile",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setContent","parameterTypes":["java.lang.String"] }, {"name":"setFileName","parameterTypes":["java.lang.String"] }, {"name":"setIsMain","parameterTypes":["java.lang.Long"] }]
+},
+{
+  "name":"us.kbase.common.executionengine.CallbackServer",
+  "methods":[{"name":"getProvenance","parameterTypes":[] }]
+},
+{
+  "name":"us.kbase.common.service.JsonServerServlet$RpcCallData",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"getContext","parameterTypes":[] }, {"name":"getId","parameterTypes":[] }, {"name":"getMethod","parameterTypes":[] }, {"name":"getParams","parameterTypes":[] }, {"name":"getVersion","parameterTypes":[] }, {"name":"setContext","parameterTypes":["us.kbase.common.service.RpcContext"] }, {"name":"setId","parameterTypes":["java.lang.Object"] }, {"name":"setMethod","parameterTypes":["java.lang.String"] }, {"name":"setParams","parameterTypes":["java.util.List"] }, {"name":"setVersion","parameterTypes":["java.lang.Object"] }]
+},
+{
+  "name":"us.kbase.common.service.MethodCall",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"getAdditionalProperties","parameterTypes":[] }, {"name":"getJobId","parameterTypes":[] }, {"name":"getMethod","parameterTypes":[] }, {"name":"getTime","parameterTypes":[] }]
+},
+{
+  "name":"us.kbase.common.service.RpcContext",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"getAdditionalProperties","parameterTypes":[] }, {"name":"getCallStack","parameterTypes":[] }, {"name":"getProvenance","parameterTypes":[] }, {"name":"getRunId","parameterTypes":[] }, {"name":"setAdditionalProperties","parameterTypes":["java.lang.String","java.lang.Object"] }]
+},
+{
+  "name":"us.kbase.common.service.UObject",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"us.kbase.narrativemethodstore.AppBriefInfo",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"us.kbase.narrativemethodstore.AppFullInfo",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"us.kbase.narrativemethodstore.AppSpec",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"us.kbase.narrativemethodstore.AppStepInputMapping",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"us.kbase.narrativemethodstore.AppSteps",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"us.kbase.narrativemethodstore.AutoGeneratedValue",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"us.kbase.narrativemethodstore.CheckboxOptions",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"us.kbase.narrativemethodstore.DropdownOption",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"us.kbase.narrativemethodstore.DropdownOptions",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"us.kbase.narrativemethodstore.FixedMethodParameter",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"us.kbase.narrativemethodstore.FloatSliderOptions",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"us.kbase.narrativemethodstore.Icon",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"us.kbase.narrativemethodstore.IntSliderOptions",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"us.kbase.narrativemethodstore.MethodBehavior",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setKbServiceInputMapping","parameterTypes":["java.util.List"] }, {"name":"setKbServiceMethod","parameterTypes":["java.lang.String"] }, {"name":"setKbServiceName","parameterTypes":["java.lang.String"] }, {"name":"setKbServiceOutputMapping","parameterTypes":["java.util.List"] }, {"name":"setKbServiceUrl","parameterTypes":["java.lang.String"] }]
+},
+{
+  "name":"us.kbase.narrativemethodstore.MethodBriefInfo",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setAdditionalProperties","parameterTypes":["java.lang.String","java.lang.Object"] }, {"name":"setAuthors","parameterTypes":["java.util.List"] }, {"name":"setCategories","parameterTypes":["java.util.List"] }, {"name":"setId","parameterTypes":["java.lang.String"] }, {"name":"setInputTypes","parameterTypes":["java.util.List"] }, {"name":"setName","parameterTypes":["java.lang.String"] }, {"name":"setOutputTypes","parameterTypes":["java.util.List"] }, {"name":"setSubtitle","parameterTypes":["java.lang.String"] }, {"name":"setTooltip","parameterTypes":["java.lang.String"] }, {"name":"setVer","parameterTypes":["java.lang.String"] }]
+},
+{
+  "name":"us.kbase.narrativemethodstore.MethodFullInfo",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setAdditionalProperties","parameterTypes":["java.lang.String","java.lang.Object"] }, {"name":"setAuthors","parameterTypes":["java.util.List"] }, {"name":"setCategories","parameterTypes":["java.util.List"] }, {"name":"setContact","parameterTypes":["java.lang.String"] }, {"name":"setDescription","parameterTypes":["java.lang.String"] }, {"name":"setId","parameterTypes":["java.lang.String"] }, {"name":"setName","parameterTypes":["java.lang.String"] }, {"name":"setPublications","parameterTypes":["java.util.List"] }, {"name":"setScreenshots","parameterTypes":["java.util.List"] }, {"name":"setSubtitle","parameterTypes":["java.lang.String"] }, {"name":"setSuggestions","parameterTypes":["us.kbase.narrativemethodstore.Suggestions"] }, {"name":"setTechnicalDescription","parameterTypes":["java.lang.String"] }, {"name":"setTooltip","parameterTypes":["java.lang.String"] }, {"name":"setVer","parameterTypes":["java.lang.String"] }]
+},
+{
+  "name":"us.kbase.narrativemethodstore.MethodParameter",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setAdvanced","parameterTypes":["java.lang.Long"] }, {"name":"setAllowMultiple","parameterTypes":["java.lang.Long"] }, {"name":"setDefaultValues","parameterTypes":["java.util.List"] }, {"name":"setDescription","parameterTypes":["java.lang.String"] }, {"name":"setDisabled","parameterTypes":["java.lang.Long"] }, {"name":"setFieldType","parameterTypes":["java.lang.String"] }, {"name":"setId","parameterTypes":["java.lang.String"] }, {"name":"setOptional","parameterTypes":["java.lang.Long"] }, {"name":"setShortHint","parameterTypes":["java.lang.String"] }, {"name":"setTextOptions","parameterTypes":["us.kbase.narrativemethodstore.TextOptions"] }, {"name":"setUiClass","parameterTypes":["java.lang.String"] }, {"name":"setUiName","parameterTypes":["java.lang.String"] }]
+},
+{
+  "name":"us.kbase.narrativemethodstore.MethodSpec",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setBehavior","parameterTypes":["us.kbase.narrativemethodstore.MethodBehavior"] }, {"name":"setFixedParameters","parameterTypes":["java.util.List"] }, {"name":"setInfo","parameterTypes":["us.kbase.narrativemethodstore.MethodBriefInfo"] }, {"name":"setJobIdOutputField","parameterTypes":["java.lang.String"] }, {"name":"setParameters","parameterTypes":["java.util.List"] }, {"name":"setWidgets","parameterTypes":["us.kbase.narrativemethodstore.WidgetSpec"] }]
+},
+{
+  "name":"us.kbase.narrativemethodstore.OutputMapping",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"us.kbase.narrativemethodstore.Publication",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"us.kbase.narrativemethodstore.RadioOptions",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"us.kbase.narrativemethodstore.RegexMatcher",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"us.kbase.narrativemethodstore.ScreenShot",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"us.kbase.narrativemethodstore.ScriptInputMapping",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"us.kbase.narrativemethodstore.ScriptOutputMapping",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"us.kbase.narrativemethodstore.ServiceMethodInputMapping",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setInputParameter","parameterTypes":["java.lang.String"] }, {"name":"setNarrativeSystemVariable","parameterTypes":["java.lang.String"] }, {"name":"setTargetProperty","parameterTypes":["java.lang.String"] }]
+},
+{
+  "name":"us.kbase.narrativemethodstore.ServiceMethodOutputMapping",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setServiceMethodOutputPath","parameterTypes":["java.util.List"] }, {"name":"setTargetProperty","parameterTypes":["java.lang.String"] }]
+},
+{
+  "name":"us.kbase.narrativemethodstore.SubdataSelection",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"us.kbase.narrativemethodstore.Suggestions",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setNextApps","parameterTypes":["java.util.List"] }, {"name":"setNextMethods","parameterTypes":["java.util.List"] }, {"name":"setRelatedApps","parameterTypes":["java.util.List"] }, {"name":"setRelatedMethods","parameterTypes":["java.util.List"] }]
+},
+{
+  "name":"us.kbase.narrativemethodstore.TabOptions",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"us.kbase.narrativemethodstore.TextAreaOptions",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"us.kbase.narrativemethodstore.TextOptions",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setIsOutputName","parameterTypes":["java.lang.Long"] }, {"name":"setPlaceholder","parameterTypes":["java.lang.String"] }, {"name":"setRegexConstraint","parameterTypes":["java.util.List"] }, {"name":"setValidWsTypes","parameterTypes":["java.util.List"] }]
+},
+{
+  "name":"us.kbase.narrativemethodstore.TextSubdataOptions",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"us.kbase.narrativemethodstore.TypeInfo",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"us.kbase.narrativemethodstore.ValidateMethodParams",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"getAdditionalProperties","parameterTypes":[] }, {"name":"getDisplayYaml","parameterTypes":[] }, {"name":"getExtraFiles","parameterTypes":[] }, {"name":"getId","parameterTypes":[] }, {"name":"getSpecJson","parameterTypes":[] }]
+},
+{
+  "name":"us.kbase.narrativemethodstore.ValidationResults",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setErrors","parameterTypes":["java.util.List"] }, {"name":"setIsValid","parameterTypes":["java.lang.Long"] }, {"name":"setMethodFullInfo","parameterTypes":["us.kbase.narrativemethodstore.MethodFullInfo"] }, {"name":"setMethodSpec","parameterTypes":["us.kbase.narrativemethodstore.MethodSpec"] }, {"name":"setWarnings","parameterTypes":["java.util.List"] }]
+},
+{
+  "name":"us.kbase.narrativemethodstore.WidgetSpec",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setInput","parameterTypes":["java.lang.String"] }, {"name":"setOutput","parameterTypes":["java.lang.String"] }]
+},
+{
+  "name":"us.kbase.sdk.ModuleBuilder",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"us.kbase.sdk.ModuleBuilder$ClientVersionsGroup",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"us.kbase.sdk.ModuleBuilder$CompileCommand",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"us.kbase.sdk.ModuleBuilder$InitCommand",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"us.kbase.sdk.ModuleBuilder$InstallCommand",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"us.kbase.sdk.ModuleBuilder$RunCommand",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"us.kbase.sdk.ModuleBuilder$RunInput",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"us.kbase.sdk.ModuleBuilder$TagAndVerbose",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"us.kbase.sdk.ModuleBuilder$TestCommand",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"us.kbase.sdk.ModuleBuilder$ValidateCommand",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"us.kbase.sdk.ModuleBuilder$ValidationArgs",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"us.kbase.sdk.ModuleBuilder$Verbose",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"us.kbase.sdk.ModuleBuilder$VersionCommand",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"us.kbase.sdk.installer.Dependency",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"us.kbase.sdk.tester.SDKCallbackServer",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"us.kbase.workspace.ProvenanceAction",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"getAdditionalProperties","parameterTypes":[] }, {"name":"getCaller","parameterTypes":[] }, {"name":"getCustom","parameterTypes":[] }, {"name":"getDescription","parameterTypes":[] }, {"name":"getEpoch","parameterTypes":[] }, {"name":"getExternalData","parameterTypes":[] }, {"name":"getInputWsObjects","parameterTypes":[] }, {"name":"getIntermediateIncoming","parameterTypes":[] }, {"name":"getIntermediateOutgoing","parameterTypes":[] }, {"name":"getMethod","parameterTypes":[] }, {"name":"getMethodParams","parameterTypes":[] }, {"name":"getResolvedWsObjects","parameterTypes":[] }, {"name":"getScript","parameterTypes":[] }, {"name":"getScriptCommandLine","parameterTypes":[] }, {"name":"getScriptVer","parameterTypes":[] }, {"name":"getService","parameterTypes":[] }, {"name":"getServiceVer","parameterTypes":[] }, {"name":"getSubactions","parameterTypes":[] }, {"name":"getTime","parameterTypes":[] }]
+},
+{
+  "name":"us.kbase.workspace.SubAction",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"getAdditionalProperties","parameterTypes":[] }, {"name":"getCodeUrl","parameterTypes":[] }, {"name":"getCommit","parameterTypes":[] }, {"name":"getEndpointUrl","parameterTypes":[] }, {"name":"getName","parameterTypes":[] }, {"name":"getVer","parameterTypes":[] }]
+}
+]
