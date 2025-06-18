@@ -99,11 +99,6 @@ public class ModuleTesterTest {
 		String lang = "python";
 		String moduleName = SIMPLE_MODULE_NAME + "Python";
 		final Path moduleDir = init(lang, moduleName);
-		// TODO TESTHACK remove this when there's a base image that deploys the authclient correctly
-		FileUtils.copyFile(
-				new File("./src/main/resources/us/kbase/sdk/templates/authclient.py"),
-				moduleDir.resolve(Paths.get("lib", moduleName, "/authclient.py")).toFile()
-				);
 		// TODO TESTHACK PYTEST upgrade to pytest and remove this stuff assuming that works
 		// nose is identifying the class as a test case
 		final Path implFile = moduleDir.resolve(
