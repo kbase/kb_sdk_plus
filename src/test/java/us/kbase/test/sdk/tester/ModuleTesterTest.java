@@ -19,7 +19,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import us.kbase.auth.AuthToken;
-import us.kbase.sdk.ModuleBuilder;
 import us.kbase.sdk.initializer.ModuleInitializer;
 import us.kbase.sdk.tester.ModuleTester;
 import us.kbase.test.sdk.TestUtils;
@@ -89,8 +88,7 @@ public class ModuleTesterTest {
 				"auth_service_url_allow_insecure=" + 
 				TestConfigHelper.getAuthServiceUrlInsecure() + "\n";
 		FileUtils.writeStringToFile(testCfgFile, testCfgText);
-		int exitCode = new ModuleTester(moduleDir).runTests(ModuleBuilder.DEFAULT_METHOD_STORE_URL,
-				skipValidation, false);
+		int exitCode = new ModuleTester(moduleDir).runTests(skipValidation);
 		System.out.println("Exit code: " + exitCode);
 		return exitCode;
 	}

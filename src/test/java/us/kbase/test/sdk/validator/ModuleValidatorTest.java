@@ -29,7 +29,7 @@ public class ModuleValidatorTest {
                 new StringReader(kidlSpec), null, null));
         KbModule parsedKidl = services.get(0).getModules().get(0);
         String methodSpec = loadTextResource("spec_" + num + ".properties");
-        ModuleValidator.validateMethodSpecMapping(methodSpec, parsedKidl, false);
+        ModuleValidator.validateMethodSpecMapping(methodSpec, parsedKidl);
     }
     
     private static String loadTextResource(String name) throws Exception {

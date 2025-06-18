@@ -50,8 +50,6 @@ public class ModuleBuilder implements Runnable{
 	private static final String DEFAULT_PARENT_PACKAGE = "us.kbase";
 
 	public static final String GLOBAL_SDK_HOME_ENV_VAR = "KB_SDK_HOME";
-	public static final String DEFAULT_METHOD_STORE_URL =
-			"https://appdev.kbase.us/services/narrative_method_store/rpc";
 
 	public static final String VERSION = "0.1.0";
 	
@@ -80,36 +78,8 @@ public class ModuleBuilder implements Runnable{
 		boolean verbose;
 	}
 	
-	public static class ValidationArgs extends Verbose {
-		
-		// TODO UX this doesn't actually make much sense. I tried to summarize but the code
-		//         is kind of bonkers, just read the ModuleValidator constructor.
-		//         It should probably be removed.
-		//         Changing validate to take only one module made it somewhat less crazy
-		@Option(
-				paramLabel = "<method_store_url>",
-				names = {"-m", "--method_store"},
-				description = """
-						The URL of the KBase Narrative Method Store to use when validating method \
-						specifications.\
-						""",
-				defaultValue = ModuleBuilder.DEFAULT_METHOD_STORE_URL,
-				showDefaultValue = CommandLine.Help.Visibility.ALWAYS
-		)
-		String methodStoreUrl;
-
-		// TODO UX seems like this could be removed, not sure it's still relevant.
-		//         just looks for a specific value in the spec.json file. Check w/ Bill
-		@Option(
-				names = {"-a", "--allow_sync_method"},
-				description = "Allow synchronous methods (advanced).",
-				defaultValue = "false"
-		)
-		boolean allowSyncMethods;
-	}
-
 	@Command(name = "validate", description = "Validate a module.")
-	public static class ValidateCommand extends ValidationArgs implements Callable<Integer> {
+	public static class ValidateCommand extends Verbose implements Callable<Integer> {
 
 		@Parameters(
 				paramLabel = "<module_path>",
@@ -123,9 +93,7 @@ public class ModuleBuilder implements Runnable{
 		@Override
 		public Integer call() {
 			try {
-				final ModuleValidator mv = new ModuleValidator(
-						module.toString(), verbose, methodStoreUrl, allowSyncMethods
-				);
+				final ModuleValidator mv = new ModuleValidator(module.toString(), verbose);
 				return mv.validate();
 			} catch (Exception e) {
 				showError("Error while validating module", e.getMessage());
@@ -468,7 +436,7 @@ public class ModuleBuilder implements Runnable{
 	 * Runs the module test command - this runs tests in a local docker container.
 	 */
 	@Command(name = "test", description = "Test a module with local Docker.")
-	public static class TestCommand extends ValidationArgs implements Callable<Integer> {
+	public static class TestCommand extends Verbose implements Callable<Integer> {
 		
 		@Option(
 				names = {"-s", "--skip_validation"},
@@ -481,7 +449,7 @@ public class ModuleBuilder implements Runnable{
 		public Integer call() {
 			try {
 				final ModuleTester tester = new ModuleTester();
-				return tester.runTests(methodStoreUrl, skipValidation, allowSyncMethods);
+				return tester.runTests(skipValidation);
 			}
 			catch (Exception e) {
 				showError("Error while initializing module", e.getMessage());
