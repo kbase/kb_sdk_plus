@@ -338,7 +338,7 @@ dependencies {
 		exclude group: 'com.fasterxml.jackson.core'  // don't upgrade yet, breaks tests
 	}
 	testImplementation 'junit:junit:4.12'
-	testImplementation 'org.hamcrest:hamcrest-core:1.3'
+	testImplementation 'org.hamcrest:hamcrest-core:3.0'
 }
 
 task showTestClassPath {
