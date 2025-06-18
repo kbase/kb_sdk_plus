@@ -296,8 +296,8 @@ dependencies {
 		exclude group: 'com.fasterxml.jackson.core'  // don't upgrade yet, breaks tests
 		exclude group: 'net.java.dev.jna' // don't include in runtime path
 	}
-	implementation "com.fasterxml.jackson.core:jackson-annotations:2.2.3"
-	implementation "com.fasterxml.jackson.core:jackson-databind:2.2.3"
+	implementation "com.fasterxml.jackson.core:jackson-annotations:2.19.1"
+	implementation "com.fasterxml.jackson.core:jackson-databind:2.19.1"
 	implementation 'com.google.guava:guava:18.0'
 	implementation 'com.googlecode.jsonschema2pojo:jsonschema2pojo-core:0.3.6'
 	implementation('com.j2html:j2html:0.7') {
