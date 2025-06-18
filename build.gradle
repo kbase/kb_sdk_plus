@@ -272,7 +272,7 @@ configurations.all {
 	// not sure why, but couldn't get an exclusion on the auth2 client to work, which
 	// was upgrading slf4j and breaking tests
 	resolutionStrategy {
-		force 'org.slf4j:slf4j-api:1.7.7'
+		force 'org.slf4j:slf4j-api:2.0.17'
 	}
 }
 
@@ -317,7 +317,7 @@ dependencies {
 	//           moved to a test implementation if we swap the callback service for the
 	//           python docker image
 	implementation 'ch.qos.logback:logback-classic:1.1.2'
-	implementation 'org.slf4j:slf4j-api:1.7.7'
+	implementation 'org.slf4j:slf4j-api:2.0.17'
 	// TODO DEPS the annotation api is also needed for
 	//           a couple of SDK compiled classes in mobu/runner that should be factored out
 	implementation 'javax.annotation:javax.annotation-api:1.3.2'
