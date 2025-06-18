@@ -337,7 +337,7 @@ dependencies {
 	testImplementation ('com.github.kbase:java_test_utilities:0.1.0') {
 		exclude group: 'com.fasterxml.jackson.core'  // don't upgrade yet, breaks tests
 	}
-	testImplementation 'junit:junit:4.12'
+	testImplementation 'junit:junit:4.13.2'
 	testImplementation 'org.hamcrest:hamcrest-core:1.3'
 }
 
