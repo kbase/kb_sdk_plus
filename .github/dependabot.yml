@@ -15,6 +15,13 @@ updates:
       interval: "monthly"
     open-pull-requests-limit: 25
 
+  # Java
+  - package-ecosystem: "gradle" # See documentation for possible values
+    directory: "/" # Location of package manifests
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 25
+
   # GitHub Actions
   - package-ecosystem: "github-actions"
     directory: ".github/workflows"
