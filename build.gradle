@@ -332,7 +332,7 @@ dependencies {
 
 	// needed for syslog4j. Used in java test modules and JsonServerServlet subclasses in tests
 	// but not in SDK code proper.
-	testImplementation 'net.java.dev.jna:jna:3.4.0'
+	testImplementation 'net.java.dev.jna:jna:5.17.0'
 	
 	testImplementation ('com.github.kbase:java_test_utilities:0.1.0') {
 		exclude group: 'com.fasterxml.jackson.core'  // don't upgrade yet, breaks tests
