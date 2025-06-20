@@ -1,21 +1,13 @@
-name: Build Native Binaries
+name: Release Native Binaries
 
 # Currently no longer supporting windows. Can look into it if we get requests
 # Work around is to use a VM like VirtualBox and Linux
 
 on:
-  pull_request:
-    types:
-    - opened
-    - reopened
-    - synchronize
-    - ready_for_review
-  push:
-    # run workflow when merging to main or develop
+  release:
     branches:
       - main
-      - master
-      - develop
+    types: [ published ]
 
 jobs:
   build-native:
@@ -45,8 +37,17 @@ jobs:
       - name: Build native image
         run: ./gradlew nativeCompile
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - name: Rename binary with release label
+        run: |
+          mkdir -p release/
+          cp build/native/nativeCompile/kb-sdk release/kb-sdk-${{ matrix.label }}
+          cd release
+          sha256sum kb-sdk-${{ matrix.label }} > kb-sdk-${{ matrix.label }}.sha256
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v2
         with:
-          name: kb-sdk-${{ matrix.label }}
-          path: build/native/nativeCompile/kb-sdk
+          files: |
+            release/kb-sdk-${{ matrix.label }}
+            release/kb-sdk-${{ matrix.label }}.sha256
+          fail_on_unmatched_files: true
