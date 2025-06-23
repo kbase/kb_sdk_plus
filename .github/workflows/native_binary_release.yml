@@ -41,8 +41,13 @@ jobs:
         run: |
           mkdir -p release/
           cp build/native/nativeCompile/kb-sdk release/kb-sdk-${{ matrix.label }}
-          cd release
-          sha256sum kb-sdk-${{ matrix.label }} > kb-sdk-${{ matrix.label }}.sha256
+          if command -v sha256sum >/dev/null 2>&1; then
+              # linux
+              sha256sum release/kb-sdk-${{ matrix.label }} > release/kb-sdk-${{ matrix.label }}.sha256
+          else
+              # mac
+              shasum -a 256 release/kb-sdk-${{ matrix.label }} > release/kb-sdk-${{ matrix.label }}.sha256
+          fi
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v2
