@@ -239,7 +239,7 @@ echo
 echo "Done. NOTE: Inspect the merged output carefully; the agent is better"
 echo "than starting from scratch but is imperfect."
 echo "When merging into src/main/resources/META-INF/native-image carefully"
-echo "check that"
+echo "check that:"
 echo ""
 echo "  * all, not just specific resources from this repo are included in the"
 echo "    configuration files"
