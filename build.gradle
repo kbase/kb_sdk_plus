@@ -231,17 +231,23 @@ java \$COMMON_OPTS/test -cp "\$CP" ${mainClass} test
 # comes with GraalVM 17
 native-image-configure generate \\
 	--output-dir=\$OUTDIR/merged \\
-	--input-dir=\$OUTDIR/init --input-dir=\$OUTDIR/compile --input-dir=\$OUTDIR/test
+	--input-dir=\$OUTDIR/init \\
+	--input-dir=\$OUTDIR/compile \\
+	--input-dir=\$OUTDIR/test
 
 echo
-echo "Done. NOTE: Inspect the merged output carefully; the agent is better "
-echo "than starting from scratch but is imperfect. In particular, check that "
-echo "all, not just specific resources from this repo are included in the "
-echo "configuration files, and test classes are not included "
-echo "(e.g. KBaseReport). Edit manually if necessary."
-echo "When the files look acceptable, copy them to "
-echo "src/main/resources/META-INF/native-image and carefully check for "
-echo "differences in the versions."
+echo "Done. NOTE: Inspect the merged output carefully; the agent is better"
+echo "than starting from scratch but is imperfect."
+echo "When merging into src/main/resources/META-INF/native-image carefully"
+echo "check that"
+echo ""
+echo "  * all, not just specific resources from this repo are included in the"
+echo "    configuration files"
+echo "  * test classes are not included (e.g. KBaseReport)"
+echo "  * Narrative method store objects have all methods, constructors, and "
+echo "    fields included"
+echo ""
+echo "Edit manually if necessary."
 """
 
 		scriptFile.setExecutable(true)
@@ -256,7 +262,7 @@ graalvmNative {
 			// Don't fall back to a jar based build
 			buildArgs.addAll([
 				"--no-fallback",
-				"--enable-url-protocols=https,http,file",
+				"--enable-url-protocols=https,http",
 				"-H:+AddAllCharsets"
 			])
 		}
