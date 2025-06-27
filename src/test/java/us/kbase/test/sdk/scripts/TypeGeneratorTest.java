@@ -49,7 +49,6 @@ import us.kbase.common.service.ServerException;
 import us.kbase.common.service.UObject;
 import us.kbase.kidl.KbFuncdef;
 import us.kbase.kidl.KbService;
-import us.kbase.kidl.KidlParseException;
 import us.kbase.kidl.KidlParser;
 import us.kbase.sdk.compiler.JavaData;
 import us.kbase.sdk.compiler.JavaFunc;
@@ -79,6 +78,10 @@ public class TypeGeneratorTest extends Assert {
 
 	private static final String rootPackageName = "us.kbase";
 	private static final String SERVICE_WIZARD = "ServiceWizard";
+	
+	// specified in the build.gradle file
+	private static final Path BUILD_LIB_DIR = Paths.get("build/generated-code-libs")
+			.toAbsolutePath();
 
 	private static boolean debugClientTimes = false;
 
@@ -224,7 +227,7 @@ public class TypeGeneratorTest extends Assert {
         serverJavaFile.createNewFile();
 		File libDir = new File(workDir, "lib");
         // Test for empty server file
-		setUpTestJars(new DiskFileSaver(libDir), true);
+		setUpTestJars(new DiskFileSaver(libDir));
 		try {
 			JavaTypeGenerator.processSpec(new File(workDir, testFileName),
 					srcDir, testPackage, true, null);
@@ -861,7 +864,7 @@ public class TypeGeneratorTest extends Assert {
 		return parsingData;
 	}
 
-	public static JavaData processSpec(
+	private static JavaData processSpec(
 			final File workDir,
 			final String testPackage,
 			final File libDir,
@@ -871,7 +874,7 @@ public class TypeGeneratorTest extends Assert {
 			final boolean isDynamic,
 			final boolean isAsync
 			) throws Exception {
-		setUpTestJars(new DiskFileSaver(libDir), true);
+		setUpTestJars(new DiskFileSaver(libDir));
 		File specFile = new File(workDir, testFileName);
 		List<KbService> services = KidlParser.parseSpec(specFile, null);
 		JavaData parsingData = JavaTypeGenerator.processSpec(services, new DiskFileSaver(srcDir), 
@@ -880,52 +883,32 @@ public class TypeGeneratorTest extends Assert {
 		return parsingData;
 	}
 	
-	private static void setUpTestJars(
-			final FileSaver libOutDir,
-			final boolean createServers
-			) throws Exception {
+	private static void setUpTestJars(final FileSaver libOutDir) throws Exception {
 		// TODO TEST CLEANUP remove this method and figure out some other way of handling test deps
 		//                   maybe mark deps in gradle?
 		checkLib(libOutDir, "jackson-annotations-2.2.3");
 		checkLib(libOutDir, "jackson-core-2.2.3");
 		checkLib(libOutDir, "jackson-databind-2.2.3");
-		checkLib(libOutDir, "auth2_client_java-0.5.0.jar");
-		checkLib(libOutDir, "java_common-0.3.1.jar");
+		checkLib(libOutDir, "auth2_client_java-0.5.0");
+		checkLib(libOutDir, "java_common-0.3.1");
 		checkLib(libOutDir, "javax.annotation-api-1.3.2");
-		if (createServers) {
-			checkLib(libOutDir, "servlet-api-2.5");
-			checkLib(libOutDir, "jetty-all-7.0.0");
-			checkLib(libOutDir, "ini4j-0.5.2");
-			checkLib(libOutDir, "syslog4j-0.9.46");
-			checkLib(libOutDir, "jna-3.4.0");
-			checkLib(libOutDir, "joda-time-2.2");
-			checkLib(libOutDir, "logback-core-1.1.2");
-			checkLib(libOutDir, "logback-classic-1.1.2");
-			checkLib(libOutDir, "slf4j-api-1.7.7");
-		}
+		checkLib(libOutDir, "servlet-api-2.5");
+		checkLib(libOutDir, "jetty-all-7.0.0.v20091005");
+		checkLib(libOutDir, "ini4j-0.5.2");
+		checkLib(libOutDir, "syslog4j-0.9.46");
+		checkLib(libOutDir, "jna-3.4.0");
+		checkLib(libOutDir, "joda-time-2.2");
+		checkLib(libOutDir, "logback-core-1.1.2");
+		checkLib(libOutDir, "logback-classic-1.1.2");
+		checkLib(libOutDir, "slf4j-api-1.7.7");
 	}
 
-	private static String checkLib(FileSaver libDir, String libName) throws Exception {
+	private static void checkLib(FileSaver libDir, String libName) throws Exception {
 		// TODO TEST CLEANUP try to eliminate this method entirely
-		File libFile = null;
-		final String classpath = System.getProperty("java.class.path");
-		final String sep = System.getProperty("path.separator");
-		for (final String cp: classpath.split(sep)) {
-			final File maybelibFile = new File(cp);
-			if (maybelibFile.isFile()
-					&& maybelibFile.getName().startsWith(libName)
-					&& maybelibFile.getName().endsWith(".jar"))
-			{
-				libFile = maybelibFile;
-			}
-		}
-		if (libFile == null) {
-			throw new KidlParseException("Can't find lib-file for: " + libName);
-		}
-		InputStream is = new FileInputStream(libFile);
-		OutputStream os = libDir.openStream(libFile.getName());
+		final Path lib = BUILD_LIB_DIR.resolve(libName + ".jar");
+		InputStream is = new FileInputStream(lib.toFile());
+		OutputStream os = libDir.openStream(lib.getFileName().toString());
 		TextUtils.copyStreams(is, os);
-		return libFile.getCanonicalPath();
 	}
 	
 	private static File findPythonServerScript(File dir) {
