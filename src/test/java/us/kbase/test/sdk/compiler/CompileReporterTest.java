@@ -1,13 +1,13 @@
 package us.kbase.test.sdk.compiler;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Assert;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import us.kbase.kidl.KbModule;
 import us.kbase.kidl.KbService;
@@ -48,13 +48,13 @@ public class CompileReporterTest {
                 "#", server);
         //System.out.println(UObject.transformObjectToString(rpt));
         Map<String, FunctionPlace> pos = rpt.functionPlaces;
-        Assert.assertEquals(1, pos.size());
-        Assert.assertEquals(4, (int)pos.get(methodName).startLine);
-        Assert.assertEquals(6, (int)pos.get(methodName).endLine);
+        assertEquals(1, pos.size());
+        assertEquals(4, (int)pos.get(methodName).startLine);
+        assertEquals(6, (int)pos.get(methodName).endLine);
         Function f = rpt.functions.get(methodName);
-        Assert.assertEquals("Super func!", f.comment);
-        Assert.assertEquals(4, f.input.size());
-        Assert.assertEquals(2, f.output.size());
-        Assert.assertEquals("Test that!", f.output.get(1).comment);
+        assertEquals("Super func!", f.comment);
+        assertEquals(4, f.input.size());
+        assertEquals(2, f.output.size());
+        assertEquals("Test that!", f.output.get(1).comment);
     }
 }

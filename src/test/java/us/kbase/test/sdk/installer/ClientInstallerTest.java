@@ -1,17 +1,18 @@
 package us.kbase.test.sdk.installer;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
-import org.junit.Assert;
-
 import org.apache.commons.io.FileUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import us.kbase.sdk.initializer.ModuleInitializer;
 import us.kbase.sdk.installer.ClientInstaller;
@@ -21,7 +22,7 @@ import us.kbase.test.sdk.scripts.TestConfigHelper;
 public class ClientInstallerTest {
     private static File tempDir = null;
     
-    @BeforeClass
+    @BeforeAll
     public static void prepareClass() throws Exception {
         final Path rootTemp = Paths.get(
                 TestConfigHelper.getTempTestDir(), ClientInstallerTest.class.getSimpleName()
@@ -30,7 +31,7 @@ public class ClientInstallerTest {
         tempDir = Files.createTempDirectory(rootTemp, "test_install_").toFile();
     }
     
-    @AfterClass
+    @AfterAll
     public static void teardownClass() throws Exception {
         if (tempDir != null && tempDir.exists()) {
             FileUtils.deleteQuietly(tempDir);
@@ -53,8 +54,8 @@ public class ClientInstallerTest {
         ci.install(null, false, false, false, "dev", true, module2, null, null);
         File dir = new File(moduleDir, "lib/src/installed_clients/" + module2);
         //ProcessHelper.cmd("ls", "-l", dir.getAbsolutePath()).exec(moduleDir);
-        Assert.assertTrue(new File(dir, "OnerepotestClient.java").exists());
-        Assert.assertTrue(new File(dir, "OnerepotestServiceClient.java").exists());
+        assertTrue(new File(dir, "OnerepotestClient.java").exists());
+        assertTrue(new File(dir, "OnerepotestServiceClient.java").exists());
         checkDeps(moduleDir);
     }
     
@@ -73,14 +74,14 @@ public class ClientInstallerTest {
         String module2 = "onerepotest";
         ci.install(null, false, false, false, "dev", true, module2, null, null);
         File dir = new File(moduleDir, "lib/installed_clients");
-        Assert.assertTrue(new File(dir, "onerepotestClient.py").exists());
-        Assert.assertTrue(new File(dir, "onerepotestServiceClient.py").exists());
+        assertTrue(new File(dir, "onerepotestClient.py").exists());
+        assertTrue(new File(dir, "onerepotestServiceClient.py").exists());
         checkDeps(moduleDir);
     }
 
     private static void checkDeps(File moduleDir) throws Exception {
         File depsFile = new File(moduleDir, "dependencies.json");
-        Assert.assertTrue(depsFile.exists());
+        assertTrue(depsFile.exists());
         String expectedText = "" +
                 "[ {\n" +
                 "  \"module_name\" : \"KBaseReport\",\n" +
@@ -95,6 +96,6 @@ public class ClientInstallerTest {
                 "  \"type\" : \"core\",\n" +
                 "  \"file_path\" : \"https://raw.githubusercontent.com/kbase/workspace_deluxe/master/workspace.spec\"\n" +
                 "} ]";
-        Assert.assertEquals(expectedText, FileUtils.readFileToString(depsFile));
+        assertEquals(expectedText, FileUtils.readFileToString(depsFile));
     }
 }

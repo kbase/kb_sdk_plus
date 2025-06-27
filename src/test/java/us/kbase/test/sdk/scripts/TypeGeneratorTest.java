@@ -1,5 +1,9 @@
 package us.kbase.test.sdk.scripts;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,10 +36,9 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.util.log.Logger;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -67,7 +70,7 @@ import us.kbase.sdk.util.TextUtils;
  * syslog, documentation and GWT-stubs. 
  * @author rsutormin
  */
-public class TypeGeneratorTest extends Assert {
+public class TypeGeneratorTest {
 
 	// TODO TEST seems like the TODO below is done, but not entirely sure
 	//           the tests work correctly. Verify then remove
@@ -100,7 +103,7 @@ public class TypeGeneratorTest extends Assert {
 		}
 	}
 	
-    @BeforeClass
+    @BeforeAll
     public static void prepareTestConfigParams() throws Exception {
         // Next line loads test config-params to java System properties:
         TestConfigHelper.init();
@@ -142,7 +145,7 @@ public class TypeGeneratorTest extends Assert {
         });
     }
 	
-	@Before
+	@BeforeEach
 	public void beforeCleanup() {
 	    System.clearProperty("KB_JOB_CHECK_WAIT_TIME");
 	}
@@ -235,12 +238,12 @@ public class TypeGeneratorTest extends Assert {
 			boolean key = ex.getMessage().contains("Missing header in original file");
 			if (!key)
 				ex.printStackTrace();
-			Assert.assertTrue(key);
+			assertTrue(key);
 		}
         String testJavaResource = "Test" + testNum + ".java.properties";
         InputStream testClassIS = TypeGeneratorTest.class.getResourceAsStream(testJavaResource);
         if (testClassIS == null) {
-        	Assert.fail("Java test class resource was not found: " + testJavaResource);
+        	fail("Java test class resource was not found: " + testJavaResource);
         }
         TextUtils.copyStreams(testClassIS, new FileOutputStream(serverJavaFile));
         // Test for full server file
@@ -255,13 +258,13 @@ public class TypeGeneratorTest extends Assert {
 		for (JavaModule module : parsingData.getModules())
         	createServerServletInstance(module, libDir, binDir, testPackage);
 		String text = TextUtils.readFileText(serverJavaFile);
-		Assert.assertTrue(text.contains("* Header comment."));
-		Assert.assertTrue(text.contains("private int myValue = -1;"));
-		Assert.assertTrue(text.contains("myValue = 0;"));
-		Assert.assertTrue(text.contains("myValue = 1;"));
-		Assert.assertTrue(text.contains("myValue = 2;"));
-        Assert.assertTrue(text.contains("myValue = 3;"));
-        Assert.assertTrue(text.contains("myValue = 4;"));
+		assertTrue(text.contains("* Header comment."));
+		assertTrue(text.contains("private int myValue = -1;"));
+		assertTrue(text.contains("myValue = 0;"));
+		assertTrue(text.contains("myValue = 1;"));
+		assertTrue(text.contains("myValue = 2;"));
+        assertTrue(text.contains("myValue = 3;"));
+        assertTrue(text.contains("myValue = 4;"));
 		/////////////////////////////// Python ////////////////////////////////////
         {
             File serverOutDir = preparePyServerCode(testNum, workDir);
@@ -271,13 +274,13 @@ public class TypeGeneratorTest extends Assert {
                     "Test" + testNum + ".python.properties"), new FileOutputStream(pythonImplFile));
             preparePyServerCode(testNum, workDir);
             text = TextUtils.readFileText(pythonImplFile);
-            Assert.assertTrue(text.contains("# Header comment."));
-            Assert.assertTrue(text.contains("# Class header comment."));
-            Assert.assertTrue(text.contains("myValue = -1"));
-            Assert.assertTrue(text.contains("myValue = 1"));
-            Assert.assertTrue(text.contains("myValue = 2"));
-            Assert.assertTrue(text.contains("myValue = 3"));
-            Assert.assertTrue(text.contains("myValue = 4"));
+            assertTrue(text.contains("# Header comment."));
+            assertTrue(text.contains("# Class header comment."));
+            assertTrue(text.contains("myValue = -1"));
+            assertTrue(text.contains("myValue = 1"));
+            assertTrue(text.contains("myValue = 2"));
+            assertTrue(text.contains("myValue = 3"));
+            assertTrue(text.contains("myValue = 4"));
         }
         ///////////////////////////////// Windows EOL chars /////////////////////////////////
         String codeText = "" +
@@ -303,10 +306,10 @@ public class TypeGeneratorTest extends Assert {
         FileUtils.write(tempFile, codeText);
         Map<String, String> prevCode = PrevCodeParser.parsePrevCode(tempFile, "#", 
                 Arrays.asList("m1"), true);
-        Assert.assertEquals("text1", prevCode.get(PrevCodeParser.HEADER).trim());
-        Assert.assertEquals("text2", prevCode.get(PrevCodeParser.CLSHEADER).trim());
-        Assert.assertEquals("text3", prevCode.get(PrevCodeParser.CONSTRUCTOR).trim());
-        Assert.assertEquals("text4", prevCode.get(PrevCodeParser.METHOD + "m1").trim());
+        assertEquals("text1", prevCode.get(PrevCodeParser.HEADER).trim());
+        assertEquals("text2", prevCode.get(PrevCodeParser.CLSHEADER).trim());
+        assertEquals("text3", prevCode.get(PrevCodeParser.CONSTRUCTOR).trim());
+        assertEquals("text4", prevCode.get(PrevCodeParser.METHOD + "m1").trim());
 	}
 	
 	// Test9 was removed as obsolete
@@ -464,7 +467,7 @@ public class TypeGeneratorTest extends Assert {
 
     private static void checkFileForKeyword(File f, String keyword, boolean occure) throws Exception {
         String text = FileUtils.readFileToString(f);
-        Assert.assertEquals(occure, text.contains(keyword));
+        assertEquals(occure, text.contains(keyword));
     }
     
     @Test
@@ -850,7 +853,7 @@ public class TypeGeneratorTest extends Assert {
 		String testJavaResource = testJavaFileName + ".properties";
 		InputStream testClassIS = TypeGeneratorTest.class.getResourceAsStream(testJavaResource);
 		if (testClassIS == null) {
-			Assert.fail("Java test class resource was not found: " + testJavaResource);
+			fail("Java test class resource was not found: " + testJavaResource);
 		}
 		TextUtils.copyStreams(testClassIS, new FileOutputStream(testJavaFile));
 		runJavac(workDir, srcDir, classPath, binDir, testFilePath);
@@ -1134,7 +1137,7 @@ public class TypeGeneratorTest extends Assert {
                 if (!err.isEmpty())
                     System.err.println(pyName + " client errors:\n" + err);
             }
-            Assert.assertEquals(pyName + " client exit code should be 0", 0, exitCode);
+            assertEquals(0, exitCode, pyName + " client exit code should be 0");
         }
         if (debugClientTimes)
             System.out.println("  (time=" + (System.currentTimeMillis() - time) + " ms)");

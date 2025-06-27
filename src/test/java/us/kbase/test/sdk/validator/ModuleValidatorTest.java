@@ -4,7 +4,7 @@ import java.io.StringReader;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import us.kbase.kidl.KbModule;
 import us.kbase.kidl.KbService;

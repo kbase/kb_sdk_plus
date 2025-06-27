@@ -1,5 +1,8 @@
 package us.kbase.test.sdk.initializer;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -10,12 +13,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import org.junit.Assert;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import us.kbase.sdk.initializer.ModuleInitializer;
 import us.kbase.test.sdk.TestUtils;
@@ -52,7 +53,7 @@ public class InitializerTest {
 	private static List<String> pythonPaths;
 	private static List<String> javaPaths;
 
-	@After
+	@AfterEach
 	public void tearDownModule() throws IOException {
 		File module = Paths.get(tempDir.getAbsolutePath(), SIMPLE_MODULE_NAME).toFile();
 		if (module.exists() && module.isDirectory()) {
@@ -60,7 +61,7 @@ public class InitializerTest {
 		}
 	}
 
-	@AfterClass
+	@AfterAll
 	public static void cleanupClass() throws Exception {
 		FileUtils.deleteQuietly(tempDir);
 	}
@@ -109,7 +110,7 @@ public class InitializerTest {
 		return true;
 	}
 
-	@BeforeClass
+	@BeforeAll
 	public static void prepPathsToCheck() throws Exception {
 		allExpectedDefaultPaths = new ArrayList<String>(Arrays.asList(EXPECTED_PATHS));
 		allExpectedDefaultPaths.addAll(Arrays.asList(EXPECTED_DEFAULT_PATHS));
@@ -146,7 +147,7 @@ public class InitializerTest {
 		ModuleInitializer initer = new ModuleInitializer(SIMPLE_MODULE_NAME, USER_NAME, null, 
 				false, tempDir, true);
 		initer.initialize(useExample);
-		Assert.assertTrue(examineModule(SIMPLE_MODULE_NAME, useExample, 
+		assertTrue(examineModule(SIMPLE_MODULE_NAME, useExample, 
 				ModuleInitializer.DEFAULT_LANGUAGE));
 	}
 
@@ -158,10 +159,10 @@ public class InitializerTest {
 		ModuleInitializer initer = new ModuleInitializer(SIMPLE_MODULE_NAME, USER_NAME, language, 
 				false, tempDir, true);
 		initer.initialize(false);
-		Assert.assertTrue(examineModule(SIMPLE_MODULE_NAME, useExample, language));
+		assertTrue(examineModule(SIMPLE_MODULE_NAME, useExample, language));
 	}
 
-	@Test(expected=IOException.class)
+	@Test
 	public void testModuleAlreadyExists() throws Exception {
 		File f = Paths.get(tempDir.getAbsolutePath(), SIMPLE_MODULE_NAME).toFile();
 		if (!f.exists())
@@ -169,14 +170,14 @@ public class InitializerTest {
 		// should throw error if dir exists, so no dirExists boolean arg
 		ModuleInitializer initer = new ModuleInitializer(SIMPLE_MODULE_NAME, USER_NAME, null, 
 				false, tempDir);
-		initer.initialize(false);
+		assertThrows(IOException.class, () -> initer.initialize(false));
 	}
 
-	@Test(expected=Exception.class)
+	@Test
 	public void testNoNameModule() throws Exception {
 		// not modulename = fails immediately
 		ModuleInitializer initer = new ModuleInitializer(null, null, null, false, tempDir);
-		initer.initialize(false);
+		assertThrows(Exception.class, () -> initer.initialize(false));
 	}
 
 	@Test
@@ -187,7 +188,7 @@ public class InitializerTest {
 		ModuleInitializer initer = new ModuleInitializer(SIMPLE_MODULE_NAME, USER_NAME, lang, 
 				false, tempDir, true);
 		initer.initialize(useExample);
-		Assert.assertTrue(examineModule(SIMPLE_MODULE_NAME, useExample, lang));
+		assertTrue(examineModule(SIMPLE_MODULE_NAME, useExample, lang));
 	}
 
 	@Test
@@ -198,7 +199,7 @@ public class InitializerTest {
 		ModuleInitializer initer = new ModuleInitializer(SIMPLE_MODULE_NAME, USER_NAME, lang, 
 				false, tempDir, true);
 		initer.initialize(useExample);
-		Assert.assertTrue(examineModule(SIMPLE_MODULE_NAME, useExample, lang));
+		assertTrue(examineModule(SIMPLE_MODULE_NAME, useExample, lang));
 	}
 
 }

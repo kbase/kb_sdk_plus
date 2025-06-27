@@ -1,10 +1,10 @@
 package us.kbase.test.sdk.tester;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -36,8 +36,8 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.DateTimeFormatterBuilder;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,10 +50,10 @@ import us.kbase.catalog.ModuleVersionInfo;
 import us.kbase.catalog.SelectOneModuleParams;
 import us.kbase.common.executionengine.CallbackServer;
 import us.kbase.common.executionengine.CallbackServerConfigBuilder;
+import us.kbase.common.executionengine.CallbackServerConfigBuilder.CallbackServerConfig;
 import us.kbase.common.executionengine.LineLogger;
 import us.kbase.common.executionengine.ModuleMethod;
 import us.kbase.common.executionengine.ModuleRunVersion;
-import us.kbase.common.executionengine.CallbackServerConfigBuilder.CallbackServerConfig;
 import us.kbase.common.service.JacksonTupleModule;
 import us.kbase.common.service.JsonClientException;
 import us.kbase.common.service.ServerException;
@@ -110,7 +110,7 @@ public class CallbackServerTest {
     private final static DateTimeFormatter DATE_FORMATTER =
             DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ssZ").withZoneUTC();
     
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         FileUtils.deleteDirectory(TEST_DIR.toFile());
         Files.deleteIfExists(TEST_DIR);
@@ -303,7 +303,7 @@ public class CallbackServerTest {
         }
         assertThat("incorrect id", (String) got.get("id"),
                 is(params.get("id")));
-        assertNotNull("missing hash", (String) got.get("hash"));
+        assertNotNull((String) got.get("hash"), "missing hash");
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> parjobs =
                 (List<Map<String, Object>>) params.get("jobs");
@@ -311,7 +311,7 @@ public class CallbackServerTest {
             @SuppressWarnings("unchecked")
             List<List<Map<String,Object>>> gotjobs =
                     (List<List<Map<String, Object>>>) got.get("jobs");
-            assertNotNull("missing jobs", gotjobs);
+            assertNotNull(gotjobs, "missing jobs");
             assertThat("not same number of jobs", gotjobs.size(),
                     is(parjobs.size()));
             Iterator<List<Map<String, Object>>> gotiter = gotjobs.iterator();
@@ -740,8 +740,8 @@ public class CallbackServerTest {
         ProvenanceAction pa = prov.get(0);
         long got = DATE_PARSER.parseDateTime(pa.getTime()).getMillis();
         long now = new Date().getTime();
-        assertTrue("got prov time < now ", got < now);
-        assertTrue("got prov time > now - 5m", got > now - (5 * 60 * 1000));
+        assertTrue(got < now, "got prov time < now ");
+        assertTrue(got > now - (5 * 60 * 1000), "got prov time > now - 5m");
         assertThat("correct service", pa.getService(), is(moduleName));
         assertThat("correct service version", pa.getServiceVer(),
                 is(ver));
