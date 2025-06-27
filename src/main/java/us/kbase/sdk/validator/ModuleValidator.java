@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -16,7 +17,6 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
-import org.yaml.snakeyaml.Yaml;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,14 +36,10 @@ import us.kbase.kidl.KidlParser;
 import us.kbase.narrativemethodstore.NarrativeMethodStoreClient;
 import us.kbase.narrativemethodstore.ValidateMethodParams;
 import us.kbase.narrativemethodstore.ValidationResults;
-import us.kbase.sdk.util.TextUtils;
+import us.kbase.sdk.common.KBaseYmlConfig;
 
 
 public class ModuleValidator {
-	
-	
-	private static final String KBASE_YML_FILE = "kbase.yml";
-	
 	
 	protected String modulePath;
 	protected boolean verbose;
@@ -81,7 +77,7 @@ public class ModuleValidator {
     private static boolean isModuleDir(File dir) {
         return  new File(dir, "Dockerfile").exists() &&
                 new File(dir, "Makefile").exists() &&
-                new File(dir, "kbase.yml").exists() &&
+                new File(dir, KBaseYmlConfig.KBASE_YAML).exists() &&
                 new File(dir, "lib").exists() &&
                 new File(dir, "scripts").exists() &&
                 new File(dir, "test").exists() &&
@@ -125,20 +121,19 @@ public class ModuleValidator {
 			try {
 				int status = validateKBaseYmlConfig(module);
 				if(status!=0) {
-					errors++; continue;
+					errors++;
+					continue;
 				}
 			} catch (Exception e) {
 				System.err.println("  **ERROR** - configuration file validation failed:");
 				System.err.println("                "+e.getMessage());
-				errors++; continue;
+				errors++;
+				continue;
 			}
 			
 			KbModule parsedKidl = null;
             try {
-                Map<String,Object> config = parseKBaseYaml(new File(module, KBASE_YML_FILE));
-                String moduleName = (String)config.get("module-name");
-                if (moduleName == null)
-                    throw new IllegalStateException("\"module-name\" key isn't found in " + KBASE_YML_FILE);
+                final String moduleName = new KBaseYmlConfig(module.toPath()).getModuleName();
                 File specFile = new File(module, moduleName + ".spec");
                 if (!specFile.exists())
                     throw new IllegalStateException("Spec-file isn't found: " + specFile);
@@ -189,38 +184,23 @@ public class ModuleValidator {
 	}
 	
 	protected int validateKBaseYmlConfig(File module) throws IOException {
-		File kbaseYmlFile = new File(module.getCanonicalPath()+File.separator+KBASE_YML_FILE);
-		if(verbose) System.out.println("  - configuration file = "+kbaseYmlFile);
-		
-		if(!kbaseYmlFile.exists()) {
-			System.err.println("  **ERROR** - "+KBASE_YML_FILE+" configuration file does not exist in module directory.");
-			return 1;
+		final Path kbaseYmlFile = module.toPath().resolve(KBaseYmlConfig.KBASE_YAML);
+		if (verbose) {
+			System.out.println("  - configuration file = " + kbaseYmlFile);
 		}
-		if(kbaseYmlFile.isDirectory()) {
-			System.err.println("  **ERROR** - "+KBASE_YML_FILE+" configuration file location is a directory, not a file.");
-			return 1;
-		}
-		
 		try {
-			parseKBaseYaml(kbaseYmlFile);
-			if(verbose) System.out.println("  - configuration file is valid YAML");
+			new KBaseYmlConfig(module.toPath());
+			if (verbose) {
+				System.out.println("  - configuration file is valid YAML");
+			}
 		} catch(Exception e) {
-			System.err.println("  **ERROR** - "+KBASE_YML_FILE+" configuration file location is invalid:");
-			System.err.println("                "+e.getMessage());
+			System.err.println("  **ERROR** - " + e.getMessage());
 			return 1;
 			
 		}
 		return 0;
 	}
 
-    @SuppressWarnings("unchecked")
-    public Map<String,Object> parseKBaseYaml(File kbaseYmlFile) throws IOException {
-        Yaml yaml = new Yaml();
-        String kbaseYml = TextUtils.readFileText(kbaseYmlFile);
-        return (Map<String, Object>) yaml.load(kbaseYml);
-    }
-	
-	
 	protected int validateMethodSpec(File methodDir, KbModule parsedKidl) throws IOException {
 	    NarrativeMethodStoreClient nms = new NarrativeMethodStoreClient(new URL(methodStoreUrl));
 	    nms.setAllSSLCertificatesTrusted(true);

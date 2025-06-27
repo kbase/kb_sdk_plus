@@ -28,7 +28,6 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.productivity.java.syslog4j.SyslogIF;
-import org.yaml.snakeyaml.Yaml;
 
 import us.kbase.common.executionengine.CallbackServer;
 import us.kbase.common.executionengine.LineLogger;
@@ -40,6 +39,7 @@ import us.kbase.common.service.JsonServerSyslog;
 import us.kbase.common.service.JsonServerSyslog.SyslogOutput;
 import us.kbase.common.service.UObject;
 import us.kbase.common.utils.NetUtils;
+import us.kbase.sdk.common.KBaseYmlConfig;
 import us.kbase.sdk.initializer.ModuleInitializer;
 import us.kbase.sdk.templates.TemplateFormatter;
 import us.kbase.sdk.util.DirUtils;
@@ -49,7 +49,7 @@ import us.kbase.sdk.validator.ModuleValidator;
 
 public class ModuleTester {
     private File moduleDir;
-    protected Map<String,Object> kbaseYmlConfig;
+    private KBaseYmlConfig kbaseYmlConfig;
     private Map<String, Object> moduleContext;
 
     public ModuleTester() throws Exception {
@@ -58,18 +58,15 @@ public class ModuleTester {
     
     public ModuleTester(File dir) throws Exception {
         moduleDir = dir == null ? DirUtils.findModuleDir() : DirUtils.findModuleDir(dir);
-        String kbaseYml = TextUtils.readFileText(new File(moduleDir, "kbase.yml"));
-        @SuppressWarnings("unchecked")
-        Map<String,Object> config = (Map<String, Object>)new Yaml().load(kbaseYml);
-        kbaseYmlConfig = config;
+        kbaseYmlConfig = new KBaseYmlConfig(moduleDir.toPath());
         moduleContext = new HashMap<String, Object>();
-        moduleContext.put("module_name", kbaseYmlConfig.get("module-name"));
+        moduleContext.put("module_name", kbaseYmlConfig.getModuleName());
         moduleContext.put("module_root_path", moduleDir.getAbsolutePath());
-        if (kbaseYmlConfig.get("data-version") != null) {
-            moduleContext.put("data_version", kbaseYmlConfig.get("data-version"));
+        if (kbaseYmlConfig.getDataVersion().isPresent()) {
+            moduleContext.put("data_version", kbaseYmlConfig.getDataVersion().get());
         }
         // this next line will throw an exception if the language is unsupported
-        ModuleInitializer.qualifyLanguage((String) kbaseYmlConfig.get("service-language"));
+        ModuleInitializer.qualifyLanguage((String) kbaseYmlConfig.getServiceLanguage());
         moduleContext.put("os_name", System.getProperty("os.name"));
     }
     
@@ -114,7 +111,7 @@ public class ModuleTester {
         if (!readmeFile.exists())
             TemplateFormatter.formatTemplate("module_readme_test_local", moduleContext,
                     readmeFile);
-        if (kbaseYmlConfig.get("data-version") != null) {
+        if (kbaseYmlConfig.getDataVersion().isPresent()) {
             File refDataDir = new File(tlDir, "refdata");
             if (!refDataDir.exists()) {
                 TemplateFormatter.formatTemplate("module_run_tests", moduleContext, 
@@ -161,7 +158,7 @@ public class ModuleTester {
         cfgLoader.generateConfigProperties(configPropsFile);
         ProcessHelper.cmd("chmod", "+x", runBashSh.getCanonicalPath()).exec(tlDir);
         ProcessHelper.cmd("chmod", "+x", runDockerSh.getCanonicalPath()).exec(tlDir);
-        String moduleName = (String)kbaseYmlConfig.get("module-name");
+        String moduleName = kbaseYmlConfig.getModuleName();
         String imageName = "test/" + moduleName.toLowerCase() + ":latest";
         File subjobsDir = new File(tlDir, "subjobs");
         if (subjobsDir.exists())

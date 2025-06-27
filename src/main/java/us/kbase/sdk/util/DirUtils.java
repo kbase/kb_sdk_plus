@@ -3,12 +3,14 @@ package us.kbase.sdk.util;
 import java.io.File;
 import java.io.IOException;
 
+import us.kbase.sdk.common.KBaseYmlConfig;
+
 public class DirUtils {
 
     public static boolean isModuleDir(File dir) {
         return  new File(dir, "Dockerfile").exists() &&
                 new File(dir, "Makefile").exists() &&
-                new File(dir, "kbase.yml").exists() &&
+                new File(dir, KBaseYmlConfig.KBASE_YAML).exists() &&
                 new File(dir, "lib").exists() &&
                 new File(dir, "scripts").exists() &&
                 new File(dir, "test").exists() &&
