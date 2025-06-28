@@ -384,7 +384,7 @@ dependencies {
 	generatedCodeClasspath('junit:junit:4.12')
 	generatedCodeClasspath('net.java.dev.jna:jna:3.4.0')
 	generatedCodeClasspath('org.eclipse.jetty.aggregate:jetty-all:7.0.0.v20091005')
-	generatedCodeClasspath('org.hamcrest:hamcrest-core:1.3')
+	generatedCodeClasspath('org.hamcrest:hamcrest-core:3.0')
 	generatedCodeClasspath('org.ini4j:ini4j:0.5.2')
 	generatedCodeClasspath('org.syslog4j:syslog4j:0.9.46')
 	generatedCodeClasspath('org.slf4j:slf4j-api:1.7.7')
