@@ -341,7 +341,7 @@ dependencies {
 	//           c) java modules created by tests. See if they can be
 	//           moved to a test implementation if we swap the callback service for the
 	//           python docker image
-	implementation('ch.qos.logback:logback-classic:1.1.2')
+	implementation('ch.qos.logback:logback-classic:1.5.18')
 	implementation('org.slf4j:slf4j-api:1.7.7')
 	// TODO DEPS the annotation api is also needed for
 	//           a couple of SDK compiled classes in mobu/runner that should be factored out
@@ -368,7 +368,7 @@ dependencies {
 	
 	// isolate the sdk generated code dependencies from the standard dependencies
 	
-	generatedCodeClasspath('ch.qos.logback:logback-classic:1.1.2')
+	generatedCodeClasspath('ch.qos.logback:logback-classic:1.5.18')
 	generatedCodeClasspath('com.fasterxml.jackson.core:jackson-annotations:2.2.3')
 	generatedCodeClasspath('com.fasterxml.jackson.core:jackson-databind:2.2.3')
 	generatedCodeClasspath('com.github.kbase:auth2_client_java:0.5.0') {
