@@ -323,7 +323,7 @@ dependencies {
 	}
 	implementation('com.fasterxml.jackson.core:jackson-annotations:2.2.3')
 	implementation('com.fasterxml.jackson.core:jackson-databind:2.2.3')
-	implementation('com.google.guava:guava:18.0')
+	implementation('com.google.guava:guava:23.0')
 	implementation('com.googlecode.jsonschema2pojo:jsonschema2pojo-core:0.3.6')
 	implementation('com.j2html:j2html:0.7') {
 		exclude group: 'junit', module: 'junit' // bro
