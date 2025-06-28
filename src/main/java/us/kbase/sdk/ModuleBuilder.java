@@ -7,10 +7,7 @@ import java.io.StringWriter;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Map;
 import java.util.concurrent.Callable;
-
-import org.yaml.snakeyaml.Yaml;
 
 import picocli.AutoComplete.GenerateCompletion;
 import picocli.CommandLine;
@@ -19,13 +16,13 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.HelpCommand;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
+import us.kbase.sdk.common.KBaseYmlConfig;
 import us.kbase.sdk.compiler.RunCompileCommand;
 import us.kbase.sdk.initializer.ModuleInitializer;
 import us.kbase.sdk.installer.ClientInstaller;
 import us.kbase.sdk.runner.ModuleRunner;
 import us.kbase.sdk.tester.ModuleTester;
 import us.kbase.sdk.util.ProcessHelper;
-import us.kbase.sdk.util.TextUtils;
 import us.kbase.sdk.validator.ModuleValidator;
 
 
@@ -347,14 +344,8 @@ public class ModuleBuilder implements Runnable{
 			final Path moduleDir = specFile.getParent();
 			String semanticVersion = null;
 			try {
-				// TODO CODE all these hardcoded file names should be constants somewhere
-				final Path kbaseYmlFile = moduleDir.resolve("kbase.yml");
-				if (Files.exists(kbaseYmlFile)) {
-					final String kbaseYml = TextUtils.readFileText(kbaseYmlFile.toFile());
-					@SuppressWarnings("unchecked")
-					final Map<String,Object> kbaseYmlConfig =
-						(Map<String, Object>) new Yaml().load(kbaseYml);
-					semanticVersion = (String) kbaseYmlConfig.get("module-version");
+				if (Files.exists(moduleDir.resolve(KBaseYmlConfig.KBASE_YAML))) {
+					semanticVersion = new KBaseYmlConfig(moduleDir).getSemanticVersion();
 				}
 			} catch (Exception ex) {
 				System.out.println(
@@ -445,7 +436,7 @@ public class ModuleBuilder implements Runnable{
 				return tester.runTests(skipValidation);
 			}
 			catch (Exception e) {
-				showError("Error while initializing module", e.getMessage());
+				showError("Error while testing module", e.getMessage());
 				if (verbose) {
 					e.printStackTrace();
 				}

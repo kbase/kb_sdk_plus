@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import us.kbase.sdk.Language;
+import us.kbase.sdk.common.KBaseYmlConfig;
 import us.kbase.sdk.compiler.JavaData;
 import us.kbase.sdk.compiler.JavaModule;
 import us.kbase.sdk.compiler.JavaTypeGenerator;
@@ -133,7 +134,7 @@ public class ModuleInitializer {
 		templateFiles.put("module_readme_ui", Paths.get(moduleDir, "ui", "README.md"));
 		templateFiles.put("module_readme_test", Paths.get(moduleDir, "test", "README.md"));
 		templateFiles.put("module_readme_data", Paths.get(moduleDir, "data", "README.md"));
-		templateFiles.put("module_config_yaml", Paths.get(moduleDir, "kbase.yml"));
+		templateFiles.put("module_config_yaml", Paths.get(moduleDir, KBaseYmlConfig.KBASE_YAML));
         templateFiles.put("module_gitignore", Paths.get(moduleDir, ".gitignore"));
         templateFiles.put("module_dockerignore", Paths.get(moduleDir, ".dockerignore"));
         templateFiles.put("module_readme_test_local", Paths.get(moduleDir, "test_local", "readme.txt"));

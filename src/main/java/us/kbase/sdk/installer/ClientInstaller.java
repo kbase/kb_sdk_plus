@@ -17,7 +17,6 @@ import java.util.TreeMap;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.yaml.snakeyaml.Yaml;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,6 +33,7 @@ import us.kbase.kidl.KbModule;
 import us.kbase.kidl.KbService;
 import us.kbase.kidl.KidlParseException;
 import us.kbase.kidl.KidlParser;
+import us.kbase.sdk.common.KBaseYmlConfig;
 import us.kbase.sdk.compiler.JavaTypeGenerator;
 import us.kbase.sdk.compiler.TemplateBasedGenerator;
 import us.kbase.sdk.util.DirUtils;
@@ -43,7 +43,6 @@ import us.kbase.sdk.util.TextUtils;
 
 public class ClientInstaller {
     private final File moduleDir;
-    private final Map<String, Object> kbaseYmlConfig;
     private final String language;
     private final Properties sdkConfig;
     private final URL catalogUrl;
@@ -54,11 +53,7 @@ public class ClientInstaller {
 
     public ClientInstaller(File dir, boolean showWarnings) throws Exception {
         moduleDir = dir == null ? DirUtils.findModuleDir() : DirUtils.findModuleDir(dir);
-        String kbaseYml = TextUtils.readFileText(new File(moduleDir, "kbase.yml"));
-        @SuppressWarnings("unchecked")
-        Map<String,Object> config = (Map<String, Object>)new Yaml().load(kbaseYml);
-        kbaseYmlConfig = config;
-        language = (String)kbaseYmlConfig.get("service-language");
+        language = new KBaseYmlConfig(moduleDir.toPath()).getServiceLanguage();
         File sdkCfgFile = new File(moduleDir, "sdk.cfg");
         sdkConfig = new Properties();
         if (!sdkCfgFile.exists()) {

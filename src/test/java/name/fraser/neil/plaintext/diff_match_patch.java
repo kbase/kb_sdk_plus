@@ -1,4 +1,3 @@
-//TODO move this to a jar
 /*
  * Diff Match and Patch
  *
