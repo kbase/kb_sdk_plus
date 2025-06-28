@@ -1,8 +1,9 @@
 package us.kbase.test.sdk.tester;
 
-import static org.junit.Assert.assertThat;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -10,13 +11,11 @@ import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.junit.Assert;
-
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import us.kbase.auth.AuthToken;
 import us.kbase.sdk.initializer.ModuleInitializer;
@@ -34,19 +33,19 @@ public class ModuleTesterTest {
 	private static final List<Path> CREATED_MODULES = new LinkedList<>();
 	private static AuthToken token;
 
-	@BeforeClass
+	@BeforeAll
 	public static void beforeClass() throws Exception {
 		token = TestConfigHelper.getToken();
 	}
 
-	@AfterClass
+	@AfterAll
 	public static void tearDownModule() throws Exception {
 		for (final Path mod: CREATED_MODULES) {
 			TestUtils.deleteTestModule(mod, true, DELETE_TEST_MODULES);
 		}
 	}
 
-	@After
+	@AfterEach
 	public void afterTest() {
 		System.out.println();
 	}
@@ -113,7 +112,7 @@ public class ModuleTesterTest {
 		FileUtils.writeStringToFile(implFile.toFile(), newText);
 		
 		int exitCode = runTestsInDocker(moduleDir.toFile());
-		Assert.assertEquals(0, exitCode);
+		assertEquals(0, exitCode);
 	}
 
 	@Test
@@ -134,7 +133,7 @@ public class ModuleTesterTest {
 		assertThat(implText, is(not(newText)));
 		FileUtils.writeStringToFile(implFile.toFile(), newText);
 		int exitCode = runTestsInDocker(moduleDir.toFile());
-		Assert.assertEquals(2, exitCode);
+		assertEquals(2, exitCode);
 	}
 
 	@Test
@@ -144,7 +143,7 @@ public class ModuleTesterTest {
 		String moduleName = SIMPLE_MODULE_NAME + "Java";
 		final Path moduleDir = init(lang, moduleName);
 		int exitCode = runTestsInDocker(moduleDir.toFile());
-		Assert.assertEquals(0, exitCode);
+		assertEquals(0, exitCode);
 	}
 
 	@Test
@@ -166,7 +165,7 @@ public class ModuleTesterTest {
 		assertThat(implText, is(not(newText)));
 		FileUtils.writeStringToFile(implFile.toFile(), newText);
 		int exitCode = runTestsInDocker(moduleDir.toFile());
-		Assert.assertEquals(2, exitCode);
+		assertEquals(2, exitCode);
 	}
 
 	@Test
@@ -225,6 +224,6 @@ public class ModuleTesterTest {
 		FileUtils.writeStringToFile(implFile, implInit);
 		FileUtils.writeStringToFile(testFile, newCode);
 		int exitCode = runTestsInDocker(moduleDir, token, true);
-		Assert.assertEquals(0, exitCode);
+		assertEquals(0, exitCode);
 	}
 }

@@ -1,5 +1,9 @@
 package us.kbase.test.sdk.initializer;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.lang.reflect.InvocationTargetException;
@@ -15,10 +19,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 
 import us.kbase.auth.AuthToken;
 import us.kbase.common.service.ServerException;
@@ -41,7 +44,7 @@ public class DockerClientServerTester {
     protected static List<Path> CREATED_MODULES = new ArrayList<Path>();
     protected static AuthToken token;
     
-    @BeforeClass
+    @BeforeAll
     public static void beforeTesterClass() throws Exception {
         token = TestConfigHelper.getToken();
         TypeGeneratorTest.suppressJettyLogging();
@@ -49,7 +52,7 @@ public class DockerClientServerTester {
     
     // TODO TEST CODE pretty sure a lot of this stuff is duplicated in multiple places elsewhere
     //                also needs to be updated to more modern code
-    @AfterClass
+    @AfterAll
     public static void afterTesterClass() throws Exception {
         if (cleanupAfterTests)
             for (final Path moduleName: CREATED_MODULES)
@@ -61,7 +64,7 @@ public class DockerClientServerTester {
                 }
     }
     
-    @After
+    @AfterEach
     public void afterText() {
         System.out.println();
     }
@@ -275,9 +278,9 @@ public class DockerClientServerTester {
 			System.out.println("(" + time + " ms)");
 			if (error != null)
 				throw error;
-			Assert.assertNotNull(obj);
-			Assert.assertTrue(obj instanceof String);
-			Assert.assertEquals(input, obj);
+			assertNotNull(obj);
+			assertTrue(obj instanceof String);
+			assertEquals(input, obj);
 		}
 		// Common non-java preparation
 		// Note 24/12/13: No longer common, just python
@@ -323,7 +326,7 @@ public class DockerClientServerTester {
 				if (!err.isEmpty())
 					System.err.println("Python client errors:\n" + err);
 			}
-			Assert.assertEquals("Python client exit code should be 0", 0, exitCode);
+			assertEquals(0, exitCode, "Python client exit code should be 0");
 		}
 	}
 
@@ -422,7 +425,7 @@ public class DockerClientServerTester {
 				String err = ph.getSavedErrors();
 				if (!err.isEmpty())
 					System.err.println("Python client runner errors:\n" + err);
-				Assert.assertEquals("Python client runner exit code should be 0", 0, exitCode);
+				assertEquals(0, exitCode, "Python client runner exit code should be 0");
 			} else {
 				checkStatusResponse(outputFile, errorFile);
 			}
@@ -439,20 +442,20 @@ public class DockerClientServerTester {
     }
 
     private static void checkStatusResponse(Object obj) throws Exception {
-        Assert.assertNotNull(obj);
+        assertNotNull(obj);
         String errMsg = "Unexpected response: " + UObject.transformObjectToString(obj);
         if (obj instanceof List) {
             @SuppressWarnings("rawtypes")
             List<?> list = (List)obj;
-            Assert.assertEquals(errMsg, 1, list.size());
+            assertEquals(1, list.size(), errMsg);
             obj = list.get(0);
         }
-        Assert.assertTrue(obj instanceof Map);
+        assertTrue(obj instanceof Map);
         @SuppressWarnings("unchecked")
         Map<String, String> map = (Map<String, String>)obj;
-        Assert.assertEquals(errMsg, "OK", map.get("state"));
-        Assert.assertTrue(errMsg, map.containsKey("version"));
-        Assert.assertTrue(errMsg, map.containsKey("git_url"));
-        Assert.assertTrue(errMsg, map.containsKey("git_commit_hash"));
+        assertEquals("OK", map.get("state"), errMsg);
+        assertTrue(map.containsKey("version"), errMsg);
+        assertTrue(map.containsKey("git_url"), errMsg);
+        assertTrue(map.containsKey("git_commit_hash"), errMsg);
     }
 }

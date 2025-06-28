@@ -12,9 +12,9 @@ import org.apache.commons.io.FileUtils;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import us.kbase.common.service.JsonClientException;
 import us.kbase.common.service.JsonServerMethod;
@@ -33,7 +33,7 @@ public class DynamicServiceTest extends DockerClientServerTester {
     private static Server serviceWizardJettyServer;
     private static ServiceWizardMock serviceWizard;
     
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         // TODO TEST CLEANUP delete this directory
         final Path workDir = Paths.get(
@@ -54,7 +54,7 @@ public class DynamicServiceTest extends DockerClientServerTester {
         serviceWizardJettyServer.start();
     }
     
-    @AfterClass
+    @AfterAll
     public static void tearDownModule() throws Exception {
         if (serviceWizardJettyServer != null)
             serviceWizardJettyServer.stop();

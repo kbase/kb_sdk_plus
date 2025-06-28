@@ -5,9 +5,9 @@ import java.io.File;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import us.kbase.test.sdk.scripts.TestConfigHelper;
 import us.kbase.test.sdk.scripts.TypeGeneratorTest;
@@ -20,7 +20,7 @@ public class AsyncDockerTest extends DockerClientServerTester {
     private static Server execEngineJettyServer;
     private static CallbackServerMock cbsMock;
     
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         execEnginePort = TypeGeneratorTest.findFreePort();
         execEngineJettyServer = new Server(execEnginePort);
@@ -32,7 +32,7 @@ public class AsyncDockerTest extends DockerClientServerTester {
         execEngineJettyServer.start();
     }
     
-    @AfterClass
+    @AfterAll
     public static void tearDownModule() throws Exception {
         cbsMock.waitAndCleanAllJobs();
         if (execEngineJettyServer != null)

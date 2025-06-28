@@ -1,8 +1,8 @@
 package us.kbase.test.sdk.compiler.html;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,14 +25,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.IOUtils;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
 import name.fraser.neil.plaintext.diff_match_patch;
 import name.fraser.neil.plaintext.diff_match_patch.Diff;
 import name.fraser.neil.plaintext.diff_match_patch.Operation;
-
-import org.apache.commons.io.IOUtils;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import us.kbase.jkidl.IncludeProvider;
 import us.kbase.jkidl.ParseException;
 import us.kbase.jkidl.SpecParser;
@@ -48,7 +47,7 @@ public class HTMLGenTest {
 	private static String CSS = "KIDLspec.css";
 	private static String CSS_FILE;
 	
-	@BeforeClass
+	@BeforeAll
 	public static void beforeClass() throws Exception {
 		CSS_FILE = getFile(CSS);
 		HTML_FILES = listFiles();
