@@ -18,7 +18,7 @@ import us.kbase.sdk.util.TextUtils;
 
 public class TemplateFormatter {
 
-    public static boolean formatTemplate(String templateName, Map<?,?> context, 
+    public static boolean formatTemplate(String templateName, Map<String, Object> context, 
             File output) throws IOException {
         StringWriter sw = new StringWriter();
         boolean ret = formatTemplate(templateName, context, sw);
@@ -29,7 +29,7 @@ public class TemplateFormatter {
     }
     
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public static boolean formatTemplate(String templateName, Map<?,?> context, 
+    public static boolean formatTemplate(String templateName, Map<String, Object> context, 
             Writer output) {
         try {
             if (!context.containsKey("esc")) {

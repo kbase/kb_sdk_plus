@@ -29,10 +29,10 @@ public class ConfigLoader {
     private final String catalogUrl;
     private final Map<String, String> secureCfgParams;
 
-    public ConfigLoader(Properties props, boolean testMode, 
-            String configPathInfo, boolean tryHomeCfg) throws Exception {
+    public ConfigLoader(Properties props, boolean testMode, String configPathInfo
+            ) throws Exception {
         if (configPathInfo == null) {
-            configPathInfo = "test_local/test.cfg";
+            throw new IllegalArgumentException("configPathInfo is required");
         }
         authUrl = props.getProperty("auth_service_url");
         if (authUrl == null)
