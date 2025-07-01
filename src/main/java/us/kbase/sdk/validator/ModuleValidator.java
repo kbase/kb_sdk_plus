@@ -37,41 +37,49 @@ import us.kbase.narrativemethodstore.NarrativeMethodStoreClient;
 import us.kbase.narrativemethodstore.ValidateMethodParams;
 import us.kbase.narrativemethodstore.ValidationResults;
 import us.kbase.sdk.common.KBaseYmlConfig;
+import us.kbase.sdk.common.TestLocalManager;
+import us.kbase.sdk.common.TestLocalManager.TestLocalInfo;
 
 
 public class ModuleValidator {
 	
-	protected String modulePath;
-	protected boolean verbose;
-	protected String methodStoreUrl;
+	private String modulePath;
+	private boolean verbose;
 
 	public ModuleValidator(final String modulePath, final boolean verbose) throws Exception {
 		this.modulePath = modulePath;
 		this.verbose = verbose;
-		File module = new File(modulePath);
-		// TODO CODE don't hardcode file names and directories everywhere
-		File testCfg = new File(new File(module, "test_local"), "test.cfg");
+	}
+
+	private String getMethodStoreUrl(final Path mod, final KBaseYmlConfig kyc) throws IOException {
+		// ensure test_local/test.cfg exists before trying to get a url from it
+		final TestLocalInfo tlm = TestLocalManager.ensureTestLocal(
+				mod,
+				kyc.getModuleName(),
+				kyc.getDataVersion()
+		);
+		final Path tltc = TestLocalManager.getTestCfgRelative();
 		// everything except the happy path is currently tested manually
-		if (!testCfg.exists()) {
-			// TODO CODE IllegalStateException is used for everything - maybe not terrible in
-			//           a CLI?
-			throw new IllegalStateException(
-					"test_local/test.cfg file is missing from SDK module"
-			);
-		}
 		final Properties props = new Properties();
-		try (final InputStream is = new FileInputStream(testCfg);) {
+		try (final InputStream is = new FileInputStream(tlm.getTestCfgFile().toFile());) {
 			props.load(is);
 		} catch (Exception e) {
-			throw new IOException("Could not read test_local/test.cfg file: " + e.getMessage(), e);
+			throw new IOException(String.format(
+					"Could not read %s file: " + e.getMessage(), tltc), e
+			);
 		}
 		final String endPoint = props.getProperty("kbase_endpoint");
 		if (endPoint == null) {
-			throw new IllegalStateException(
-					"test_local/test.cfg file is missing the kbase_endpoint property"
-			);
+			throw new IllegalStateException(String.format(
+					"%s file is missing the kbase_endpoint property", tltc
+			));
 		}
-		this.methodStoreUrl = endPoint + "/narrative_method_store/rpc";
+		final String msurl = endPoint + "/narrative_method_store/rpc";
+		
+		System.out.println(String.format(
+				"Using Narrative Method Store URL from %s for module validation:\n%s", tltc, msurl
+		));
+		return msurl;
 	}
 
     private static boolean isModuleDir(File dir) {
@@ -83,12 +91,13 @@ public class ModuleValidator {
                 new File(dir, "test").exists() &&
                 new File(dir, "ui").exists();
     }
-	
+
 	public int validate() {
-		
+
 		int errors = 0;
-		
+
 		// TODO CODE remove this crufty loop
+		// TODO CODE this whole module needs a rewrite
 		for(String modulePathString : Arrays.asList(modulePath)) {
 			File module = new File(modulePathString);
 			System.out.println("\nValidating module in ("+module+")");
@@ -113,27 +122,41 @@ public class ModuleValidator {
 	            module = dir;
 			} catch (IOException e) {
 				System.err.println("  **ERROR** - unable to extract module canonical path:");
-				System.err.println("                "+e.getMessage());
+				System.err.println("                " + e.getMessage());
 			}
 
-
 			// 1) Validate the configuration file
+			final KBaseYmlConfig kyc;
 			try {
-				int status = validateKBaseYmlConfig(module);
-				if(status!=0) {
-					errors++;
-					continue;
+				final Path kbaseYmlFile = module.toPath().toAbsolutePath()
+						.resolve(KBaseYmlConfig.KBASE_YAML);
+				if (verbose) {
+					System.out.println("  - configuration file = " + kbaseYmlFile);
+				}
+				kyc = new KBaseYmlConfig(module.toPath());
+				if (verbose) {
+					System.out.println("  - configuration file %s is valid YAML");
 				}
 			} catch (Exception e) {
 				System.err.println("  **ERROR** - configuration file validation failed:");
-				System.err.println("                "+e.getMessage());
+				System.err.println("                " + e.getMessage());
 				errors++;
 				continue;
 			}
 			
+			String methodStoreUrl = null;
+			try {
+				methodStoreUrl = getMethodStoreUrl(module.toPath(), kyc);
+			} catch (IOException | IllegalStateException e) {
+				System.err.println("  **ERROR** - getting Narrative Method Store URL failed:");
+				System.err.println("                " + e.getMessage());
+				errors++;
+				continue;
+			}
+
 			KbModule parsedKidl = null;
             try {
-                final String moduleName = new KBaseYmlConfig(module.toPath()).getModuleName();
+                final String moduleName = kyc.getModuleName();
                 File specFile = new File(module, moduleName + ".spec");
                 if (!specFile.exists())
                     throw new IllegalStateException("Spec-file isn't found: " + specFile);
@@ -160,7 +183,7 @@ public class ModuleValidator {
 			        if (methodDir.isDirectory()) {
 			            System.out.println("\nValidating method in ("+methodDir+")");
 			            try {
-			                int status = validateMethodSpec(methodDir, parsedKidl);
+			                int status = validateMethodSpec(methodDir, parsedKidl, methodStoreUrl);
 			                if (status != 0) {
 			                    errors++; 
 			                    continue;
@@ -183,25 +206,11 @@ public class ModuleValidator {
 		return 0;
 	}
 	
-	protected int validateKBaseYmlConfig(File module) throws IOException {
-		final Path kbaseYmlFile = module.toPath().resolve(KBaseYmlConfig.KBASE_YAML);
-		if (verbose) {
-			System.out.println("  - configuration file = " + kbaseYmlFile);
-		}
-		try {
-			new KBaseYmlConfig(module.toPath());
-			if (verbose) {
-				System.out.println("  - configuration file is valid YAML");
-			}
-		} catch(Exception e) {
-			System.err.println("  **ERROR** - " + e.getMessage());
-			return 1;
-			
-		}
-		return 0;
-	}
-
-	protected int validateMethodSpec(File methodDir, KbModule parsedKidl) throws IOException {
+	private int validateMethodSpec(
+			final File methodDir,
+			final KbModule parsedKidl,
+			final String methodStoreUrl
+			) throws IOException {
 	    NarrativeMethodStoreClient nms = new NarrativeMethodStoreClient(new URL(methodStoreUrl));
 	    nms.setAllSSLCertificatesTrusted(true);
 	    nms.setIsInsecureHttpConnectionAllowed(true);

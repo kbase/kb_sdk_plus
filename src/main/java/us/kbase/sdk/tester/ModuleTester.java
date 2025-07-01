@@ -40,8 +40,9 @@ import us.kbase.common.service.JsonServerSyslog.SyslogOutput;
 import us.kbase.common.service.UObject;
 import us.kbase.common.utils.NetUtils;
 import us.kbase.sdk.common.KBaseYmlConfig;
+import us.kbase.sdk.common.TestLocalManager;
+import us.kbase.sdk.common.TestLocalManager.TestLocalInfo;
 import us.kbase.sdk.initializer.ModuleInitializer;
-import us.kbase.sdk.templates.TemplateFormatter;
 import us.kbase.sdk.util.DirUtils;
 import us.kbase.sdk.util.ProcessHelper;
 import us.kbase.sdk.util.TextUtils;
@@ -84,12 +85,19 @@ public class ModuleTester {
     
     public int runTests(final boolean skipValidation) throws Exception {
         // TODO CODE some of this code looks similar to that in the module runner, DRY possible
+        final TestLocalInfo tli = TestLocalManager.ensureTestLocal(
+                moduleDir.toPath(),
+                kbaseYmlConfig.getModuleName(),
+                kbaseYmlConfig.getDataVersion()
+        );
+        final String testLocalRel = TestLocalManager.getTestLocalRelative().toString();
+        final String testCfgRel = TestLocalManager.getTestCfgRelative().toString();
         if (skipValidation) {
             System.out.println("Validation step is skipped");
         } else {
             ModuleValidator mv = new ModuleValidator(moduleDir.getCanonicalPath(), false);
             int returnCode = mv.validate();
-            if (returnCode!=0) {
+            if (returnCode != 0) {
                 System.out.println("You can skip validation step using -s (or --skip_validation)" +
                 		" flag");
                 // TODO CODE should be throwing exceptions, not returning return codes all over the
@@ -97,40 +105,20 @@ public class ModuleTester {
                 return returnCode;
             }
         }
-        String testLocal = "test_local";
-        checkIgnoreLine(new File(moduleDir, ".gitignore"), testLocal);
-        checkIgnoreLine(new File(moduleDir, ".dockerignore"), testLocal);
-        File tlDir = new File(moduleDir, testLocal);
-        File readmeFile = new File(tlDir, "readme.txt");
-        File testCfg = new File(tlDir, "test.cfg");
-        File runTestsSh = new File(tlDir, "run_tests.sh");
-        File runBashSh = new File(tlDir, "run_bash.sh");
-        File runDockerSh = new File(tlDir, "run_docker.sh");
-        if (!tlDir.exists())
-            tlDir.mkdir();
-        if (!readmeFile.exists())
-            TemplateFormatter.formatTemplate("module_readme_test_local", moduleContext,
-                    readmeFile);
-        if (kbaseYmlConfig.getDataVersion().isPresent()) {
-            File refDataDir = new File(tlDir, "refdata");
-            if (!refDataDir.exists()) {
-                TemplateFormatter.formatTemplate("module_run_tests", moduleContext, 
-                        runTestsSh);
-                refDataDir.mkdir();
-            }
-        }
-        if (!runTestsSh.exists())
-            TemplateFormatter.formatTemplate("module_run_tests", moduleContext, runTestsSh);
-        if (!runBashSh.exists())
-            TemplateFormatter.formatTemplate("module_run_bash", moduleContext, runBashSh);
-        if (!runDockerSh.exists())
-            TemplateFormatter.formatTemplate("module_run_docker", moduleContext, runDockerSh);
-        if (!testCfg.exists()) {
-            TemplateFormatter.formatTemplate("module_test_cfg", moduleContext, testCfg);
-            System.out.println("Set KBase account credentials in test_local/test.cfg and then " +
-            		"test again");
+        checkIgnoreLine(new File(moduleDir, ".gitignore"), testLocalRel);
+        checkIgnoreLine(new File(moduleDir, ".dockerignore"), testLocalRel);
+        if (tli.isCreatedTestCfgFile()) {
+            System.out.println(String.format(
+                    "Set KBase account credentials in %s and then test again", testCfgRel
+            ));
             return 1;
         }
+        // TODO CODE update the code below to use Path
+        final File testCfg = tli.getTestCfgFile().toFile();
+        final File tlDir = tli.getTestLocalDir().toFile();
+        final File runDockerSh = tli.getRunDockerShFile().toFile();
+        final File runBashSh = tli.getRunBashShFile().toFile();
+        final File runTestsSh = tli.getRunTestsShFile().toFile();
         Properties props = new Properties();
         InputStream is = new FileInputStream(testCfg);
         try {
@@ -139,8 +127,7 @@ public class ModuleTester {
             is.close();
         }
         
-        ConfigLoader cfgLoader = new ConfigLoader(props, true, "test_local/test.cfg", true);
-        
+        final ConfigLoader cfgLoader = new ConfigLoader(props, true, testCfgRel);
         
         File workDir = new File(tlDir, "workdir");
         workDir.mkdir();

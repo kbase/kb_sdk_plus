@@ -9,9 +9,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import us.kbase.sdk.Language;
 import us.kbase.sdk.common.KBaseYmlConfig;
+import us.kbase.sdk.common.TestLocalManager;
 import us.kbase.sdk.compiler.JavaData;
 import us.kbase.sdk.compiler.JavaModule;
 import us.kbase.sdk.compiler.JavaTypeGenerator;
@@ -107,16 +109,15 @@ public class ModuleInitializer {
 		 * Set up the context - the set of variables used to flesh out the templates */
 		String specFile = Paths.get(this.moduleName + ".spec").toString();
 		
-		Map<String, Object> moduleContext = new HashMap<String, Object>();
+		Map<String, Object> moduleContext = new HashMap<>();
 		moduleContext.put("module_name", this.moduleName);
 		moduleContext.put("user_name", this.userName);
 		moduleContext.put("spec_file", specFile);
 		moduleContext.put("language", this.language);
 		moduleContext.put("module_root_path", Paths.get(moduleDir).toAbsolutePath());
+		moduleContext.put("test_cfg_loc", TestLocalManager.getTestCfgRelative());
 		moduleContext.put("example", example);
 		moduleContext.put("dollar_sign", "$");
-        moduleContext.put("os_name", System.getProperty("os.name"));
-
 
 		Map<String, Path> templateFiles = new HashMap<String, Path>();
 		templateFiles.put("module_typespec", Paths.get(moduleDir, specFile));
@@ -137,11 +138,6 @@ public class ModuleInitializer {
 		templateFiles.put("module_config_yaml", Paths.get(moduleDir, KBaseYmlConfig.KBASE_YAML));
         templateFiles.put("module_gitignore", Paths.get(moduleDir, ".gitignore"));
         templateFiles.put("module_dockerignore", Paths.get(moduleDir, ".dockerignore"));
-        templateFiles.put("module_readme_test_local", Paths.get(moduleDir, "test_local", "readme.txt"));
-        templateFiles.put("module_test_cfg", Paths.get(moduleDir, "test_local", "test.cfg"));
-        templateFiles.put("module_run_tests", Paths.get(moduleDir, "test_local", "run_tests.sh"));
-        templateFiles.put("module_run_bash", Paths.get(moduleDir, "test_local", "run_bash.sh"));
-        templateFiles.put("module_run_docker", Paths.get(moduleDir, "test_local", "run_docker.sh"));
 		
 		switch (language) {
 		case "java":
@@ -198,6 +194,8 @@ public class ModuleInitializer {
 			fillTemplate(moduleContext, templateName, templateFiles.get(templateName));
 		}
 		
+		TestLocalManager.ensureTestLocal(Paths.get(moduleDir), this.moduleName, Optional.empty());
+		
 		if (example) {
 			// Generated examples require some other SDK dependencies
             new ClientInstaller(new File(moduleDir), false).install(
@@ -240,7 +238,9 @@ public class ModuleInitializer {
 		System.out.println("Compile and run the example methods with the following inputs:");
 		System.out.println("  cd " + moduleDir);
 		System.out.println("  make          (required after making changes to " + new File(specFile).getName() + ")");
-		System.out.println("  kb-sdk test   (will require setting test user account credentials in test_local/test.cfg)");
+		System.out.println(String.format(
+				"  kb-sdk test   (will require setting test user account credentials in %s)",
+				TestLocalManager.getTestCfgRelative()));
 		System.out.println();
 	}
 	
@@ -273,7 +273,7 @@ public class ModuleInitializer {
 	 * @param outfile
 	 * @throws IOException
 	 */
-	private void fillTemplate(Map<?,?> context, String templateName, Path outfilePath) throws IOException {
+	private void fillTemplate(Map<String, Object> context, String templateName, Path outfilePath) throws IOException {
 		if (this.verbose) System.out.println("Building file \"" + outfilePath.toString() + "\"");
 		initDirectory(outfilePath.getParent(), false);
 		TemplateFormatter.formatTemplate(templateName, context, outfilePath.toFile());

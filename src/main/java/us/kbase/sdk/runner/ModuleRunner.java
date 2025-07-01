@@ -87,7 +87,7 @@ public class ModuleRunner {
         try (InputStream is = new FileInputStream(sdkCfgFile)) {
             sdkConfig.load(is);
         }
-        cfgLoader = new ConfigLoader(sdkConfig, false, sdkCfgPath, true);
+        cfgLoader = new ConfigLoader(sdkConfig, false, sdkCfgPath);
         catalogUrl = new URL(cfgLoader.getCatalogUrl());
         runDir = new File(sdkHomeDir, "run_local");
         String callbackNetworksText = sdkConfig.getProperty("callback_networks");
