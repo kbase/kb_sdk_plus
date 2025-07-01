@@ -135,7 +135,7 @@ public class TestLocalManagerTest {
 		assertThat(TestLocalManager.getRunTestsRelative(),
 				is(Paths.get("test_local/run_tests.sh"))
 		);
-		assertThat(TestLocalManager.getTesCfgRelative(), is(Paths.get("test_local/test.cfg")));
+		assertThat(TestLocalManager.getTestCfgRelative(), is(Paths.get("test_local/test.cfg")));
 		assertThat(TestLocalManager.getTestLocalRelative(), is(Paths.get("test_local")));
 	}
 	

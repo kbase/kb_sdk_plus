@@ -115,7 +115,7 @@ public class ModuleInitializer {
 		moduleContext.put("spec_file", specFile);
 		moduleContext.put("language", this.language);
 		moduleContext.put("module_root_path", Paths.get(moduleDir).toAbsolutePath());
-		moduleContext.put("test_cfg_loc", TestLocalManager.getTesCfgRelative());
+		moduleContext.put("test_cfg_loc", TestLocalManager.getTestCfgRelative());
 		moduleContext.put("example", example);
 		moduleContext.put("dollar_sign", "$");
 
@@ -240,7 +240,7 @@ public class ModuleInitializer {
 		System.out.println("  make          (required after making changes to " + new File(specFile).getName() + ")");
 		System.out.println(String.format(
 				"  kb-sdk test   (will require setting test user account credentials in %s)",
-				TestLocalManager.getTesCfgRelative()));
+				TestLocalManager.getTestCfgRelative()));
 		System.out.println();
 	}
 	

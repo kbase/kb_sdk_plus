@@ -58,7 +58,7 @@ public class ModuleValidator {
 				kyc.getModuleName(),
 				kyc.getDataVersion()
 		);
-		final Path tltc = TestLocalManager.getTesCfgRelative();
+		final Path tltc = TestLocalManager.getTestCfgRelative();
 		// everything except the happy path is currently tested manually
 		final Properties props = new Properties();
 		try (final InputStream is = new FileInputStream(tlm.getTestCfgFile().toFile());) {
@@ -122,7 +122,7 @@ public class ModuleValidator {
 	            module = dir;
 			} catch (IOException e) {
 				System.err.println("  **ERROR** - unable to extract module canonical path:");
-				System.err.println("                "+e.getMessage());
+				System.err.println("                " + e.getMessage());
 			}
 
 			// 1) Validate the configuration file
@@ -139,7 +139,7 @@ public class ModuleValidator {
 				}
 			} catch (Exception e) {
 				System.err.println("  **ERROR** - configuration file validation failed:");
-				System.err.println("                "+e.getMessage());
+				System.err.println("                " + e.getMessage());
 				errors++;
 				continue;
 			}
@@ -149,7 +149,7 @@ public class ModuleValidator {
 				methodStoreUrl = getMethodStoreUrl(module.toPath(), kyc);
 			} catch (IOException | IllegalStateException e) {
 				System.err.println("  **ERROR** - getting Narrative Method Store URL failed:");
-				System.err.println("                "+e.getMessage());
+				System.err.println("                " + e.getMessage());
 				errors++;
 				continue;
 			}

@@ -91,7 +91,7 @@ public class ModuleTester {
                 kbaseYmlConfig.getDataVersion()
         );
         final String testLocalRel = TestLocalManager.getTestLocalRelative().toString();
-        final String testCfgRel = TestLocalManager.getTesCfgRelative().toString();
+        final String testCfgRel = TestLocalManager.getTestCfgRelative().toString();
         if (skipValidation) {
             System.out.println("Validation step is skipped");
         } else {

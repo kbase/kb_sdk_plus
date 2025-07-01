@@ -60,11 +60,13 @@ public class TestLocalManager {
 	/** Get the path of the test config file relative to the module root.
 	 * @return the path.
 	 */
-	public static Path getTesCfgRelative() {
+	public static Path getTestCfgRelative() {
 		return TEST_LOCAL.resolve(TEST_CFG);
 	}
 	
-	/** The results of ensuring the test local directory. */
+	/**
+	 * The results of ensuring the test local directory is present and the expected files exist.
+	 */
 	public static class TestLocalInfo {
 		private final Path testLocalDir;
 		private final boolean createdTestCfgFile;
@@ -129,13 +131,13 @@ public class TestLocalManager {
 	
 	/** Create and / or restore the test local directory for an SDK app.
 	 * 
-	 * Will only overwrite files if they don't already exist.
+	 * Will only generate files if they don't already exist.
 	 * 
 	 * @param moduleDir the SDK module root directory.
 	 * @param moduleName the name of the module.
 	 * @param dataVersion the version of the module's reference data, if applicable.
-	 * If provided, the "refdata" subfolder will be created if it doesn't exist. If is doesn't
-	 * exist, the test runner shell script will be regenerated to ensure it handles reference
+	 * If provided, the "refdata" subfolder will be created if it doesn't exist. If so,
+	 * the test runner shell script will be regenerated to ensure it handles reference
 	 * data correctly.
 	 * @return information about the test local directory.
 	 * @throws IOException if a file or directory cannot be created.
@@ -173,8 +175,8 @@ public class TestLocalManager {
 			}
 		}
 		boolean createdTestCfg = false;
-		// could make a template -> Path map here and DRY things up for all the but the last
-		// if. Meh
+		// could make a template -> Path map here and DRY things up for all but the last if.
+		// Meh
 		if (!Files.exists(readmeFile)) {
 			TemplateFormatter.formatTemplate(
 					"module_readme_test_local", moduleContext, readmeFile.toFile()
