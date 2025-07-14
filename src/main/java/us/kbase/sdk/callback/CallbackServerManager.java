@@ -3,6 +3,8 @@ package us.kbase.sdk.callback;
 import static java.util.Objects.requireNonNull;
 
 import java.io.IOException;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -145,35 +147,16 @@ public class CallbackServerManager implements AutoCloseable {
 		// Could make this configurable if it's annoying
 		// Another case where we may want to pass in IO streams and pipe
 		pb.inheritIO();
+		// TODO NOW wait for the service to start
 		return pb.start();
 	}
 	
 	@Override
 	public void close() throws IOException {
 		try {
-			proc.destroy();
-			final boolean finished;
-			// these error condition are essentially impossible to test under normal conditions
-			try {
-				finished = proc.waitFor(15L, TimeUnit.SECONDS);
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e);
-			}
-			if (!finished) {
-				// TODO CBS this line is currently hit every time, I think the CBS container
-				//          doesn't handle sigterm correctly
-				//          https://github.com/kbase/JobRunner/issues/92
-				System.err.println(
-						"Callback server container didn't stop after asking nicely. "
-						+ "Force destoying callback server container"
-				);
-				proc.destroyForcibly();
-			}
-			else if (proc.exitValue() != 0) {
-				System.err.println(String.format(
-						"Unexpected exit code from docker: %s", proc.exitValue()
-				));
-			}
+			// proc.destroyForcibly() doesn't seem to work, container keeps running
+			runQuickCommand(15L, "docker", "stop", containerName);
+			proc.destroyForcibly();  // why not
 		} finally {
 			Files.delete(initProvFile);
 		}
@@ -185,48 +168,39 @@ public class CallbackServerManager implements AutoCloseable {
 			// probably a better way to do this. Maybe pass in a stream to write to?
 			System.out.println(
 					"Detected Docker Desktop, using docker internal host for Callback Server"
-			);
+					);
 			host = "host.docker.internal";  // points to host inside container
 		} else {
-			System.out.println(
-					"Docker Desktop not detected, getting docker bridge network gateway for "
-					+ "Callback Server"
-			);
-			// this all seems pretty fragile
-			@SuppressWarnings("unchecked")
-			final List<Map<String, Object>> dockerInfo =
-					(List<Map<String, Object>>) runJSONCommand(
-							mapper, "docker",  "network",  "inspect", "bridge"
-			);
-			@SuppressWarnings("unchecked")
-			final Map<String, Object> ipam = (Map<String, Object>) dockerInfo.get(0).get("IPAM");
-			@SuppressWarnings("unchecked")
-			final List<Map<String, Object>> config =
-					(List<Map<String, Object>>) ipam.get("Config");
-			host = (String) config.get(0).get("Gateway");
+			System.out.println("Docker Desktop not detected, getting host ip for Callback Server");
+			try (DatagramSocket socket = new DatagramSocket()) {
+				socket.connect(InetAddress.getByName("1.1.1.1"), 53);
+				host = socket.getLocalAddress().getHostAddress();
+			}
 		}
 		return host;
 	}
 	
 	private boolean isDockerDesktop(final ObjectMapper mapper) throws IOException {
+		final Process proc = runQuickCommand(2L, "docker",  "info",  "-f", "json");
 		@SuppressWarnings("unchecked")
-		final Map<String, Object> dockerInfo = (Map<String, Object>) runJSONCommand(
-				mapper, "docker",  "info",  "-f", "json"
-		);
+		final Map<String, Object> dockerInfo = (Map<String, Object>)
+				mapper.readValue(proc.getInputStream().readAllBytes(), Object.class);
 		final String os = (String) dockerInfo.get("OperatingSystem");
 		if (os == null) {
 			throw new IOException("docker info missing operating system information");
 		}
-		return os.equals("Docker Desktop");  // TODO NOW check with bill
+		return os.toLowerCase().contains("docker desktop");  // TODO NOW check with bill
 	}
 	
-	private Object runJSONCommand(final ObjectMapper mapper, final String... command)
-			throws IOException {
+	private Process runQuickCommand(
+			final long timeout,
+			final String... command
+			) throws IOException {
 		final Process proc = new ProcessBuilder(command).start();
 		// these error condition are essentially impossible to test under normal conditions
 		final boolean finished;
 		try {
-			finished = proc.waitFor(2L, TimeUnit.SECONDS);
+			finished = proc.waitFor(timeout, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}
@@ -241,7 +215,7 @@ public class CallbackServerManager implements AutoCloseable {
 					new String(proc.getErrorStream().readAllBytes(), StandardCharsets.UTF_8)
 			));
 		}
-		return mapper.readValue(proc.getInputStream().readAllBytes(), Object.class);
+		return proc;
 	}
 	
 	public static void main(String[] args) throws Exception {
