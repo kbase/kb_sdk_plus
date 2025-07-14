@@ -6,11 +6,16 @@ import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -84,6 +89,7 @@ public class CallbackServerManager implements AutoCloseable {
 		// may want to manually specify? Probably not
 		port = NetUtils.findFreePort();
 		proc = startCBS(initProvFile, token, kbaseBaseURL, workDir);
+		waitForCBS(Duration.ofSeconds(120), Duration.ofSeconds(2));
 		callbackUrl = new URL(String.format("http://%s:%s", host, port));
 	}
 	
@@ -147,8 +153,40 @@ public class CallbackServerManager implements AutoCloseable {
 		// Could make this configurable if it's annoying
 		// Another case where we may want to pass in IO streams and pipe
 		pb.inheritIO();
-		// TODO NOW wait for the service to start
 		return pb.start();
+	}
+
+	private void waitForCBS(final Duration timeout, final Duration interval) throws IOException {
+		System.out.println("Waiting for Callback Server to start");
+		final HttpClient httpClient = HttpClient.newHttpClient();
+		final URI uri = URI.create("http://localhost:" + port + "/");
+		final HttpRequest request = HttpRequest.newBuilder()
+				.uri(uri)
+				.GET()
+				.timeout(interval)
+				.build();
+
+		final long deadline = System.currentTimeMillis() + timeout.toMillis();
+
+		while (System.currentTimeMillis() < deadline) {
+			try {
+				final HttpResponse<String> response = httpClient.send(
+						request, HttpResponse.BodyHandlers.ofString()
+				);
+				if (response.statusCode() == 200 && "[{}]".equals(response.body().trim())) {
+					System.out.println("Callback Server is up.");
+					return;
+				}
+			} catch (IOException | InterruptedException e) {
+				// Server not ready yet; ignore and retry
+			}
+			try {
+				Thread.sleep(interval.toMillis());
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		throw new IOException("Callback Server did not start within the timeout period.");
 	}
 	
 	@Override
