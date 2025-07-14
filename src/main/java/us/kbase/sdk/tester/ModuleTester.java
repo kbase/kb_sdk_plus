@@ -12,33 +12,20 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.productivity.java.syslog4j.SyslogIF;
 
-import us.kbase.common.executionengine.CallbackServer;
-import us.kbase.common.executionengine.LineLogger;
 import us.kbase.common.executionengine.ModuleMethod;
 import us.kbase.common.executionengine.ModuleRunVersion;
-import us.kbase.common.executionengine.CallbackServerConfigBuilder.CallbackServerConfig;
-import us.kbase.common.service.JsonServerServlet;
-import us.kbase.common.service.JsonServerSyslog;
-import us.kbase.common.service.JsonServerSyslog.SyslogOutput;
-import us.kbase.common.service.UObject;
-import us.kbase.common.utils.NetUtils;
+import us.kbase.sdk.callback.CallbackServerManager;
 import us.kbase.sdk.common.KBaseYmlConfig;
 import us.kbase.sdk.common.TestLocalManager;
 import us.kbase.sdk.common.TestLocalManager.TestLocalInfo;
@@ -157,77 +144,32 @@ public class ModuleTester {
         if (!buildNewDockerImageWithCleanup(moduleDir, tlDir, runDockerSh, imageName))
             return 1;
         ///////////////////////////////////////////////////////////////////////////////////////////
-        int callbackPort = NetUtils.findFreePort();
-        String[] callbackNetworks = null;
-        String callbackNetworksText = props.getProperty("callback_networks");
-        if (callbackNetworksText != null) {
-            callbackNetworks = callbackNetworksText.trim().split("\\s*,\\s*");
-            System.out.println("Custom network instarface list is defined: " + 
-                    Arrays.asList(callbackNetworks));
-        }
-        URL callbackUrl = CallbackServer.getCallbackUrl(callbackPort, callbackNetworks);
-        Server jettyServer = null;
-        if (callbackUrl != null) {
-            JsonServerSyslog.setStaticUseSyslog(false);
-            CallbackServerConfig cfg = cfgLoader.buildCallbackServerConfig(callbackUrl, 
-                    tlDir.toPath(), new LineLogger() {
-                @Override
-                public void logNextLine(String line, boolean isError) {
-                    if (isError) {
-                        System.err.println(line);
-                    } else {
-                        System.out.println(line);
-                    }
-                }
-            });
-            ModuleRunVersion runver = new ModuleRunVersion(
-                    new URL("https://localhost"),
-                    new ModuleMethod(moduleName + ".run_local_tests"),
-                    "local-docker-image", "local", "dev");
-            final DockerMountPoints mounts = new DockerMountPoints(
-                    Paths.get("/kb/module/work"), Paths.get("tmp"));
-            Map<String, String> localModuleToImage = new LinkedHashMap<>();
-            localModuleToImage.put(moduleName, imageName);
-            JsonServerServlet catalogSrv = new SDKCallbackServer(
-                    cfgLoader.getToken(), cfg, runver, new ArrayList<UObject>(),
-                    new ArrayList<String>(), mounts, localModuleToImage);
-            catalogSrv.changeSyslogOutput(new SyslogOutput() {
-                @Override
-                public void logToSystem(
-                       final SyslogIF log,
-                       final int level,
-                       final String message) {
-                   System.out.println(message);
-                }
-            });
-            jettyServer = new Server(callbackPort);
-            ServletContextHandler context = new ServletContextHandler(
-                    ServletContextHandler.SESSIONS);
-            context.setContextPath("/");
-            jettyServer.setHandler(context);
-            context.addServlet(new ServletHolder(catalogSrv),"/*");
-            jettyServer.start();
-        } else {
-            if (callbackNetworks != null && callbackNetworks.length > 0) {
-                throw new IllegalStateException("No proper callback IP was found, " +
-                		"please check callback_networks parameter in test.cfg");
-            }
-            System.out.println("WARNING: No callback URL was received " +
-                    "by the job runner. Local callbacks are disabled.");
-        }
-        ///////////////////////////////////////////////////////////////////////////////////////////
-        try {
+        final CallbackServerManager csm = new CallbackServerManager(
+                tlDir.toPath(),
+                new URL(cfgLoader.getEndPoint()),
+                cfgLoader.getToken(),
+                new ModuleRunVersion(
+                        new URL("https://localhost"),
+                        new ModuleMethod(moduleName + ".run_local_tests"),
+                        "local-docker-image",
+                        "local",
+                        "dev"
+                ),
+                Arrays.asList(),
+                Arrays.asList()
+        );
+        System.out.println(csm.getCallbackUrl());
+        System.out.println("** ext **");
+        System.out.println(csm.getCallbackUrl().toExternalForm());
+        try (csm) {
             System.out.println();
             ProcessHelper.cmd("chmod", "+x", runTestsSh.getCanonicalPath()).exec(tlDir);
-            int exitCode = ProcessHelper.cmd("bash", DirUtils.getFilePath(runTestsSh),
-                    callbackUrl == null ? "http://fakecallbackurl" : 
-                        callbackUrl.toExternalForm()).exec(tlDir).getExitCode();
+            int exitCode = ProcessHelper.cmd(
+                    "bash",
+                    DirUtils.getFilePath(runTestsSh),
+                    csm.getCallbackUrl().toExternalForm()
+            ).exec(tlDir).getExitCode();
             return exitCode;
-        } finally {
-            if (jettyServer != null) {
-                System.out.println("Shutting down callback server...");
-                jettyServer.stop();
-            }
         }
     }
 
