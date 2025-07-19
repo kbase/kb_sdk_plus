@@ -158,11 +158,9 @@ public class ModuleTester {
                 Arrays.asList(),
                 Arrays.asList()
         );
-        System.out.println(csm.getCallbackUrl());
-        System.out.println("** ext **");
-        System.out.println(csm.getCallbackUrl().toExternalForm());
+        System.out.println(String.format("Local callback port: %s", csm.getCallbackPort()));
+        System.out.println(String.format("In container callback url: %s", csm.getCallbackUrl()));
         try (csm) {
-            System.out.println();
             ProcessHelper.cmd("chmod", "+x", runTestsSh.getCanonicalPath()).exec(tlDir);
             int exitCode = ProcessHelper.cmd(
                     "bash",
