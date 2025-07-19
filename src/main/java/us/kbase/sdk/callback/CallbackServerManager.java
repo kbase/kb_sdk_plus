@@ -3,8 +3,6 @@ package us.kbase.sdk.callback;
 import static java.util.Objects.requireNonNull;
 
 import java.io.IOException;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -24,6 +22,8 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -37,7 +37,9 @@ import us.kbase.common.utils.NetUtils;
 // TODO NOW TEST
 // TODO NOW this won't work inside a container, need to make a call; container vs. native code
 //          or go to the trouble to make it work in both somehow...?
-
+// TODO NOW python callback server leaves root owned files around after tests
+// TODO NOW convert module runner
+// TODO NOW delete old callback server code and related code
 
 /** 
  * A manager for starting and stopping the Callback server docker image.
@@ -56,7 +58,11 @@ public class CallbackServerManager implements AutoCloseable {
 	 */
 	
 	// may want to make this configurable?
-	public static final String CALLBACK_IMAGE = "ghcr.io/kbase/jobrunner:pr-85";
+	public static final String CALLBACK_IMAGE = "ghcr.io/kbase/jobrunner:pr-97";
+	
+	private static final String BUSYBOX_IMAGE = "busybox:1.37.0";
+	
+	private static final Pattern IP_ROUTE_PATTERN = Pattern.compile("^default.*?src\\s+(\\S+)");
 	
 	private final String containerName;
 	private final URL callbackUrl;
@@ -83,12 +89,11 @@ public class CallbackServerManager implements AutoCloseable {
 		workDir = requireNonNull(workDir, "workDir").toAbsolutePath();
 		this.containerName = mrv.getModuleMethod().getModuleDotMethod().replace(".", "_")
 				+ "_test_catllback_server_" + UUID.randomUUID().toString();
-		final ObjectMapper mapper = new ObjectMapper();
-		final String host = getHost(mapper);
-		initProvFile = writeProvFile(mapper, workDir, mrv, params, inputWorkspaceRefs);
+		final String host = getHost();
+		initProvFile = writeProvFile(workDir, mrv, params, inputWorkspaceRefs);
 		// may want to manually specify? Probably not
 		port = NetUtils.findFreePort();
-		proc = startCBS(initProvFile, token, kbaseBaseURL, workDir);
+		proc = startCBS( host, token, kbaseBaseURL, workDir);
 		waitForCBS(Duration.ofSeconds(120), Duration.ofSeconds(2));
 		callbackUrl = new URL(String.format("http://%s:%s", host, port));
 	}
@@ -102,7 +107,6 @@ public class CallbackServerManager implements AutoCloseable {
 	}
 
 	private Path writeProvFile(
-			final ObjectMapper mapper,
 			final Path workDir,
 			final ModuleRunVersion mrv,
 			final List<Object> params,
@@ -117,12 +121,12 @@ public class CallbackServerManager implements AutoCloseable {
 				requireNonNull(inputWorkspaceRefs, "inputWorkspaceRefs"));
 		 final Path initProvFile = Files.createTempFile(
 				 workDir, "callback_initial_provenance", ".json");
-		Files.write(initProvFile, mapper.writeValueAsBytes(initProv));
+		Files.write(initProvFile, new ObjectMapper().writeValueAsBytes(initProv));
 		return initProvFile;
 	}
 	
 	private Process startCBS(
-			final Path initProvFile,
+			final String host,
 			final AuthToken token,
 			final URL kbaseBaseURL,
 			final Path workDir
@@ -138,7 +142,7 @@ public class CallbackServerManager implements AutoCloseable {
 				"-e", String.format("KB_BASE_URL=%s", kbaseBaseURL),
 				"-e", String.format("PROV_FILE=%s", initProvFile),
 				"-e", String.format("JOB_DIR=%s", workDir),
-				"-e", "CALLBACK_IP=0.0.0.0",
+				"-e", String.format("CALLBACK_IP=%s", host),
 				"-e", String.format("CALLBACK_PORT=%s", port),
 				// Apparently this is consistent across platforms. Let's find out
 				// May need to make the socket file configurable
@@ -200,34 +204,31 @@ public class CallbackServerManager implements AutoCloseable {
 		}
 	}
 	
-	private String getHost(final ObjectMapper mapper) throws IOException {
-		final String host;
-		if (isDockerDesktop(mapper)) {
-			// probably a better way to do this. Maybe pass in a stream to write to?
-			System.out.println(
-					"Detected Docker Desktop, using docker internal host for Callback Server"
-					);
-			host = "host.docker.internal";  // points to host inside container
-		} else {
-			System.out.println("Docker Desktop not detected, getting host ip for Callback Server");
-			try (DatagramSocket socket = new DatagramSocket()) {
-				socket.connect(InetAddress.getByName("1.1.1.1"), 53);
-				host = socket.getLocalAddress().getHostAddress();
+	private String getHost() throws IOException {
+		// runs a container to see what the container thinks the host address might be.
+		// should work on linux (on bare machine) or mac (in docker VM)
+		final Process p = runQuickCommand(
+				15L,
+				"docker", "run",
+				"--rm",
+				"--network", "host",
+				BUSYBOX_IMAGE,
+				"ip", "route"
+		);
+		final String out = new String(
+				p.getInputStream().readAllBytes(), StandardCharsets.UTF_8
+		);
+		final String[] lines = out.split("\n");
+		for (final String line: lines) {
+			final Matcher matcher = IP_ROUTE_PATTERN.matcher(line);
+			if (matcher.find()) {
+				return matcher.group(1);
 			}
 		}
-		return host;
-	}
-	
-	private boolean isDockerDesktop(final ObjectMapper mapper) throws IOException {
-		final Process proc = runQuickCommand(2L, "docker",  "info",  "-f", "json");
-		@SuppressWarnings("unchecked")
-		final Map<String, Object> dockerInfo = (Map<String, Object>)
-				mapper.readValue(proc.getInputStream().readAllBytes(), Object.class);
-		final String os = (String) dockerInfo.get("OperatingSystem");
-		if (os == null) {
-			throw new IOException("docker info missing operating system information");
-		}
-		return os.toLowerCase().contains("docker desktop");  // TODO NOW check with bill
+		throw new IOException(
+				"Unexpected output from busybox ip route command when attempting to determine "
+				+ "docker host:\n" + out
+		);
 	}
 	
 	private Process runQuickCommand(
