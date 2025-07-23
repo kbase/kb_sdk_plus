@@ -5,6 +5,7 @@ import static java.util.Objects.requireNonNull;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -33,13 +34,11 @@ import us.kbase.common.executionengine.ModuleMethod;
 import us.kbase.common.executionengine.ModuleRunVersion;
 import us.kbase.common.utils.NetUtils;
 
-// TODO NOW JAVADOC - add notes about expects to be running outside a container
 // TODO NOW TEST
-// TODO NOW this won't work inside a container, need to make a call; container vs. native code
-//          or go to the trouble to make it work in both somehow...?
 // TODO NOW python callback server leaves root owned files around after tests
 // TODO NOW convert module runner
 // TODO NOW delete old callback server code and related code
+// TODO NOW update CallbackServerTest to use this module to run the CBS. Needs CBS set_provenance
 
 /** 
  * A manager for starting and stopping the Callback server docker image.
@@ -62,7 +61,9 @@ public class CallbackServerManager implements AutoCloseable {
 	
 	private static final String BUSYBOX_IMAGE = "busybox:1.37.0";
 	
-	private static final Pattern IP_ROUTE_PATTERN = Pattern.compile("^default.*?src\\s+(\\S+)");
+	private static final Pattern DEFAULT_ADAPTER_REGEX = Pattern.compile(
+			"^default.*?dev\\s+(\\S+)"
+	);
 	
 	private final String containerName;
 	private final URL callbackUrl;
@@ -71,7 +72,7 @@ public class CallbackServerManager implements AutoCloseable {
 	private final Path initProvFile;
 	
 	public CallbackServerManager(
-			Path workDir,
+			Path workDirRoot, // TODO note must be mounted into container if running in container
 			URL kbaseBaseURL,
 			final AuthToken token,
 			// TODO NOW make a provenance class w/ builder for these
@@ -86,16 +87,18 @@ public class CallbackServerManager implements AutoCloseable {
 		} catch (MalformedURLException e) {
 			throw new RuntimeException(e);
 		}
-		workDir = requireNonNull(workDir, "workDir").toAbsolutePath();
+		workDirRoot = requireNonNull(workDirRoot, "workDir").toAbsolutePath();
 		this.containerName = mrv.getModuleMethod().getModuleDotMethod().replace(".", "_")
 				+ "_test_catllback_server_" + UUID.randomUUID().toString();
 		final String host = getHost();
-		initProvFile = writeProvFile(workDir, mrv, params, inputWorkspaceRefs);
+		initProvFile = writeProvFile(
+				workDirRoot.resolve("workdir"), mrv, params, inputWorkspaceRefs
+		);
 		// may want to manually specify? Probably not
 		port = NetUtils.findFreePort();
-		proc = startCBS( host, token, kbaseBaseURL, workDir);
-		waitForCBS(Duration.ofSeconds(120), Duration.ofSeconds(2));
+		proc = startCBS( host, token, kbaseBaseURL, workDirRoot);
 		callbackUrl = new URL(String.format("http://%s:%s", host, port));
+		waitForCBS(Duration.ofSeconds(120), Duration.ofSeconds(2));
 	}
 	
 	public URL getCallbackUrl() {
@@ -119,7 +122,8 @@ public class CallbackServerManager implements AutoCloseable {
 		initProv.put("params", requireNonNull(params, "params"));
 		initProv.put("source_ws_objects",
 				requireNonNull(inputWorkspaceRefs, "inputWorkspaceRefs"));
-		 final Path initProvFile = Files.createTempFile(
+		Files.createDirectories(workDir);
+		final Path initProvFile = Files.createTempFile(
 				 workDir, "callback_initial_provenance", ".json");
 		Files.write(initProvFile, new ObjectMapper().writeValueAsBytes(initProv));
 		return initProvFile;
@@ -163,7 +167,12 @@ public class CallbackServerManager implements AutoCloseable {
 	private void waitForCBS(final Duration timeout, final Duration interval) throws IOException {
 		System.out.println("Waiting for Callback Server to start");
 		final HttpClient httpClient = HttpClient.newHttpClient();
-		final URI uri = URI.create("http://localhost:" + port + "/");
+		final URI uri;
+		try {
+			uri = callbackUrl.toURI();
+		} catch (URISyntaxException e) {
+			throw new RuntimeException(e);
+		}
 		final HttpRequest request = HttpRequest.newBuilder()
 				.uri(uri)
 				.GET()
@@ -219,15 +228,23 @@ public class CallbackServerManager implements AutoCloseable {
 				p.getInputStream().readAllBytes(), StandardCharsets.UTF_8
 		);
 		final String[] lines = out.split("\n");
+		final String adapter = getRegexTarget(lines, DEFAULT_ADAPTER_REGEX);
+		final Pattern hostIPPattern = Pattern.compile(
+				"dev\\s+" + Pattern.quote(adapter) + ".*?src\\s+(\\S+)"
+		);
+		return getRegexTarget(lines, hostIPPattern);
+	}
+
+	private String getRegexTarget(final String[] lines, final Pattern regex) throws IOException {
 		for (final String line: lines) {
-			final Matcher matcher = IP_ROUTE_PATTERN.matcher(line);
+			final Matcher matcher = regex.matcher(line);
 			if (matcher.find()) {
 				return matcher.group(1);
 			}
 		}
 		throw new IOException(
 				"Unexpected output from busybox ip route command when attempting to determine "
-				+ "docker host:\n" + out
+				+ "docker host:\n" + String.join("\n", lines)
 		);
 	}
 	
@@ -235,7 +252,9 @@ public class CallbackServerManager implements AutoCloseable {
 			final long timeout,
 			final String... command
 			) throws IOException {
-		final Process proc = new ProcessBuilder(command).start();
+		final ProcessBuilder pb = new ProcessBuilder(command);
+		pb.redirectError(ProcessBuilder.Redirect.INHERIT);
+		final Process proc = pb.start();
 		// these error condition are essentially impossible to test under normal conditions
 		final boolean finished;
 		try {
