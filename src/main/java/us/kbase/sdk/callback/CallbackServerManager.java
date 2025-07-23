@@ -87,7 +87,7 @@ public class CallbackServerManager implements AutoCloseable {
 		} catch (MalformedURLException e) {
 			throw new RuntimeException(e);
 		}
-		workDirRoot = requireNonNull(workDirRoot, "workDir").toAbsolutePath();
+		workDirRoot = requireNonNull(workDirRoot, "workDirRoot").toAbsolutePath();
 		this.containerName = mrv.getModuleMethod().getModuleDotMethod().replace(".", "_")
 				+ "_test_catllback_server_" + UUID.randomUUID().toString();
 		final String host = getHost();
@@ -96,7 +96,7 @@ public class CallbackServerManager implements AutoCloseable {
 		);
 		// may want to manually specify? Probably not
 		port = NetUtils.findFreePort();
-		proc = startCBS( host, token, kbaseBaseURL, workDirRoot);
+		proc = startCBS(host, token, kbaseBaseURL, workDirRoot);
 		callbackUrl = new URL(String.format("http://%s:%s", host, port));
 		waitForCBS(Duration.ofSeconds(120), Duration.ofSeconds(2));
 	}
@@ -138,6 +138,7 @@ public class CallbackServerManager implements AutoCloseable {
 		final List<String> command = new LinkedList<>();
 		command.addAll(Arrays.asList(
 				"docker", "run",
+				"--platform=linux/amd64",  // until we have multiarch images
 				"--name", containerName,
 				"--rm",  // make configuratble?
 				// TODO SECURITY when CBS allows, use a file instead
@@ -165,32 +166,40 @@ public class CallbackServerManager implements AutoCloseable {
 	}
 
 	private void waitForCBS(final Duration timeout, final Duration interval) throws IOException {
-		System.out.println("Waiting for Callback Server to start");
+		System.out.println("Waiting for Callback Server to start at " + callbackUrl);
 		final HttpClient httpClient = HttpClient.newHttpClient();
-		final URI uri;
+		final HttpRequest request;
 		try {
-			uri = callbackUrl.toURI();
+			request = HttpRequest.newBuilder()
+					// TODO NOW this only works if kb-sdk isn't running in a container
+					//          if in a container, presumably needs to use the host variable
+					//          need to document
+					.uri(new URI("http://localhost:" + port))
+					.GET()
+					.timeout(interval)
+					.build();
 		} catch (URISyntaxException e) {
 			throw new RuntimeException(e);
 		}
-		final HttpRequest request = HttpRequest.newBuilder()
-				.uri(uri)
-				.GET()
-				.timeout(interval)
-				.build();
 
 		final long deadline = System.currentTimeMillis() + timeout.toMillis();
-
+		Exception err = null;
+		String responseText = null;
+		
 		while (System.currentTimeMillis() < deadline) {
 			try {
 				final HttpResponse<String> response = httpClient.send(
 						request, HttpResponse.BodyHandlers.ofString()
 				);
-				if (response.statusCode() == 200 && "[{}]".equals(response.body().trim())) {
+				if (response.statusCode() == 200 && "[{}]".equals(response.body().strip())) {
 					System.out.println("Callback Server is up.");
 					return;
 				}
+				else {
+					responseText = response.body().strip();
+				}
 			} catch (IOException | InterruptedException e) {
+				err = e;
 				// Server not ready yet; ignore and retry
 			}
 			try {
@@ -199,7 +208,11 @@ public class CallbackServerManager implements AutoCloseable {
 				throw new RuntimeException(e);
 			}
 		}
-		throw new IOException("Callback Server did not start within the timeout period.");
+		throw new IOException(
+				"Callback Server did not start within the timeout period. Last response: "
+				+ responseText,
+				err
+		);
 	}
 	
 	@Override
@@ -227,6 +240,7 @@ public class CallbackServerManager implements AutoCloseable {
 		final String out = new String(
 				p.getInputStream().readAllBytes(), StandardCharsets.UTF_8
 		);
+		System.out.println("Looking for host ip in `ip route` output:\n" + out);
 		final String[] lines = out.split("\n");
 		final String adapter = getRegexTarget(lines, DEFAULT_ADAPTER_REGEX);
 		final Pattern hostIPPattern = Pattern.compile(
