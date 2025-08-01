@@ -328,7 +328,7 @@ dependencies {
 	implementation('com.j2html:j2html:0.7') {
 		exclude group: 'junit', module: 'junit' // bro
 	}
-	implementation('commons-io:commons-io:2.4')
+	implementation('commons-io:commons-io:2.20.0')
 	implementation('info.picocli:picocli:4.7.7')
 	implementation('org.apache.commons:commons-lang3:3.1')
 	implementation('org.apache.velocity:velocity:1.7')
