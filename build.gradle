@@ -334,7 +334,7 @@ dependencies {
 	implementation('org.apache.velocity:velocity:1.7')
 	implementation('org.ini4j:ini4j:0.5.2')
 	implementation('com.sun.codemodel:codemodel:2.4.1')
-	implementation('org.yaml:snakeyaml:1.11')
+	implementation('org.yaml:snakeyaml:2.4')
 
 	// TODO DEPS the deps below are required due to a) the callback server code, b)
 	//           tests that mock service wizard and the callback service and
