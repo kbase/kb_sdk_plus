@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayOutputStream;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -26,14 +27,17 @@ public class CallbackProvenanceTest {
 	}
 	
 	@Test
-	public void buildMinimalValidInstance() {
+	public void buildMinimalValidInstance() throws Exception {
 		final CallbackProvenance cp = CallbackProvenance
 				.getBuilder("module.method", Version.parse("1.0.0"))
 				.build();
 
 		assertThat(cp.getModuleMethod(), is("module.method"));
+		assertThat(cp.getModule(), is("module"));
 		assertThat(cp.getVersion(), is(Version.parse("1.0.0")));
 		assertThat(cp.getServiceVer(), is("dev"));
+		assertThat(cp.getCodeUrl(), is(new URL("http://localhost/fake_module")));
+		assertThat(cp.getCommit(), is("a".repeat(40)));
 		assertThat(cp.getParams(), empty());
 		assertThat(cp.getWorkspaceRefs(), empty());
 	}
@@ -49,8 +53,11 @@ public class CallbackProvenanceTest {
 				.build();
 
 		assertThat(cp.getModuleMethod(), is("module2.method2"));
+		assertThat(cp.getModule(), is("module2"));
 		assertThat(cp.getVersion(), is(Version.parse("1.0.0")));
 		assertThat(cp.getServiceVer(), is("dev"));
+		assertThat(cp.getCodeUrl(), is(new URL("http://localhost/fake_module")));
+		assertThat(cp.getCommit(), is("a".repeat(40)));
 		assertThat(cp.getParams(), empty());
 		assertThat(cp.getWorkspaceRefs(), empty());
 	}
@@ -60,13 +67,18 @@ public class CallbackProvenanceTest {
 		final CallbackProvenance cp = CallbackProvenance
 				.getBuilder("f_oo.ba_r", Version.parse("2.3.4"))
 				.withServiceVer("release")
+				.withCodeUrl(new URL("https://yay.com/mymod"))
+				.withCommit("abcdefa")
 				.withParams(Arrays.asList("x", 123))
 				.withWorkspaceRefs(Arrays.asList("1/1/3", "w._-s1/ob|._-j1/15", "65/143154/1"))
 				.build();
 
 		assertThat(cp.getModuleMethod(), is("f_oo.ba_r"));
+		assertThat(cp.getModule(), is("f_oo"));
 		assertThat(cp.getVersion(), is(Version.parse("2.3.4")));
 		assertThat(cp.getServiceVer(), is("release"));
+		assertThat(cp.getCodeUrl(), is(new URL("https://yay.com/mymod")));
+		assertThat(cp.getCommit(), is("abcdefa"));
 		assertThat(cp.getParams(), contains("x", 123));
 		assertThat(cp.getWorkspaceRefs(), contains("1/1/3", "w._-s1/ob|._-j1/15", "65/143154/1"));
 	}
@@ -82,6 +94,20 @@ public class CallbackProvenanceTest {
 					.withServiceVer(t)
 					.build();
 			assertThat(cp.getServiceVer(), is(t));
+		}
+	}
+	
+	@Test
+	public void commitVariations() {
+		final List<String> testCases = Arrays.asList(
+				"7f8e19a", "ed2ceca5db5fdd3e69ba619bc901e9eaf3d4da0d"
+		);
+		for (final String t: testCases) {
+			final CallbackProvenance cp = CallbackProvenance
+					.getBuilder("module.method", Version.parse("1.0.0"))
+					.withCommit(t)
+					.build();
+			assertThat(cp.getCommit(), is(t));
 		}
 	}
 
@@ -131,6 +157,35 @@ public class CallbackProvenanceTest {
 		}
 	}
 
+	@Test
+	public void codeUrlValidationFails() {
+		final Exception e = assertThrows(NullPointerException.class,
+				() -> CallbackProvenance.getBuilder("mod.meth", Version.of(1))
+						.withCodeUrl(null)
+		);
+		assertThat(e.getMessage(), is("codeUrl"));
+	}
+	
+	@Test
+	public void commitValidationFails() {
+		Exception e = assertThrows(NullPointerException.class,
+				() -> CallbackProvenance.getBuilder("mod.meth", Version.parse("1.0.0"))
+							.withCommit(null)
+		);
+		assertThat(e.getMessage(), is("commit"));
+
+		final List<String> testCases = Arrays.asList(
+				"not_valid", "7fa8af", "1234567u", "1".repeat(41)
+		);
+		for (final String t: testCases) {
+			e = assertThrows(IllegalArgumentException.class,
+					() -> CallbackProvenance.getBuilder("mod.meth", Version.parse("1.0.0"))
+								.withCommit(t)
+			);
+			assertThat(e.getMessage(), is("Invalid commit: " + t));	
+		}
+	}
+	
 	@Test
 	public void paramsMustBeJsonSerializable() {
 		final Exception e = assertThrows(IllegalArgumentException.class, () -> {

@@ -2,6 +2,8 @@ package us.kbase.sdk.callback;
 
 import static java.util.Objects.requireNonNull;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -24,12 +26,17 @@ public final class CallbackProvenance {
 
 	private static final Pattern SERVICE_VER_PATTERN =
 		Pattern.compile("^(release|beta|dev|[0-9a-f]{7,40})$");
+	
+	// git specific? Meh
+	private static final Pattern COMMIT_PATTERN = Pattern.compile("^[0-9a-f]{7,40}$");
 
 	private static final ObjectMapper MAPPER = new ObjectMapper();
 
 	private final String modulemethod;
 	private final Version version;
 	private final String serviceVer;
+	private final URL codeUrl;
+	private final String commit;
 	private final List<Object> params;
 	private final List<String> workspaceRefs;
 
@@ -37,6 +44,8 @@ public final class CallbackProvenance {
 		this.modulemethod = b.modulemethod;
 		this.version = b.version;
 		this.serviceVer = b.serviceVer;
+		this.codeUrl = b.codeUrl;
+		this.commit = b.commit;
 		this.params = Collections.unmodifiableList(b.params);
 		this.workspaceRefs = Collections.unmodifiableList(b.workspaceRefs);
 	}
@@ -48,6 +57,13 @@ public final class CallbackProvenance {
 	 */
 	public String getModuleMethod() {
 		return modulemethod;
+	}
+	
+	/** Get the module to be stored in initial callback server provenance.
+	 * @return the SDK module.
+	 */
+	public String getModule() {
+		return modulemethod.split("\\.")[0];
 	}
 
 	/**
@@ -68,6 +84,22 @@ public final class CallbackProvenance {
 	}
 
 	/**
+	 * Get the URL of the module to be stored in initial callback server provenance.
+	 * @return the URL
+	 */
+	public URL getCodeUrl() {
+		return codeUrl;
+	}
+	
+	/**
+	 * Get the version control commit of the module to be stored in initial callback provenance.
+	 * @return the commit.
+	 */
+	public String getCommit() {
+		return commit;
+	}
+	
+	/**
 	 * Get the parameters of the method to be stored in initial callback server provenance.
 	 * The parameters are JSON serializable.
 	 * 
@@ -87,7 +119,9 @@ public final class CallbackProvenance {
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(modulemethod, params, serviceVer, version, workspaceRefs);
+		return Objects.hash(
+				codeUrl, commit, modulemethod, params, serviceVer, version, workspaceRefs
+		);
 	}
 
 	@Override
@@ -99,12 +133,13 @@ public final class CallbackProvenance {
 		if (getClass() != obj.getClass())
 			return false;
 		CallbackProvenance other = (CallbackProvenance) obj;
-		return Objects.equals(modulemethod, other.modulemethod)
+		return Objects.equals(codeUrl, other.codeUrl)
+				&& Objects.equals(commit, other.commit)
+				&& Objects.equals(modulemethod, other.modulemethod)
 				&& Objects.equals(params, other.params)
 				&& Objects.equals(serviceVer, other.serviceVer)
 				&& Objects.equals(version, other.version)
-				&& Objects.equals(workspaceRefs, other.workspaceRefs
-		);
+				&& Objects.equals(workspaceRefs, other.workspaceRefs);
 	}
 
 	/**
@@ -125,6 +160,8 @@ public final class CallbackProvenance {
 		private final String modulemethod;
 		private final Version version;
 		private String serviceVer = "dev";
+		private URL codeUrl;
+		private String commit = "a".repeat(40);
 		private List<Object> params = Collections.emptyList();
 		private List<String> workspaceRefs = Collections.emptyList();
 
@@ -133,6 +170,11 @@ public final class CallbackProvenance {
 			requireNonNull(modulemethod, "modulemethod");
 			if (!MODULE_METHOD_PATTERN.matcher(modulemethod).matches()) {
 				throw new IllegalArgumentException("Invalid modulemethod: " + modulemethod);
+			}
+			try {
+				this.codeUrl = new URL("http://localhost/fake_module");
+			} catch (MalformedURLException e) {
+				throw new RuntimeException(e);
 			}
 			this.modulemethod = modulemethod;
 			this.version = semver;
@@ -152,6 +194,30 @@ public final class CallbackProvenance {
 			return this;
 		}
 
+		/**
+		 * Set the URL of the module to be stored in initial callback server provenance.
+		 * @param codeUrl the URL
+		 * @return this Builder.
+		 */
+		public Builder withCodeUrl(final URL codeUrl) {
+			this.codeUrl = requireNonNull(codeUrl, "codeUrl");
+			return this;
+		}
+		
+		/**
+		 * Set the version control commit of the module to be stored in initial callback
+		 * provenance.
+		 * @param commit the commit
+		 * @return this Builder
+		 */
+		public Builder withCommit(final String commit) {
+			if (!COMMIT_PATTERN.matcher(requireNonNull(commit, "commit")).matches()) {
+				throw new IllegalArgumentException("Invalid commit: " + commit);
+			}
+			this.commit = commit;
+			return this;
+		}
+		
 		/**
 		 * Sets the params list to be stored in the initial callback server provenance.
 		 * 
