@@ -1,4 +1,4 @@
-package us.kbase.test.sdk.tester;
+package us.kbase.test.sdk.callback;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
