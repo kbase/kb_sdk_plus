@@ -7,7 +7,6 @@ import java.io.FileWriter;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -17,41 +16,28 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.productivity.java.syslog4j.SyslogIF;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.github.zafarkhaja.semver.Version;
 
 import us.kbase.catalog.CatalogClient;
 import us.kbase.catalog.ModuleVersion;
 import us.kbase.catalog.SelectModuleVersion;
-import us.kbase.common.executionengine.CallbackServer;
-import us.kbase.common.executionengine.LineLogger;
-import us.kbase.common.executionengine.ModuleMethod;
-import us.kbase.common.executionengine.ModuleRunVersion;
-import us.kbase.common.executionengine.CallbackServerConfigBuilder.CallbackServerConfig;
-import us.kbase.common.service.JsonServerServlet;
-import us.kbase.common.service.JsonServerSyslog;
-import us.kbase.common.service.JsonServerSyslog.SyslogOutput;
 import us.kbase.common.service.UObject;
-import us.kbase.common.utils.NetUtils;
 import us.kbase.sdk.ModuleBuilder;
+import us.kbase.sdk.callback.CallbackProvenance;
+import us.kbase.sdk.callback.CallbackServerManager;
 import us.kbase.sdk.tester.ConfigLoader;
-import us.kbase.sdk.tester.DockerMountPoints;
-import us.kbase.sdk.tester.SDKCallbackServer;
 import us.kbase.sdk.util.DirUtils;
 import us.kbase.sdk.util.ProcessHelper;
-import us.kbase.sdk.util.TextUtils;
 
 public class ModuleRunner {
     private final URL catalogUrl;
     private final File runDir;
-    private String[] callbackNetworks = null;
     private final ConfigLoader cfgLoader;
     
     public ModuleRunner(String sdkHome) throws Exception {
@@ -78,10 +64,8 @@ public class ModuleRunner {
                     "catalog_url=https://appdev.kbase.us/services/catalog",
                     "auth_service_url=https://appdev.kbase.us/services/auth/api/legacy/"
                     + "KBase/Sessions/Login",
-                    "token=",
-                    "### Please use next parameter to specify custom list of network",
-                    "### interfaces used for callback IP address lookup:",
-                    "#callback_networks=docker0,vboxnet0,vboxnet1,en0,en1,en2,en3"));
+                    "token="
+            ));
         }
         Properties sdkConfig = new Properties();
         try (InputStream is = new FileInputStream(sdkCfgFile)) {
@@ -90,23 +74,19 @@ public class ModuleRunner {
         cfgLoader = new ConfigLoader(sdkConfig, false, sdkCfgPath);
         catalogUrl = new URL(cfgLoader.getCatalogUrl());
         runDir = new File(sdkHomeDir, "run_local");
-        String callbackNetworksText = sdkConfig.getProperty("callback_networks");
-        if (callbackNetworksText != null) {
-            callbackNetworks = callbackNetworksText.trim().split("\\s*,\\s*");
-        }
     }
     
     public ModuleRunner(URL catalogUrl, File runDir, String[] callbackNetworks,
             ConfigLoader cfgLoader) {
         this.catalogUrl = catalogUrl;
         this.runDir = runDir;
-        this.callbackNetworks = callbackNetworks;
         this.cfgLoader = cfgLoader;
     }
     
     public int run(String methodName, File inputFile, boolean stdin, String inputJson, 
             File output, String tagVer, boolean verbose, boolean keepTempFiles,
-            String provRefs, String mountPoints) throws Exception {
+            String provRefs, boolean setFilesGloballyWriteable
+            ) throws Exception {
         ////////////////////////////////// Loading image name /////////////////////////////////////
         CatalogClient client = new CatalogClient(catalogUrl);
         String moduleName = methodName.split(Pattern.quote("."))[0];
@@ -130,9 +110,8 @@ public class ModuleRunner {
                     "callback_url=$1",
                     "cnt_id=$2",
                     "docker_image=$3",
-                    "mount_points=$4",
                     "$sdir/run_docker.sh run " +
-                    "-v $sdir/workdir:/kb/module/work $mount_points " +
+                    "-v $sdir/workdir:/kb/module/work " +
                     "-e \"SDK_CALLBACK_URL=$callback_url\" --name $cnt_id $docker_image async"));
             ProcessHelper.cmd("chmod", "+x", runLocalSh.getCanonicalPath()).exec(runDir);
         }
@@ -143,16 +122,7 @@ public class ModuleRunner {
             ProcessHelper.cmd("chmod", "+x", runDockerSh.getCanonicalPath()).exec(runDir);
         }
         ////////////////////////////////// Temporary files ////////////////////////////////////////
-        final DockerMountPoints mounts = new DockerMountPoints(
-                Paths.get("/kb/module/work"), Paths.get("tmp"));
-        if (mountPoints != null) {
-            for (String part : mountPoints.split(Pattern.quote(","))) {
-                mounts.addMount(part);
-            }
-        }
         File workDir = new File(runDir, "workdir");
-        if (workDir.exists())
-            FileUtils.deleteDirectory(workDir);
         workDir.mkdir();
         File subjobsDir = new File(runDir, "subjobs");
         if (subjobsDir.exists())
@@ -164,8 +134,6 @@ public class ModuleRunner {
         File configPropsFile = new File(workDir, "config.properties");
         cfgLoader.generateConfigProperties(configPropsFile);
         File scratchDir = new File(workDir, "tmp");
-        if (scratchDir.exists())
-            TextUtils.deleteRecursively(scratchDir);
         scratchDir.mkdir();
         ////////////////////////////////// Preparing input.json ///////////////////////////////////
         String jsonString;
@@ -194,70 +162,50 @@ public class ModuleRunner {
         rpc.put("context", new LinkedHashMap<String, Object>());
         UObject.getMapper().writeValue(new File(workDir, "input.json"), rpc);
         ////////////////////////////////// Starting callback service //////////////////////////////
-        int callbackPort = NetUtils.findFreePort();
-        URL callbackUrl = CallbackServer.getCallbackUrl(callbackPort, callbackNetworks);
-        Server jettyServer = null;
-        if (callbackUrl != null) {
-            JsonServerSyslog.setStaticUseSyslog(false);
-            // TODO: It will though an error because at least authUrl is required.
-            CallbackServerConfig cfg = cfgLoader.buildCallbackServerConfig(callbackUrl, 
-                    runDir.toPath(),new LineLogger() {
-                @Override
-                public void logNextLine(String line, boolean isError) {
-                    if (isError) {
-                        System.err.println(line);
-                    } else {
-                        System.out.println(line);
-                    }
-                }
-            });
-            Set<String> releaseTags = new TreeSet<String>();
-            if (mv.getReleaseTags() != null)
-                releaseTags.addAll(mv.getReleaseTags());
-            String requestedRelease = releaseTags.contains("release") ? "release" :
-                (releaseTags.contains("beta") ? "beta" : "dev");
-            final ModuleRunVersion runver = new ModuleRunVersion(
-                    new URL(mv.getGitUrl()), new ModuleMethod(methodName),
-                    mv.getGitCommitHash(), mv.getVersion(),
-                    requestedRelease);
-            List<String> inputWsObjects = new ArrayList<String>();
-            if (provRefs != null) {
-                inputWsObjects.addAll(Arrays.asList(provRefs.split(Pattern.quote(","))));
-            }
-            JsonServerServlet catalogSrv = new SDKCallbackServer(
-                    cfgLoader.getToken(), cfg, runver, params, inputWsObjects, mounts, null);
-            catalogSrv.changeSyslogOutput(new SyslogOutput() {
-                @Override
-                public void logToSystem(
-                       final SyslogIF log,
-                       final int level,
-                       final String message) {
-                   System.out.println(message);
-                }
-            });
-            jettyServer = new Server(callbackPort);
-            ServletContextHandler context = new ServletContextHandler(
-                    ServletContextHandler.SESSIONS);
-            context.setContextPath("/");
-            jettyServer.setHandler(context);
-            context.addServlet(new ServletHolder(catalogSrv),"/*");
-            jettyServer.start();
-        } else {
-            if (callbackNetworks != null && callbackNetworks.length > 0) {
-                throw new IllegalStateException("No proper callback IP was found, " +
-                        "please check callback_networks parameter in configuration");
-            }
-            System.out.println("WARNING: No callback URL was received " +
-                    "by the job runner. Local callbacks are disabled.");
+        final Set<String> releaseTags = new TreeSet<String>();
+        if (mv.getReleaseTags() != null)
+            releaseTags.addAll(mv.getReleaseTags());
+        final String requestedRelease = releaseTags.contains("release") ? "release" :
+            (releaseTags.contains("beta") ? "beta" : "dev");
+        final List<String> inputWsObjects = new ArrayList<>();
+        if (provRefs != null) {
+            inputWsObjects.addAll(Arrays.asList(provRefs.split(Pattern.quote(","))));
         }
+        final CallbackServerManager csm = new CallbackServerManager(
+                runDir.toPath(),
+                new URL(cfgLoader.getEndPoint()),
+                cfgLoader.getToken(),
+                CallbackProvenance.getBuilder(methodName, Version.parse(mv.getVersion()))
+                        .withServiceVer(requestedRelease)
+                        .withCodeUrl(new URL(mv.getGitUrl()))
+                        .withCommit(mv.getGitCommitHash())
+                        .withParams(params
+                                .stream()
+                                .map(o -> o.asInstance())
+                                .collect(Collectors.toList())
+                        )
+                        .withWorkspaceRefs(inputWsObjects)
+                        .build(),
+                setFilesGloballyWriteable
+        );
+        System.out.println(String.format("Local callback port: %s", csm.getCallbackPort()));
+        System.out.println(String.format(
+                "In container callback url: %s", csm.getInContainerCallbackUrl())
+        );
         ////////////////////////////////// Running Docker /////////////////////////////////////////
         final String containerName = "local_" + moduleName.toLowerCase() + "_" + 
                 System.currentTimeMillis();
         try {
             System.out.println();
-            int exitCode = ProcessHelper.cmd("bash", DirUtils.getFilePath(runLocalSh),
-                    callbackUrl.toExternalForm(), containerName, dockerImage, 
-                    mounts.getDockerCommand()).exec(runDir).getExitCode();
+            final int exitCode;
+            try (csm) {
+                exitCode = ProcessHelper.cmd(
+                        "bash", DirUtils.getFilePath(runLocalSh),
+                        csm.getInContainerCallbackUrl().toExternalForm(),
+                        containerName,
+                        dockerImage
+                ).exec(runDir).getExitCode();
+            }
             File outputTmpFile = new File(workDir, "output.json");
             if (!outputTmpFile.exists())
                 throw new IllegalStateException("Output JSON file was not found");
@@ -298,13 +246,8 @@ public class ModuleRunner {
                 System.out.println("Error deleting container [" + containerName + "]: " + 
                         ex.getMessage());
             }
-            if (jettyServer != null) {
-                System.out.println("Shutting down callback server...");
-                jettyServer.stop();
-            }
             if (!keepTempFiles) {
                 System.out.println("Deleting temporary files...");
-                FileUtils.deleteDirectory(workDir);
                 FileUtils.deleteDirectory(subjobsDir);
             }
         }

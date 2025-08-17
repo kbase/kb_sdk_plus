@@ -3,17 +3,12 @@ package us.kbase.sdk.tester;
 import java.io.File;
 import java.io.PrintWriter;
 import java.net.URI;
-import java.net.URL;
-import java.nio.file.Path;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
 
 import us.kbase.auth.AuthToken;
 import us.kbase.auth.client.AuthClient;
-import us.kbase.common.executionengine.CallbackServerConfigBuilder;
-import us.kbase.common.executionengine.CallbackServerConfigBuilder.CallbackServerConfig;
-import us.kbase.common.executionengine.LineLogger;
 
 public class ConfigLoader {
     private final String authUrl;
@@ -136,14 +131,6 @@ public class ConfigLoader {
         } finally {
             pw.close();
         }
-    }
-    
-    public CallbackServerConfig buildCallbackServerConfig(
-            URL callbackUrl, Path workDir, LineLogger logger) throws Exception {
-        return new CallbackServerConfigBuilder(
-                new URL(endPoint), new URL(wsUrl), new URL(shockUrl), new URL(jobSrvUrl),
-                new URL(handleUrl), new URL(srvWizUrl), new URL(njswUrl), new URL(authUrl),
-                authAllowInsecure, new URL(catalogUrl), callbackUrl, workDir, null, logger).build();
     }
     
     private static String getConfigUrl(Properties props, String key, String endPoint, 
