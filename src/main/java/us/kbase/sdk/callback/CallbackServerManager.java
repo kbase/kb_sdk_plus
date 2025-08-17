@@ -28,8 +28,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import us.kbase.auth.AuthToken;
 import us.kbase.common.utils.NetUtils;
 
-// TODO CBS delete old callback server code and related code
-
 // could probably make it work in a container if we really needed to, but it'd need to know that
 /** 
  * A manager for starting and stopping the Callback server docker image.
