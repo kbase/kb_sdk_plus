@@ -28,7 +28,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import us.kbase.auth.AuthToken;
 import us.kbase.common.utils.NetUtils;
 
-// TODO CBS python callback server leaves root owned files around after tests
 // TODO CBS convert module runner and tester
 // TODO CBS delete old callback server code and related code
 
@@ -57,28 +56,35 @@ public class CallbackServerManager implements AutoCloseable {
 	private final Process proc;
 	private final Path initProvFile;
 	private final Path workDirRoot;
-	
+	private final boolean setGlobalWrite;
+
 	/**
-	 * Create the manager
+	 * Create the manager.
 	 * @param workDirRoot the working directory for the callback server. This directory will
 	 * be mounted into the server. Any files outside of this directory will not be visible to
 	 * the server. The callback server will write output here.
 	 * @param kbaseBaseUrl the base URL for contacting kBase services, e.g. "https://ci.kbase.us"
 	 * @param token the user's KBase token for contacting KBase services.
-	 * @param prov initial provenance for the callback server. 
+	 * @param prov initial provenance for the callback server.
+	 * @param setResultsGloballyWriteable if true, set all files in the workDirRoot/workdir and
+	 * workDirRoot/subjobs directories to globally readable and writeable.
+	 * WARNING: This will likely set a file containing the token to globally readable.
+	 * This is a workaround for containers running as root leaving root owned files on disk.
 	 * @throws IOException if an IO error occurs.
 	 */
 	public CallbackServerManager(
 			final Path workDirRoot,
 			URL kbaseBaseUrl,
 			final AuthToken token,
-			final CallbackProvenance prov
+			final CallbackProvenance prov,
+			final boolean setResultsGloballyWriteable
 			) throws IOException {
 		requireNonNull(token, "token");
 		requireNonNull(prov, "prov");
 		kbaseBaseUrl = requireNonNull(kbaseBaseUrl, "kbaseBaseUrl").toString().endsWith("/") ?
 				kbaseBaseUrl : new URL(kbaseBaseUrl.toString() + "/");
 		this.workDirRoot = requireNonNull(workDirRoot, "workDirRoot").toAbsolutePath();
+		this.setGlobalWrite = setResultsGloballyWriteable;
 		this.containerName = prov.getModuleMethod().replace(".", "_")
 				+ "_test_callback_server_" + UUID.randomUUID().toString();
 		final String host = getHost();
@@ -248,6 +254,18 @@ public class CallbackServerManager implements AutoCloseable {
 			proc.destroyForcibly();  // why not
 		} finally {
 			Files.delete(initProvFile);
+		}
+		if (setGlobalWrite) {
+			runQuickCommand(
+					30L, // hopefully it doesn't take more than 30s to do this
+					"docker", "run",
+					"--rm",
+					"-v", String.format("%s:%s", this.workDirRoot, this.workDirRoot),
+					BUSYBOX_IMAGE,
+					"chmod", "-R", "o+rw",
+							workDirRoot.resolve("workdir").toString(),
+							workDirRoot.resolve("subjobs").toString()
+			);
 		}
 	}
 	
