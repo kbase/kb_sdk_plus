@@ -433,7 +433,8 @@ public class ModuleBuilder implements Runnable{
 		public Integer call() {
 			try {
 				final ModuleTester tester = new ModuleTester();
-				return tester.runTests(skipValidation);
+				// TODO CBS add arg to set files globally writeable. add WARNING
+				return tester.runTests(skipValidation, false);
 			}
 			catch (Exception e) {
 				showError("Error while testing module", e.getMessage());
