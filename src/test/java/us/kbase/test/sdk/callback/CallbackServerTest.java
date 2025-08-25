@@ -3,6 +3,7 @@ package us.kbase.test.sdk.callback;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -10,11 +11,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -24,13 +23,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
 import org.ini4j.InvalidFileFormatException;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -41,6 +36,7 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.zafarkhaja.semver.Version;
 import com.google.common.collect.ImmutableMap;
 
 import us.kbase.auth.AuthToken;
@@ -48,27 +44,18 @@ import us.kbase.catalog.CatalogClient;
 import us.kbase.catalog.ModuleInfo;
 import us.kbase.catalog.ModuleVersionInfo;
 import us.kbase.catalog.SelectOneModuleParams;
-import us.kbase.common.executionengine.CallbackServer;
-import us.kbase.common.executionengine.CallbackServerConfigBuilder;
-import us.kbase.common.executionengine.CallbackServerConfigBuilder.CallbackServerConfig;
-import us.kbase.common.executionengine.LineLogger;
-import us.kbase.common.executionengine.ModuleMethod;
-import us.kbase.common.executionengine.ModuleRunVersion;
 import us.kbase.common.service.JacksonTupleModule;
 import us.kbase.common.service.JsonClientException;
 import us.kbase.common.service.ServerException;
 import us.kbase.common.service.UObject;
-import us.kbase.sdk.tester.DockerMountPoints;
-import us.kbase.sdk.tester.SDKCallbackServer;
+import us.kbase.sdk.callback.CallbackProvenance;
+import us.kbase.sdk.callback.CallbackServerManager;
 import us.kbase.test.sdk.scripts.TestConfigHelper;
-import us.kbase.testutils.controllers.ControllerCommon;
 import us.kbase.workspace.ProvenanceAction;
 import us.kbase.workspace.SubAction;
 
 public class CallbackServerTest {
-	
-	// TODO TEST replace java CBS with the python ver. Should get these tests to pass against it
-
+    
     private static final Path TEST_DIR;
     static {
         try {
@@ -82,13 +69,6 @@ public class CallbackServerTest {
    
     private static AuthToken token;
     private static CatalogClient CAT_CLI;
-    
-    private static final Set<PosixFilePermission> perms =
-            new HashSet<PosixFilePermission>(
-            Arrays.asList(PosixFilePermission.OWNER_EXECUTE,
-                    PosixFilePermission.OWNER_READ,
-                    PosixFilePermission.OTHERS_WRITE));
-
     
     public static ModuleVersionInfo getMVI(ModuleInfo mi, String release) {
         if (release.equals("dev")) {
@@ -121,73 +101,45 @@ public class CallbackServerTest {
                 "/catalog"), token);
     }
 
-    private static CallbackStuff startCallBackServer()
-            throws Exception {
-        final ModuleRunVersion runver = new ModuleRunVersion(
-                new URL("https://fakefakefake.com"),
-                new ModuleMethod("foo.bar"),
-                "githash", "0.0.5", "dev");
-        final List<UObject> params = new LinkedList<UObject>();
-        final List<String> wsobjs = new ArrayList<String>();
-        return startCallBackServer(runver, params, wsobjs);
+    private static CallbackStuff startCallBackServer() throws Exception {
+        final CallbackProvenance cp = CallbackProvenance.getBuilder(
+                "foo.bar", Version.of(0, 0, 5)
+        ).build();
+        return startCallBackServer(cp, false);
     }
     
     private static CallbackStuff startCallBackServer(
-            final ModuleRunVersion runver,
-            final List<UObject> params,
-            final List<String> wsobjs)
+            final CallbackProvenance prov,
+            final boolean withTrailingSlash)
             throws Exception {
-        final LineLogger log = new LineLogger() {
-            
-            @Override
-            public void logNextLine(String line, boolean isError) {
-                System.out.println("Docker logger std" +
-                        (isError ? "err" : "out") + ": " + line);
-            }
-        };
-        final int callbackPort = ControllerCommon.findFreePort();
-        final URL callbackUrl = CallbackServer.getCallbackUrl(callbackPort);
-        final Path temp = Files.createTempDirectory(TEST_DIR, "cbt");
-        Path rundocker = temp.resolve("run_docker.sh");
-        Files.write(rundocker, Arrays.asList("#!/bin/bash", "docker $@"),
-                StandardCharsets.UTF_8);
-        Files.setPosixFilePermissions(rundocker, perms);
-        URL authUrl = new URL(TestConfigHelper.getAuthServiceUrlLegacy());
-        String authUrlInsecure = TestConfigHelper.getAuthServiceUrlInsecure();
-        final CallbackServerConfig cbcfg =
-                new CallbackServerConfigBuilder(new URL(TestConfigHelper.getKBaseEndpoint()),
-                        null, null, null, null, null, null, authUrl, authUrlInsecure, null,
-                        callbackUrl, temp, null, log).build();
-        final DockerMountPoints mounts = new DockerMountPoints(
-                Paths.get("/kb/module/work"), Paths.get("tmp"));
-        final CallbackServer callback = new SDKCallbackServer(
-                token, cbcfg, runver, params, wsobjs, mounts, null);
-        final Server callbackServer = new Server(callbackPort);
-        final ServletContextHandler srvContext =
-                new ServletContextHandler(
-                        ServletContextHandler.SESSIONS);
-        srvContext.setContextPath("/");
-        callbackServer.setHandler(srvContext);
-        srvContext.addServlet(new ServletHolder(callback),"/*");
-        callbackServer.start();
-        Thread.sleep(1000);
-        return new CallbackStuff(callbackUrl, temp, callbackServer);
+        String kBaseEndpoint = TestConfigHelper.getKBaseEndpoint().strip().replaceAll("/+$", "");
+        // test the CSM handles urls with and without trailing slashes
+        if (withTrailingSlash) {
+            kBaseEndpoint = kBaseEndpoint + "/";
+        }
+        final CallbackServerManager csm = new CallbackServerManager(
+                Files.createTempDirectory(TEST_DIR, "cbt"),
+                new URL(kBaseEndpoint),
+                token,
+                prov
+        );
+        // not really a lot that can be tested re getting the urls
+        final String port = csm.getCallbackPort() + "";
+        assertThat(csm.getInContainerCallbackUrl().toString().endsWith(port), is(true));
+        assertThat(csm.getLocalhostCallbackUrl(), is(new URL("http://localhost:" + port)));
+        return new CallbackStuff(csm);
     }
     
     private static class CallbackStuff {
-        final public URL callbackURL;
+        final public CallbackServerManager manager; 
         final public Path tempdir;
-        final public Server server;
         
-        final private ObjectMapper mapper = new ObjectMapper().registerModule(
+        final private static ObjectMapper mapper = new ObjectMapper().registerModule(
                 new JacksonTupleModule());
 
-        private CallbackStuff(URL callbackURL, Path tempdir,
-                Server server) {
-            super();
-            this.callbackURL = callbackURL;
-            this.tempdir = tempdir;
-            this.server = server;
+        private CallbackStuff(final CallbackServerManager manager) {
+            this.manager = manager;
+            this.tempdir = manager.getWorkDirRoot();
         }
         
         public List<ProvenanceAction> getProvenance() throws Exception {
@@ -203,7 +155,7 @@ public class CallbackServerTest {
                 throws Exception {
             final TypeReference<List<ProvenanceAction>> retType =
                     new TypeReference<List<ProvenanceAction>>() {};
-            final List<Object> arg = new LinkedList<Object>(Arrays.asList(pa));
+            final List<Object> arg = Arrays.asList(pa);
             final String method = "CallbackServer.set_provenance";
             
             return callServer(method, arg, null, retType);
@@ -248,7 +200,7 @@ public class CallbackServerTest {
                 final TypeReference<RET> retType)
                 throws Exception {
             final HttpURLConnection conn =
-                    (HttpURLConnection) callbackURL.openConnection();
+                    (HttpURLConnection) manager.getLocalhostCallbackUrl().openConnection();
             conn.setDoOutput(true);
             conn.setRequestMethod("POST");
             try (final OutputStream os = conn.getOutputStream()) {
@@ -332,221 +284,262 @@ public class CallbackServerTest {
     }
     
     @Test
+    public void initFail() throws Exception {
+        final Path p = Paths.get("foo");
+        final URL u = new URL("http://foo.com");
+        final AuthToken t = new AuthToken("token", "user");
+        final CallbackProvenance cp = CallbackProvenance.getBuilder("m.m", Version.of(1)).build();
+        failInit(null, u, t, cp, NullPointerException.class, "workDirRoot");
+        failInit(p, null, t, cp, NullPointerException.class, "kbaseBaseUrl");
+        failInit(p, u, null, cp, NullPointerException.class, "token");
+        failInit(p, u, t, null, NullPointerException.class, "prov");
+    }
+    
+    private <T extends Exception> void failInit(
+            final Path workdir,
+            final URL baseUrl,
+            final AuthToken token,
+            final CallbackProvenance prov,
+            final Class<T> exclass,
+            final String exmsg
+            ) throws Exception {
+        final Exception e = assertThrows(exclass,
+                () -> new CallbackServerManager(workdir, baseUrl, token, prov)
+        );
+        assertThat(e.getMessage(), is(exmsg));
+    }
+    
+    @Test
     public void maxJobs() throws Exception {
         final CallbackStuff res = startCallBackServer();
-        System.out.println("Running maxJobs in dir " + res.tempdir);
-        Map<String, Object> params = new HashMap<String, Object>();
-        params.put("id", "outer");
-        params.put("wait", 1);
-        LinkedList<Map<String, Object>> jobs =
-                new LinkedList<Map<String, Object>>();
-        params.put("jobs", jobs);
-        params.put("run_jobs_async", true);
-        for (int i = 0; i < 4; i++) {
-            Map<String, Object> inner2 = new HashMap<String, Object>();
-            inner2.put("wait", 3);
-            inner2.put("id", "inner2-" + i);
-            Map<String, Object> injob = new HashMap<String, Object>();
-            injob.put("method", "njs_sdk_test_1.run");
-            injob.put("ver", "dev");
-            injob.put("params", Arrays.asList(inner2));
-            if (i % 2 == 0) {
-                injob.put("cli_async", true);
+        try {
+            System.out.println("Running maxJobs in dir " + res.tempdir);
+            Map<String, Object> params = new HashMap<String, Object>();
+            params.put("id", "outer");
+            params.put("wait", 1);
+            LinkedList<Map<String, Object>> jobs =
+                    new LinkedList<Map<String, Object>>();
+            params.put("jobs", jobs);
+            params.put("run_jobs_async", true);
+            for (int i = 0; i < 4; i++) {
+                Map<String, Object> inner2 = new HashMap<String, Object>();
+                inner2.put("wait", 3);
+                inner2.put("id", "inner2-" + i);
+                Map<String, Object> injob = new HashMap<String, Object>();
+                injob.put("method", "njs_sdk_test_1.run");
+                injob.put("ver", "dev");
+                injob.put("params", Arrays.asList(inner2));
+                if (i % 2 == 0) {
+                    injob.put("cli_async", true);
+                }
+                Map<String, Object> innerparams = new HashMap<String, Object>();
+                innerparams.put("wait", 2);
+                innerparams.put("id", "inner-" + i);
+                innerparams.put("jobs", Arrays.asList(injob));
+                
+                Map<String, Object> outerjob = new HashMap<String, Object>();
+                outerjob.put("method", "njs_sdk_test_1.run");
+                outerjob.put("ver", "dev");
+                outerjob.put("params", Arrays.asList(innerparams));
+                if (i % 2 == 0) {
+                    outerjob.put("cli_async", true);
+                };
+                jobs.add(outerjob);
             }
-            Map<String, Object> innerparams = new HashMap<String, Object>();
-            innerparams.put("wait", 2);
-            innerparams.put("id", "inner-" + i);
-            innerparams.put("jobs", Arrays.asList(injob));
+            final ImmutableMap<String, Object> singlejob =
+                    ImmutableMap.<String, Object>builder()
+                        .put("method", "njs_sdk_test_1.run")
+                        .put("ver", "dev")
+                        .put("params", Arrays.asList(
+                            ImmutableMap.<String, Object>builder()
+                                .put("id", "singlejob")
+                                .put("wait", 2)
+                                .build()))
+                        .build();
+            jobs.add(singlejob);
             
-            Map<String, Object> outerjob = new HashMap<String, Object>();
-            outerjob.put("method", "njs_sdk_test_1.run");
-            outerjob.put("ver", "dev");
-            outerjob.put("params", Arrays.asList(innerparams));
-            if (i % 2 == 0) {
-                outerjob.put("cli_async", true);
-            };
-            jobs.add(outerjob);
-        }
-        final ImmutableMap<String, Object> singlejob =
-                ImmutableMap.<String, Object>builder()
+            // should run
+            Map<String, Object> r = res.callMethod(
+                    "njs_sdk_test_1.run", params, "dev");
+            checkResults(r, params, "njs_sdk_test_1");
+            
+            //throw an error during a sync job to check the job counter is
+            // decremented
+            Map<String, Object> errparam = new HashMap<String, Object>();
+            errparam.put("id", "errjob");
+            errparam.put("except", "planned exception");
+            try {
+                res.callMethod("njs_sdk_test_1.run", errparam, "dev");
+                fail("expected exception");
+            } catch (ServerException se) {
+                assertThat("incorrect error message", se.getLocalizedMessage(),
+                        is("'planned exception errjob'"));  // stupid sdk error quoting, arrrg
+            }
+            
+            // run again to ensure the job counter is back to 0
+            r = res.callMethod("njs_sdk_test_1.run", params, "dev");
+            checkResults(r, params, "njs_sdk_test_1");
+            
+            // run with 11 jobs to force an exception
+            jobs.add(ImmutableMap.<String, Object>builder()
                     .put("method", "njs_sdk_test_1.run")
                     .put("ver", "dev")
                     .put("params", Arrays.asList(
-                        ImmutableMap.<String, Object>builder()
-                            .put("id", "singlejob")
-                            .put("wait", 2)
-                            .build()))
-                    .build();
-        jobs.add(singlejob);
-        
-        // should run
-        Map<String, Object> r = res.callMethod(
-                "njs_sdk_test_1.run", params, "dev");
-        checkResults(r, params, "njs_sdk_test_1");
-        
-        //throw an error during a sync job to check the job counter is
-        // decremented
-        Map<String, Object> errparam = new HashMap<String, Object>();
-        errparam.put("id", "errjob");
-        errparam.put("except", "planned exception");
-        try {
-            res.callMethod("njs_sdk_test_1.run", errparam, "dev");
-        } catch (ServerException se) {
-            assertThat("incorrect error message", se.getLocalizedMessage(),
-                    is("'planned exception errjob'"));  // stupid sdk error quoting, arrrg
+                            ImmutableMap.<String, Object>builder()
+                                .put("id", "singlejob2")
+                                .put("wait", 2)
+                                .build()))
+                    .build());
+            try {
+                res.callMethod("njs_sdk_test_1.run", params, "dev");
+                fail("expected exception");
+            } catch (ServerException se) {
+                assertThat("incorrect error message", se.getLocalizedMessage(),
+                        // you've got to be shitting me right now with this quoting shit wtf
+                        is("\"'No more than 10 concurrently running methods are allowed'\""));
+            }
+        } finally {
+            res.manager.close();
         }
-        
-        // run again to ensure the job counter is back to 0
-        r = res.callMethod("njs_sdk_test_1.run", params, "dev");
-        checkResults(r, params, "njs_sdk_test_1");
-        
-        // run with 11 jobs to force an exception
-        jobs.add(ImmutableMap.<String, Object>builder()
-                .put("method", "njs_sdk_test_1.run")
-                .put("ver", "dev")
-                .put("params", Arrays.asList(
-                        ImmutableMap.<String, Object>builder()
-                            .put("id", "singlejob2")
-                            .put("wait", 2)
-                            .build()))
-                .build());
-        try {
-            res.callMethod("njs_sdk_test_1.run", params, "dev");
-        } catch (ServerException se) {
-            assertThat("incorrect error message", se.getLocalizedMessage(),
-                    // you've got to be shitting me right now with this quoting shit wtf
-                    is("\"'No more than 10 concurrently running methods are allowed'\""));
-        }
-        
-        res.server.stop();
     }
 
     @Test
     public void async() throws Exception {
         final CallbackStuff res = startCallBackServer();
-        System.out.println("Running async in dir " + res.tempdir);
-        final Map<String, Object> simplejob =
-                ImmutableMap.<String, Object>builder()
-                    .put("id", "simplejob")
-                    .put("wait", 10)
-                    .build();
-        UUID jobId = res.callAsync("njs_sdk_test_1.run", simplejob, "dev");
-        int attempts = 1;
-        List<Map<String, Object>> got;
-        while (true) {
-            if (attempts > 20) {
-                fail("timed out waiting for async results");
-            }
-            Map<String, Object> status = res.checkAsync(jobId);
-            if (((Integer) status.get("finished")) == 1) {
-                @SuppressWarnings("unchecked")
-                final List<Map<String, Object>> tempgot =
-                        (List<Map<String, Object>>) status.get("result");
-                got = tempgot;
-                break;
-            }
-            Thread.sleep(1000);
-            attempts++;
-        }
-        checkResults(got.get(0), simplejob, "njs_sdk_test_1");
-        
-        // now the result should be in the cache, so check again
-        Map<String, Object> status = res.checkAsync(jobId);
-        assertThat("job not done", (Integer) status.get("finished"), is(1));
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> tempgot =
-                (List<Map<String, Object>>) status.get("result");
-        checkResults(tempgot.get(0), simplejob, "njs_sdk_test_1");
-        
-        final UUID randomUUID = UUID.randomUUID();
         try {
-            res.checkAsync(randomUUID);
-        } catch (ServerException ise) {
-            assertThat("wrong exception message", ise.getLocalizedMessage(),
-                   is(String.format("Either there is no job with ID %s " + 
-                           "or it has expired from the cache", randomUUID)));
+            System.out.println("Running async in dir " + res.tempdir);
+            final Map<String, Object> simplejob =
+                    ImmutableMap.<String, Object>builder()
+                        .put("id", "simplejob")
+                        .put("wait", 10)
+                        .build();
+            UUID jobId = res.callAsync("njs_sdk_test_1.run", simplejob, "dev");
+            int attempts = 1;
+            List<Map<String, Object>> got;
+            while (true) {
+                if (attempts > 20) {
+                    fail("timed out waiting for async results");
+                }
+                Map<String, Object> status = res.checkAsync(jobId);
+                if (((Integer) status.get("finished")) == 1) {
+                    @SuppressWarnings("unchecked")
+                    final List<Map<String, Object>> tempgot =
+                            (List<Map<String, Object>>) status.get("result");
+                    got = tempgot;
+                    break;
+                }
+                Thread.sleep(1000);
+                attempts++;
+            }
+            checkResults(got.get(0), simplejob, "njs_sdk_test_1");
+            
+            // now the result should be in the cache, so check again
+            Map<String, Object> status = res.checkAsync(jobId);
+            assertThat("job not done", (Integer) status.get("finished"), is(1));
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> tempgot =
+                    (List<Map<String, Object>>) status.get("result");
+            checkResults(tempgot.get(0), simplejob, "njs_sdk_test_1");
+            
+            final UUID randomUUID = UUID.randomUUID();
+            try {
+                res.checkAsync(randomUUID);
+                fail("expected exception");
+            } catch (ServerException ise) {
+                assertThat("wrong exception message", ise.getLocalizedMessage(),
+                       is(String.format("No such job ID: %s", randomUUID))
+                );
+            }
+        } finally {
+            res.manager.close();
         }
-        res.server.stop();
     }
     
     @Test
     public void checkWithBadArgs() throws Exception {
         final CallbackStuff res = startCallBackServer();
-        System.out.println("Running checkwithBadArgs in dir " + res.tempdir);
-        String badUUID = UUID.randomUUID().toString();
-        badUUID = badUUID.substring(0, badUUID.length() - 1) + "g";
-        
         try {
-            res.checkAsync(Arrays.asList(badUUID));
-        } catch (ServerException ise) {
-            assertThat("wrong exception message", ise.getLocalizedMessage(),
-                   is("Invalid job ID: " + badUUID));
+            System.out.println("Running checkwithBadArgs in dir " + res.tempdir);
+            String badUUID = UUID.randomUUID().toString();
+            badUUID = badUUID.substring(0, badUUID.length() - 1) + "g";
+            
+            try {
+                res.checkAsync(Arrays.asList(badUUID));
+                fail("expected exception");
+            } catch (ServerException ise) {
+                assertThat("wrong exception message", ise.getLocalizedMessage(),
+                       is("Invalid job ID: " + badUUID));
+            }
+            try {
+                res.checkAsync(Arrays.asList(new HashMap<>()));
+                fail("expected exception");
+            } catch (ServerException ise) {
+                assertThat("wrong exception message", ise.getLocalizedMessage(),
+                       is("method params must be a list containing exactly one job ID string"));
+            }
+            try {
+                res.checkAsync(Arrays.asList(1, 2));
+                fail("expected exception");
+            } catch (ServerException ise) {
+                assertThat("wrong exception message", ise.getLocalizedMessage(),
+                       is("method params must be a list containing exactly one job ID string"));
+            }
+        } finally {
+            res.manager.close();
         }
-        try {
-            res.checkAsync(Arrays.asList(new HashMap<>()));
-        } catch (ServerException ise) {
-            assertThat("wrong exception message", ise.getLocalizedMessage(),
-                   is("The job ID must be a string"));
-        }
-        try {
-            res.checkAsync(Arrays.asList(1, 2));
-        } catch (ServerException ise) {
-            assertThat("wrong exception message", ise.getLocalizedMessage(),
-                   is("Check methods take exactly one argument"));
-        }
-        
-        res.server.stop();
     }
     
     @Test
     public void badRelease() throws Exception {
         final CallbackStuff res = startCallBackServer();
-        System.out.println("Running badRelease in dir " + res.tempdir);
-        // note that dev and beta releases can only have one version each,
-        // version tracking only happens for prod
-        
-        // Re stupid quotes: https://github.com/kbase/catalog/issues/139
-        failJob(res, "njs_sdk_test_1foo.run", "beta",
-                "Error looking up module njs_sdk_test_1foo with version " +
-                "beta: 'Module cannot be found based on module_name or " +
-                "git_url parameters.'");
-        failJob(res, "njs_sdk_test_1.run", "beta",
-                "Error looking up module njs_sdk_test_1 with version " +
-                "beta: 'No module version found that matches your criteria!'");
-        failJob(res, "njs_sdk_test_1.run", "release",
-                "Error looking up module njs_sdk_test_1 with version " +
-                "release: 'No module version found that matches your criteria!'");
-        failJob(res, "njs_sdk_test_1.run", null,
-                "Error looking up module njs_sdk_test_1 with version " +
-                 "release: 'No module version found that matches your criteria!'");
-
-        // this git commit was registered to dev but 
-        // then the previous git commit was registered to dev
-        // Note 7 years later - I don't understand what the above comment means.
-        // Dev versions aren't deleted if you register a new dev version AFAICT
-        // That being said, the test passes.
-        // Maybe the catalog used to replace dev versions?
-        String git = "b0d487271c22f793b381da29e266faa9bb0b2d1b";
-        failJob(res, "njs_sdk_test_1.run", git,
-                "Error looking up module njs_sdk_test_1 with version " +
-                git + ": 'No module version found that matches your criteria!'");
-        failJob(res, "njs_sdk_test_1.run", "foo",
-                "Error looking up module njs_sdk_test_1 with version foo: " +
-                "'No module version found that matches your criteria!'");
-        
-        res.server.stop();
+        try {
+            System.out.println("Running badRelease in dir " + res.tempdir);
+            // note that dev and beta releases can only have one version each,
+            // version tracking only happens for prod
+            
+            // Re stupid quotes: https://github.com/kbase/catalog/issues/139
+            failJob(res, "njs_sdk_test_1foo.run", "beta",
+                    "Error looking up module njs_sdk_test_1foo with version " +
+                    "beta: 'Module cannot be found based on module_name or " +
+                    "git_url parameters.'");
+            failJob(res, "njs_sdk_test_1.run", "beta",
+                    "Error looking up module njs_sdk_test_1 with version " +
+                    "beta: 'No module version found that matches your criteria!'");
+            failJob(res, "njs_sdk_test_1.run", "release",
+                    "Error looking up module njs_sdk_test_1 with version " +
+                    "release: 'No module version found that matches your criteria!'");
+            failJob(res, "njs_sdk_test_1.run", null,
+                    "Error looking up module njs_sdk_test_1 with version " +
+                     "release: 'No module version found that matches your criteria!'");
+    
+            // this git commit was registered to dev but 
+            // then the previous git commit was registered to dev
+            // Note 7 years later - I don't understand what the above comment means.
+            // Dev versions aren't deleted if you register a new dev version AFAICT
+            // That being said, the test passes.
+            // Maybe the catalog used to replace dev versions?
+            String git = "b0d487271c22f793b381da29e266faa9bb0b2d1b";
+            failJob(res, "njs_sdk_test_1.run", git,
+                    "Error looking up module njs_sdk_test_1 with version " +
+                    git + ": 'No module version found that matches your criteria!'");
+            failJob(res, "njs_sdk_test_1.run", "foo",
+                    "Error looking up module njs_sdk_test_1 with version foo: " +
+                    "'No module version found that matches your criteria!'");
+        } finally {
+            res.manager.close();
+        }
     }
     
     @Test
     public void badMethod() throws Exception {
-        final CallbackStuff res = startCallBackServer();
-        System.out.println("Running badMethod in dir " + res.tempdir);
-        failJob(res, "njs_sdk_test_1run", "foo",
-                "Can not find method [CallbackServer.njs_sdk_test_1run] " +
-                "in server class us.kbase.sdk.tester.SDKCallbackServer");
-        failJob(res, "njs_sdk_test_1.r.un", "foo",
-                "Illegal method name: njs_sdk_test_1.r.un");
-        res.server.stop();
+    	final CallbackStuff res = startCallBackServer();
+        try {
+            System.out.println("Running badMethod in dir " + res.tempdir);
+            failJob(res, "njs_sdk_test_1run", "foo", "Illegal method name: njs_sdk_test_1run");
+            failJob(res, "njs_sdk_test_1.r.un", "foo", "Illegal method name: njs_sdk_test_1.r.un");
+        } finally {
+            res.manager.close();
+        }
     }
     
     private void failJob(CallbackStuff cbs, String moduleMeth, String release,
@@ -562,58 +555,61 @@ public class CallbackServerTest {
     
     @Test
     public void setProvenance() throws Exception {
-        final ModuleRunVersion runver = new ModuleRunVersion(
-                new URL("https://github.com/kbasetest/whooptywhoop"),
-                new ModuleMethod("whooptywhoop.run"),
-                "badhash", "1000.1.0", "beta");
-        final CallbackStuff res = startCallBackServer(
-                runver, new LinkedList<UObject>(), new LinkedList<String>());
-        System.out.println("Running setProvenance in dir " + res.tempdir);
-        
-        List<String> wsobjs = Arrays.asList("foo1", "bar1", "baz1");
-        List<UObject> params = new ArrayList<UObject>();
-        params.add(new UObject(Arrays.asList("foo1", "bar1")));
-        params.add(new UObject(ImmutableMap.<String, String>builder()
-                        .put("foo1", "bar1").build()));
-        ProvenanceAction pa = new ProvenanceAction()
-            .withMethod("amethod")
-            .withService("aservice")
-            .withServiceVer("0.0.2-dev")
-            .withTime(DATE_FORMATTER.print(new DateTime()))
-            .withMethodParams(params)
-            .withInputWsObjects(wsobjs);
-        
-        res.setProvenance(pa);
-        String moduleName = "njs_sdk_test_2";
-        String methodName = "run";
-        String release = "dev";
-        String ver = "0.0.10";
-        Map<String, Object> methparams = new HashMap<String, Object>();
-        methparams.put("id", "myid");
-        Map<String, Object> results = res.callMethod(
-                moduleName + '.' + methodName, methparams, "dev");
-        
-        List<SubActionSpec> expsas = new LinkedList<SubActionSpec>();
-        expsas.add(new SubActionSpec()
-            .withMod(moduleName)
-            .withVer(ver)
-            .withRel(release)
-        );
-        
-        List<ProvenanceAction> p = res.getProvenance();
-        System.out.println(p);
-        checkProvenance("aservice", "amethod", "dev", "0.0.2", params,
-                expsas, wsobjs, p);
-        checkResults(results, methparams, moduleName);
-        
+        final CallbackProvenance cp = CallbackProvenance.getBuilder(
+                "whooptywhoop.run", Version.of(1000, 1, 0))
+                .withCommit("aaaaaaa")
+                .withCodeUrl(new URL("https://github.com/kbasetest/whooptywhoop"))
+                .withServiceVer("beta")
+                .build();
+        final CallbackStuff res = startCallBackServer(cp, true);
         try {
-            res.setProvenance(null);
-        } catch (ServerException se) {
-            assertThat("incorrect excep msg", se.getLocalizedMessage(),
-                    is("Provenance cannot be null"));
+            System.out.println("Running setProvenance in dir " + res.tempdir);
+            
+            List<String> wsobjs = Arrays.asList("foo1", "bar1", "baz1");
+            final List<String> param1 = Arrays.asList("foo1", "bar1");
+            final Map<String, String> param2 = ImmutableMap.of("foo1", "bar1");
+            ProvenanceAction pa = new ProvenanceAction()
+                .withMethod("amethod")
+                .withService("aservice")
+                .withServiceVer("0.0.2-dev")
+                .withTime(DATE_FORMATTER.print(new DateTime()))
+                .withMethodParams(Arrays.asList(new UObject(param1), new UObject(param2)))
+                .withInputWsObjects(wsobjs);
+            
+            res.setProvenance(pa);
+            String moduleName = "njs_sdk_test_2";
+            String methodName = "run";
+            String release = "dev";
+            String ver = "0.0.10";
+            Map<String, Object> methparams = new HashMap<String, Object>();
+            methparams.put("id", "myid");
+            Map<String, Object> results = res.callMethod(
+                    moduleName + '.' + methodName, methparams, "dev");
+            
+            List<SubActionSpec> expsas = new LinkedList<SubActionSpec>();
+            expsas.add(new SubActionSpec()
+                .withMod(moduleName)
+                .withVer(ver)
+                .withRel(release)
+            );
+            
+            List<ProvenanceAction> p = res.getProvenance();
+            System.out.println(p);
+            checkProvenance("aservice", "amethod", "dev", "0.0.2", Arrays.asList(param1, param2),
+                    expsas, wsobjs, p);
+            checkResults(results, methparams, moduleName);
+            
+            try {
+                res.setProvenance(null);
+                fail("expected exception");
+            } catch (ServerException se) {
+                assertThat("incorrect excep msg", se.getLocalizedMessage(), is(
+                        "method params must be a list containing exactly one provenance action"
+                ));
+            }
+        } finally {
+            res.manager.close();
         }
-        
-        res.server.stop();
     }
     
     @Test
@@ -624,66 +620,71 @@ public class CallbackServerTest {
         String ver = "0.0.3";
         String nst1latest = "dbea6819e06d37a7f7f08f49673555edaf7f96a6";
         String nst1dev = "366eb8cead445aa3e842cbc619082a075b0da322";
-        final ModuleRunVersion runver = new ModuleRunVersion(
-                new URL("https://github.com/kbasetest/njs_sdk_test_1"),
-                new ModuleMethod(moduleName + "." + methodName),
-                nst1dev, ver, release);
         List<String> wsobjs = Arrays.asList("foo", "bar", "baz");
-        List<UObject> params = new ArrayList<UObject>();
-        params.add(new UObject(Arrays.asList("foo", "bar")));
-        params.add(new UObject(ImmutableMap.<String, String>builder()
-                        .put("foo", "bar").build()));
-        final CallbackStuff res = startCallBackServer(runver, params, wsobjs);
-        System.out.println("Running multiCallProvenance in dir " + res.tempdir);
-        String moduleName2 = "njs_sdk_test_2";
-        String commit2 = "9d6b868bc0bfdb61c79cf2569ff7b9abffd4c67f";
-        @SuppressWarnings("unchecked")
-        Map<String, Object> methparams = UObject.transformStringToObject(
-                String.format(
-            "{\"jobs\": [{\"method\": \"%s\"," +
-                         "\"params\": [{\"id\": \"id1\", \"wait\": 3}]," +
-                         "\"ver\": \"%s\"" +
-                         "}," +
-                        "{\"method\": \"%s\"," +
-                         "\"params\": [{\"id\": \"id2\", \"wait\": 3}]," +
-                         "\"ver\": \"%s\"" +
-                         "}," +
-                        "{\"method\": \"%s\"," +
-                         "\"params\": [{\"id\": \"id3\", \"wait\": 3}]," +
-                         "\"ver\": \"%s\"" +
-                         "}" +
-                        "]," +
-             "\"id\": \"myid\"" + 
-             "}",
-             moduleName2 + "." + methodName,
-             // beta is on this commit
-             commit2,
-             moduleName + "." + methodName,
-             // this is the latest commit, but a prior commit is registered to dev
-             nst1latest,
-             moduleName2 + "." + methodName,
-             // this should get ignored when pulling images since this module has already been
-             // run and is cached
-             "dev"), Map.class);
-        List<SubActionSpec> expsas = new LinkedList<SubActionSpec>();
-        expsas.add(new SubActionSpec()
-            .withMod(moduleName)
-            .withVer("0.0.3")
-            .withRel("dev")
-        );
-        expsas.add(new SubActionSpec()
-            .withMod(moduleName2)
-            .withVer("0.0.9")
-            .withCommit(commit2)
-        );
-        Map<String, Object> results = res.callMethod(
-                moduleName + '.' + methodName, methparams, "dev");
-        List<ProvenanceAction> p = res.getProvenance();
-        checkProvenance(moduleName, methodName, release, ver, params,
-                expsas, wsobjs, p);
-        checkResults(results, methparams, moduleName);
-        
-        res.server.stop();
+        List<Object> params = new ArrayList<Object>();
+        params.add(Arrays.asList("foo", "bar"));
+        params.add(ImmutableMap.of("foo", "bar"));
+        final CallbackProvenance cp = CallbackProvenance.getBuilder(
+                moduleName + "." + methodName, Version.parse(ver))
+                .withParams(params)
+                .withWorkspaceRefs(wsobjs)
+                .withServiceVer(release)
+                .withCodeUrl(new URL("https://github.com/kbasetest/njs_sdk_test_1"))
+                .withCommit(nst1dev)
+                .build();
+        final CallbackStuff res = startCallBackServer(cp, false);
+        try {
+            System.out.println("Running multiCallProvenance in dir " + res.tempdir);
+            String moduleName2 = "njs_sdk_test_2";
+            String commit2 = "9d6b868bc0bfdb61c79cf2569ff7b9abffd4c67f";
+            @SuppressWarnings("unchecked")
+            Map<String, Object> methparams = UObject.transformStringToObject(
+                    String.format(
+                "{\"jobs\": [{\"method\": \"%s\"," +
+                             "\"params\": [{\"id\": \"id1\", \"wait\": 3}]," +
+                             "\"ver\": \"%s\"" +
+                             "}," +
+                            "{\"method\": \"%s\"," +
+                             "\"params\": [{\"id\": \"id2\", \"wait\": 3}]," +
+                             "\"ver\": \"%s\"" +
+                             "}," +
+                            "{\"method\": \"%s\"," +
+                             "\"params\": [{\"id\": \"id3\", \"wait\": 3}]," +
+                             "\"ver\": \"%s\"" +
+                             "}" +
+                            "]," +
+                 "\"id\": \"myid\"" + 
+                 "}",
+                 moduleName2 + "." + methodName,
+                 // beta is on this commit
+                 commit2,
+                 moduleName + "." + methodName,
+                 // this is the latest commit, but a prior commit is registered to dev
+                 nst1latest,
+                 moduleName2 + "." + methodName,
+                 // this should get ignored when pulling images since this module has already been
+                 // run and is cached
+                 "dev"), Map.class);
+            List<SubActionSpec> expsas = new LinkedList<SubActionSpec>();
+            expsas.add(new SubActionSpec()
+                .withMod(moduleName)
+                .withVer("0.0.3")
+                .withRel("dev")
+            );
+            expsas.add(new SubActionSpec()
+                .withMod(moduleName2)
+                .withVer("0.0.9")
+                .withCommit(commit2)
+            );
+            Map<String, Object> results = res.callMethod(
+                    moduleName + '.' + methodName, methparams, "dev");
+            List<ProvenanceAction> p = res.getProvenance();
+            checkProvenance(moduleName, methodName, release, ver, params,
+                    expsas, wsobjs, p);
+            checkResults(results, methparams, moduleName);
+        } finally {
+            res.manager.close();
+        }
     }
     
     private static class SubActionSpec {
@@ -714,7 +715,7 @@ public class CallbackServerTest {
         }
         public String getVerRel() {
             if (release == null) {
-                return ver;
+                return ver + "-" + commit;
             }
             return ver + "-" + release;
         }
@@ -725,7 +726,7 @@ public class CallbackServerTest {
             String methodName,
             String release,
             String ver,
-            List<UObject> methparams,
+            List<Object> methparams,
             List<SubActionSpec> subs,
             List<String> wsobjs,
             List<ProvenanceAction> prov)
@@ -751,7 +752,8 @@ public class CallbackServerTest {
         for (int i = 1; i < methparams.size(); i++) {
             assertThat("params not equal",
                     pa.getMethodParams().get(i).asClassInstance(Object.class),
-                    is(methparams.get(i).asClassInstance(Object.class)));
+                    is(methparams.get(i))
+            );
         }
         assertThat("correct incoming ws objs",
                 new HashSet<String>(pa.getInputWsObjects()),
