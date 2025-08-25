@@ -80,7 +80,7 @@ public class CallbackServerManager implements AutoCloseable {
 				kbaseBaseUrl : new URL(kbaseBaseUrl.toString() + "/");
 		this.workDirRoot = requireNonNull(workDirRoot, "workDirRoot").toAbsolutePath();
 		this.containerName = prov.getModuleMethod().replace(".", "_")
-				+ "_test_catllback_server_" + UUID.randomUUID().toString();
+				+ "_test_callback_server_" + UUID.randomUUID().toString();
 		final String host = getHost();
 		initProvFile = writeProvFile(this.workDirRoot.resolve("workdir"), prov);
 		// may want to manually specify? Probably not
