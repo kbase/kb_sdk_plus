@@ -121,7 +121,8 @@ public class CallbackServerTest {
                 Files.createTempDirectory(TEST_DIR, "cbt"),
                 new URL(kBaseEndpoint),
                 token,
-                prov
+                prov,
+                true
         );
         // not really a lot that can be tested re getting the urls
         final String port = csm.getCallbackPort() + "";
@@ -304,7 +305,7 @@ public class CallbackServerTest {
             final String exmsg
             ) throws Exception {
         final Exception e = assertThrows(exclass,
-                () -> new CallbackServerManager(workdir, baseUrl, token, prov)
+                () -> new CallbackServerManager(workdir, baseUrl, token, prov, true)
         );
         assertThat(e.getMessage(), is(exmsg));
     }
