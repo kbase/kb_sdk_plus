@@ -14,6 +14,7 @@ import picocli.CommandLine;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.HelpCommand;
+import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import us.kbase.sdk.common.KBaseYmlConfig;
@@ -416,11 +417,31 @@ public class ModuleBuilder implements Runnable{
 		return sw.toString().trim();
 	}
 
+	public static class SetDockerOutputWriteable {
+
+		@Option(
+				names = {"--set-output-globally-readwrite"},
+				description = """
+						WARNING: Setting this flag will make files containing your token \
+						globally readable and writeable - ensure the parent directory of the \
+						workdir and subjobs directories is not readable, writeable, or \
+						executable. If set, sets all files in the workdir and subjobs \
+						directories to globally readable and writeable after the run is complete. \
+						Docker containers may run as root and leave root-owned files on the \
+						file system. This flag allows the files to be modified or deleted.
+						""",
+				defaultValue = "false"
+		)
+		boolean setGloballyWriteable;
+	}
+	
 	/**
 	 * Runs the module test command - this runs tests in a local docker container.
 	 */
 	@Command(name = "test", description = "Test a module with local Docker.")
 	public static class TestCommand extends Verbose implements Callable<Integer> {
+		
+		@Mixin SetDockerOutputWriteable gl;
 		
 		@Option(
 				names = {"-s", "--skip_validation"},
@@ -433,8 +454,7 @@ public class ModuleBuilder implements Runnable{
 		public Integer call() {
 			try {
 				final ModuleTester tester = new ModuleTester();
-				// TODO CBS add arg to set files globally writeable. add WARNING
-				return tester.runTests(skipValidation, false);
+				return tester.runTests(skipValidation, gl.setGloballyWriteable);
 			}
 			catch (Exception e) {
 				showError("Error while testing module", e.getMessage());
@@ -588,9 +608,15 @@ public class ModuleBuilder implements Runnable{
 		)
 		Path output;
 		
+		@Mixin SetDockerOutputWriteable gl;
+		
 		@Option(
 				names = {"-k", "--keep-tmp"},
-				description = "Keep temporary files from the run rather than deleting them.",
+				description = """
+						Keep temporary files from the run rather than deleting them. \
+						Note that if docker written root owned files are on disk they \
+						will not be able to be deleted.
+						""",
 				defaultValue = "false"
 		)
 		boolean keepTempFiles;
@@ -646,8 +672,7 @@ public class ModuleBuilder implements Runnable{
 						verbose,
 						keepTempFiles,
 						provRefs,
-						// TODO CBS add arg to to set files globally writeable. add WARNING
-						false
+						gl.setGloballyWriteable
 				);
 			} catch (Exception e) {
 				showError("Error while running method", e.getMessage());
