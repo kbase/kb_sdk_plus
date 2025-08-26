@@ -173,7 +173,6 @@ jacocoTestReport {
 		classDirectories.setFrom(
 			files(classDirectories.files.collect {
 				fileTree(dir: it, exclude: [
-					'**/common/executionengine/**',
 					'**/common/service/**',
 					'**/catalog/**',
 					'**/narrativemethodstore/**',
