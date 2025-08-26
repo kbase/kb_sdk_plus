@@ -599,10 +599,14 @@ public class ModuleBuilder implements Runnable{
 				paramLabel = "<sdk_home_dir>",
 				names = {"-h", "--sdk-home"},
 				description = """
-						The folder containing the sdk.cfg and run_local folders. If they do \
-						not exist, they will be created. The default is loaded from the \
-						KB_SDK_HOME environment variable, which must be set if this \
-						argument is not supplied.\
+						The folder containing the sdk.cfg and run_local folders. \
+						If they do not exist, they will be created. The default is loaded \
+						from the KB_SDK_HOME environment variable, which must be set if this \
+						argument is not supplied. \
+						Any input files must be placed in run_local/workdir/tmp for them to \
+						be visible to the SDK module containers. "workdir" will be mounted into \
+						the containers at "/kb/module/work", so any input file paths in the \
+						method input must be prefixed with "/kb/module/work/tmp/".
 						"""
 		)
 		Path sdkHome;
@@ -617,20 +621,6 @@ public class ModuleBuilder implements Runnable{
 						"""
 		)
 		String provRefs;
-
-		@Option(
-				paramLabel = "<mount_points>",
-				names = {"-m","--mount-points"},
-				description = """
-						A comma separated list of mount points for the docker container. \
-						Each mount point consists of a local file path, a colon (:) separator, \
-						and a file path inside the docker container that is the target of the \
-						local mount. A relative docker container path is treated as relative to \
-						/kb/module/work. If the colon separator and docker container path are \
-						omitted the local path is mounted to /kb/module/work/tmp.\
-						"""
-		)
-		String mountPoints;
 
 		@Parameters(
 				paramLabel = "<method_name>",
@@ -655,8 +645,9 @@ public class ModuleBuilder implements Runnable{
 						tagVer,
 						verbose,
 						keepTempFiles,
-						provRefs, 
-						mountPoints
+						provRefs,
+						// TODO CBS add arg to to set files globally writeable. add WARNING
+						false
 				);
 			} catch (Exception e) {
 				showError("Error while running method", e.getMessage());

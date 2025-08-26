@@ -28,7 +28,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import us.kbase.auth.AuthToken;
 import us.kbase.common.utils.NetUtils;
 
-// TODO CBS convert module runner and tester
 // TODO CBS delete old callback server code and related code
 
 // could probably make it work in a container if we really needed to, but it'd need to know that
