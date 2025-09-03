@@ -326,9 +326,6 @@ public class TypeGeneratorTest {
 
 	@Test
 	public void testAsyncMethods() throws Exception {
-		// TODO PYTHONSERVER Revert the change that causes errors to be repr'd rather than
-		//                   str'd. Causes extra quotes around the string, which made this
-		//                   test fail. Fix Test12.java.properties when done.
 		// TODO TESTREINSTATEMENT see the comments in test12.spec.properties
 		int testNum = 12;
 		File workDir = prepareWorkDir(testNum);
