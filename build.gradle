@@ -268,6 +268,18 @@ graalvmNative {
 				'--enable-url-protocols=https,http',
 				'-H:+AddAllCharsets'
 			])
+			
+			def arch = System.getProperty("os.arch")
+			println "Detected architecture: ${arch}"
+
+			if (arch == "x86_64" || arch == "amd64") {
+				println "Adding -march=x86-64-v2 to build args"
+				// the KBase CI catalog service hardware is oooooold
+				// TODO KBASE_HW remove this stuff if we ever get modern HW
+				buildArgs.add("-march=x86-64-v2")
+			} else {
+				println "Skipping -march option for architecture: ${arch}"
+			}
 		}
 	}
 }

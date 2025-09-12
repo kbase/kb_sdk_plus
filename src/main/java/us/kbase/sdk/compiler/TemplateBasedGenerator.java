@@ -76,6 +76,10 @@ public class TemplateBasedGenerator {
             pythonClient.close();
         }
         //////////////////////////////////////// Servers /////////////////////////////////////////
+        // AFAICT at this pint either
+        //     * the python server name is null and getPythonServer is false
+        //     * the python server name is supplied and getPythonServer is true
+        // so one implies the other
         if (pythonServerName != null) {
             String pythonServerPath = fixPath(pythonServerName, ".") + ".py";
             initPythonPackages(pythonServerPath, output, false);
@@ -184,6 +188,8 @@ public class TemplateBasedGenerator {
         copyResourceFile(relativePyPath, output, "authclient.py");
         if (client) {
             copyResourceFile(relativePyPath, output, "baseclient.py");
+        } else {
+            copyResourceFile("biokbase/log.py", output, "log.py");
         }
     }
 
@@ -199,9 +205,10 @@ public class TemplateBasedGenerator {
             filepath = Paths.get(relativePath).getParent()
                     .resolve(file);
         }
-        try (final InputStream input =
-                TemplateFormatter.getResource(file);
-             final Writer w = output.openWriter(filepath.toString())) {
+        try (
+            final InputStream input = TemplateFormatter.getResource(file);
+            final Writer w = output.openWriter(filepath.toString())
+        ) {
             IOUtils.copy(input, w);
         }
     }
