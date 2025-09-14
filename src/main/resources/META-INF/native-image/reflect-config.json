@@ -18,12 +18,6 @@
   "name":"[Ljava.lang.String;"
 },
 {
-  "name":"[Lorg.eclipse.jetty.servlet.ServletHolder;"
-},
-{
-  "name":"[Lorg.eclipse.jetty.servlet.ServletMapping;"
-},
-{
   "name":"[Lsun.security.pkcs.SignerInfo;"
 },
 {
@@ -686,6 +680,36 @@
   "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
 },
 {
+  "name":"us.kbase.sdk.compiler.report.Function",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"us.kbase.sdk.compiler.report.FunctionPlace",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"us.kbase.sdk.compiler.report.Parameter",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"us.kbase.sdk.compiler.report.Report",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"us.kbase.sdk.compiler.report.SpecFile",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
   "name":"us.kbase.catalog.CompilationReport",
   "allDeclaredFields":true,
   "queryAllDeclaredMethods":true,
@@ -733,10 +757,6 @@
   "queryAllDeclaredMethods":true,
   "queryAllDeclaredConstructors":true,
   "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setContent","parameterTypes":["java.lang.String"] }, {"name":"setFileName","parameterTypes":["java.lang.String"] }, {"name":"setIsMain","parameterTypes":["java.lang.Long"] }]
-},
-{
-  "name":"us.kbase.common.executionengine.CallbackServer",
-  "methods":[{"name":"getProvenance","parameterTypes":[] }]
 },
 {
   "name":"us.kbase.common.service.JsonServerServlet$RpcCallData",
@@ -904,18 +924,6 @@
   "allDeclaredConstructors":true
 },
 {
-  "name":"us.kbase.narrativemethodstore.ScriptInputMapping",
-  "allDeclaredFields":true,
-  "allDeclaredMethods":true,
-  "allDeclaredConstructors":true
-},
-{
-  "name":"us.kbase.narrativemethodstore.ScriptOutputMapping",
-  "allDeclaredFields":true,
-  "allDeclaredMethods":true,
-  "allDeclaredConstructors":true
-},
-{
   "name":"us.kbase.narrativemethodstore.ServiceMethodInputMapping",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
@@ -1057,23 +1065,5 @@
   "queryAllDeclaredMethods":true,
   "queryAllDeclaredConstructors":true,
   "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"us.kbase.sdk.tester.SDKCallbackServer",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"us.kbase.workspace.ProvenanceAction",
-  "allDeclaredFields":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true,
-  "methods":[{"name":"getAdditionalProperties","parameterTypes":[] }, {"name":"getCaller","parameterTypes":[] }, {"name":"getCustom","parameterTypes":[] }, {"name":"getDescription","parameterTypes":[] }, {"name":"getEpoch","parameterTypes":[] }, {"name":"getExternalData","parameterTypes":[] }, {"name":"getInputWsObjects","parameterTypes":[] }, {"name":"getIntermediateIncoming","parameterTypes":[] }, {"name":"getIntermediateOutgoing","parameterTypes":[] }, {"name":"getMethod","parameterTypes":[] }, {"name":"getMethodParams","parameterTypes":[] }, {"name":"getResolvedWsObjects","parameterTypes":[] }, {"name":"getScript","parameterTypes":[] }, {"name":"getScriptCommandLine","parameterTypes":[] }, {"name":"getScriptVer","parameterTypes":[] }, {"name":"getService","parameterTypes":[] }, {"name":"getServiceVer","parameterTypes":[] }, {"name":"getSubactions","parameterTypes":[] }, {"name":"getTime","parameterTypes":[] }]
-},
-{
-  "name":"us.kbase.workspace.SubAction",
-  "allDeclaredFields":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true,
-  "methods":[{"name":"getAdditionalProperties","parameterTypes":[] }, {"name":"getCodeUrl","parameterTypes":[] }, {"name":"getCommit","parameterTypes":[] }, {"name":"getEndpointUrl","parameterTypes":[] }, {"name":"getName","parameterTypes":[] }, {"name":"getVer","parameterTypes":[] }]
 }
 ]

@@ -76,7 +76,7 @@ public class TemplateBasedGenerator {
             pythonClient.close();
         }
         //////////////////////////////////////// Servers /////////////////////////////////////////
-        // AFAICT at this pint either
+        // AFAICT at this point either
         //     * the python server name is null and getPythonServer is false
         //     * the python server name is supplied and getPythonServer is true
         // so one implies the other
