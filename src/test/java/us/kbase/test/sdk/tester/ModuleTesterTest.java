@@ -100,19 +100,6 @@ public class ModuleTesterTest {
 		String lang = "python";
 		String moduleName = SIMPLE_MODULE_NAME + "Python";
 		final Path moduleDir = init(lang, moduleName);
-		// TODO TESTHACK PYTEST upgrade to pytest and remove this stuff assuming that works
-		// nose is identifying the class as a test case
-		final Path implFile = moduleDir.resolve(
-				Paths.get("lib", moduleName, moduleName + "Impl.py")
-		);
-		final String implText = FileUtils.readFileToString(implFile.toFile());
-		final String newText = implText.replace("    #BEGIN_CLASS_HEADER", 
-				"    #BEGIN_CLASS_HEADER\n" +
-				"    __test__ = False\n"
-		);
-		assertThat(implText, is(not(newText)));
-		FileUtils.writeStringToFile(implFile.toFile(), newText);
-		
 		int exitCode = runTestsInDocker(moduleDir.toFile());
 		assertEquals(0, exitCode);
 	}

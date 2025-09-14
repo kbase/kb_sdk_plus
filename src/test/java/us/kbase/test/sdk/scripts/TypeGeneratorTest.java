@@ -628,13 +628,7 @@ public class TypeGeneratorTest {
 			//JavaTypeGenerator.checkEnvVars(lines, "PYTHONPATH");
 			lines.addAll(Arrays.asList(
 					"export KB_DEPLOYMENT_CONFIG=" + cfgFile.getCanonicalPath(),
-					"cd \"" + serverOutDir.getAbsolutePath() + "\"",
-					"if [ ! -d biokbase ]; then",
-					"  mkdir -p ./biokbase",
-					// TODO TESTCODE this is bonkers, need a better way of reffing files
-					"  cp -r ../../../../src/main/resources/us/kbase/sdk/templates/log.py "
-					+ "./biokbase/",
-					"fi"
+					"cd \"" + serverOutDir.getAbsolutePath() + "\""
 					));
 			if (serverPortNum != null) {
 				lines.addAll(Arrays.asList(
