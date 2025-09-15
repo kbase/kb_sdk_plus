@@ -40,7 +40,7 @@ public class RunCompileCommand {
             boolean pyServerSide,
             final String pyServerName, 
             final String pyImplName,
-            boolean javaClientSide,
+            final boolean javaClientSide,
             final boolean javaServerSide, 
             final String javaPackageParent,
             final String javaSrcPath,
@@ -124,7 +124,8 @@ public class RunCompileCommand {
             }
         }
         JavaData javaParsingData = null;
-        if (javaClientSide) {
+        // TODO TEST the missing javaServerSide bool was not caught in tests
+        if (javaClientSide || javaServerSide) {
             //TODO DYNSERV add dynamic service client generation to all clients except Python
             javaParsingData = JavaTypeGenerator.processSpec(services, javaSrcDir, 
                     javaPackageParent, javaServerSide, url,
