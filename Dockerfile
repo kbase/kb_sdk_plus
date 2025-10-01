@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17.0.15_6-jdk-noble AS build
+FROM eclipse-temurin:24.0.2_12-jdk-noble AS build
 # Ubuntu 24.04 LTS noble ^^
 
 RUN apt update && apt install -y git
@@ -19,7 +19,7 @@ COPY src /tmp/kbsdk/src/
 RUN ./gradlew prepareRunnableDir
 
 
-FROM eclipse-temurin:17.0.15_6-jdk-noble
+FROM eclipse-temurin:24.0.2_12-jdk-noble
 
 # install docker
 # spent too much time trying to d/l in the build step and install the debs here, not worth it
