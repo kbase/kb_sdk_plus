@@ -363,7 +363,7 @@ dependencies {
 	// this is OOOOOOLD. But that probably means updating java_common
 	testImplementation('org.eclipse.jetty.aggregate:jetty-all:7.0.0.v20091005')
 	testImplementation('org.hamcrest:hamcrest:3.0')
-	testImplementation('org.junit.jupiter:junit-jupiter:5.13.1')
+	testImplementation('org.junit.jupiter:junit-jupiter:6.0.0')
 	testImplementation('org.slf4j:slf4j-api:1.7.7')
 	// TODO DEPS Need to rework the java common logger to not use syslog4j at all since it's
 	// abandonware and has a ton of CVEs, even in the newer versions.
