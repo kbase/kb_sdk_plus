@@ -120,21 +120,6 @@ java -cp \$CLASSPATH us.kbase.sdk.ModuleBuilder \$@
 	}
 }
 
-task pythonTest(type: Exec) {
-	description = 'Runs Python tests using pytest'
-	environment 'PYTHONPATH', './src/main/resources/us/kbase/sdk/templates'
-	// Gradle is an absolute hygine product and appears to not necessarily use the same environment
-	// as the calling context. Wrapping the command in a new shell fixes that for some reason
-	// I don't quite understand.
-	// What's odd is that sometimes it works and sometimes it doesn't, but it either works
-	// or doesn't for an entire day or more in my experience
-	commandLine 'sh', '-c',
-		'pytest --cov=authclient --cov-report=xml --cov-report=html test_scripts/py_module_tests'
-	doFirst {
-		println "Running: ${commandLine.join(' ')}"
-	}
-}
-
 // this is used in TypeGeneratorTest to supply dependencies for compiler tests
 def genCodeLibDir = file("$buildDir/generated-code-libs")
 
@@ -151,7 +136,6 @@ task resolveGeneratedCodeDeps {
 test {
 	dependsOn resolveGeneratedCodeDeps
 	dependsOn kb_sdk_plusScript  // tests use script to compile sdk modules
-	dependsOn pythonTest
 	
 	useJUnitPlatform()
 	

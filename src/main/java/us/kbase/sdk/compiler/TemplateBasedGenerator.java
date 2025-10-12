@@ -185,7 +185,6 @@ public class TemplateBasedGenerator {
             }
         }
 
-        copyResourceFile(relativePyPath, output, "authclient.py");
         if (client) {
             copyResourceFile(relativePyPath, output, "baseclient.py");
         } else {
