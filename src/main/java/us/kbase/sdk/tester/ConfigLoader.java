@@ -3,6 +3,7 @@ package us.kbase.sdk.tester;
 import java.io.File;
 import java.io.PrintWriter;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
@@ -43,7 +44,17 @@ public class ConfigLoader {
                     configPathInfo);
         }
         authAllowInsecure = props.getProperty("auth_service_url_allow_insecure");
-        final AuthClient auth = AuthClient.from(new URI(authUrl.split("api/")[0]));
+        final String authUrlTrimmed = authUrl.split("api/")[0];
+        final AuthClient auth;
+        try {
+            auth = AuthClient.from(new URI(authUrlTrimmed));
+        } catch (UnknownHostException e) {
+            // user gets a crummy default error with an unknown host exception
+            throw new IllegalStateException(
+                    String.format("Could not contact the KBase auth server at %s", authUrlTrimmed),
+                    e
+            );
+        }
         token = auth.validateToken(tokenString);
         endPoint = props.getProperty("kbase_endpoint");
         if (endPoint == null) {
