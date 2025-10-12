@@ -13,7 +13,6 @@ public class TestConfigHelper {
 
     private static boolean initialized = false;
     private static AuthToken token1 = null;
-    private static AuthToken token2 = null;
     
     public static void init() throws Exception {
         final Ini testini = new Ini(new File("test.cfg"));
@@ -67,15 +66,6 @@ public class TestConfigHelper {
         return token1;
     }
 
-    public static AuthToken getToken2() throws Exception {
-        final AuthClient authService = getAuthService();
-        if (token2 == null) {
-            String tokenString = getTestConfigParam("test.token2", true);
-            token2 = authService.validateToken(tokenString);
-        }
-        return token2;
-    }
-    
     public static String getKBaseEndpoint() throws Exception {
         return getTestConfigParam("test.kbase.endpoint", true);
     }
