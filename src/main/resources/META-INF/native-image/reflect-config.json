@@ -21,30 +21,6 @@
   "name":"[Lsun.security.pkcs.SignerInfo;"
 },
 {
-  "name":"ch.qos.logback.classic.pattern.DateConverter",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"ch.qos.logback.classic.pattern.LevelConverter",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"ch.qos.logback.classic.pattern.LineSeparatorConverter",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"ch.qos.logback.classic.pattern.LoggerConverter",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"ch.qos.logback.classic.pattern.MessageConverter",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"ch.qos.logback.classic.pattern.ThreadConverter",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
   "name":"com.fasterxml.jackson.core.TreeNode",
   "queryAllDeclaredMethods":true
 },
@@ -98,9 +74,6 @@
   "name":"groovy.lang.Closure"
 },
 {
-  "name":"java.io.FilePermission"
-},
-{
   "name":"java.io.Serializable",
   "queryAllDeclaredMethods":true
 },
@@ -138,10 +111,7 @@
   "name":"java.lang.Float"
 },
 {
-  "name":"java.lang.Integer",
-  "allDeclaredFields":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true
+  "name":"java.lang.Integer"
 },
 {
   "name":"java.lang.Iterable",
@@ -165,19 +135,12 @@
   "queryAllDeclaredConstructors":true
 },
 {
-  "name":"java.lang.Runtime",
-  "methods":[{"name":"addShutdownHook","parameterTypes":["java.lang.Thread"] }]
-},
-{
-  "name":"java.lang.RuntimePermission"
-},
-{
   "name":"java.lang.Short"
 },
 {
   "name":"java.lang.String",
   "queryAllDeclaredMethods":true,
-  "methods":[{"name":"contains","parameterTypes":["java.lang.CharSequence"] }, {"name":"toLowerCase","parameterTypes":[] }]
+  "methods":[{"name":"toLowerCase","parameterTypes":[] }]
 },
 {
   "name":"java.lang.Thread",
@@ -195,16 +158,6 @@
   "name":"java.math.BigInteger"
 },
 {
-  "name":"java.net.NetPermission"
-},
-{
-  "name":"java.net.SocketPermission"
-},
-{
-  "name":"java.net.URLPermission",
-  "methods":[{"name":"<init>","parameterTypes":["java.lang.String","java.lang.String"] }]
-},
-{
   "name":"java.nio.file.Path"
 },
 {
@@ -215,16 +168,10 @@
   "name":"java.security.AlgorithmParametersSpi"
 },
 {
-  "name":"java.security.AllPermission"
-},
-{
   "name":"java.security.KeyStoreSpi"
 },
 {
   "name":"java.security.SecureRandomParameters"
-},
-{
-  "name":"java.security.SecurityPermission"
 },
 {
   "name":"java.security.interfaces.ECPrivateKey"
@@ -328,11 +275,6 @@
   "queryAllDeclaredMethods":true
 },
 {
-  "name":"java.util.AbstractSequentialList",
-  "allDeclaredFields":true,
-  "queryAllDeclaredMethods":true
-},
-{
   "name":"java.util.ArrayList",
   "allDeclaredFields":true,
   "queryAllDeclaredMethods":true,
@@ -350,14 +292,36 @@
   "queryAllDeclaredMethods":true
 },
 {
-  "name":"java.util.Date"
-},
-{
-  "name":"java.util.Deque",
+  "name":"java.util.Collections$UnmodifiableCollection",
+  "allDeclaredFields":true,
   "queryAllDeclaredMethods":true
 },
 {
+  "name":"java.util.Collections$UnmodifiableList",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.Collections$UnmodifiableRandomAccessList",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.util.Date"
+},
+{
   "name":"java.util.HashMap",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.ImmutableCollections$AbstractImmutableMap",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.ImmutableCollections$MapN",
   "allDeclaredFields":true,
   "queryAllDeclaredMethods":true,
   "queryAllDeclaredConstructors":true
@@ -368,12 +332,6 @@
   "queryAllDeclaredMethods":true,
   "queryAllDeclaredConstructors":true,
   "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"get","parameterTypes":["java.lang.Object"] }]
-},
-{
-  "name":"java.util.LinkedList",
-  "allDeclaredFields":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true
 },
 {
   "name":"java.util.List",
@@ -387,21 +345,8 @@
   "methods":[{"name":"get","parameterTypes":["java.lang.Object"] }, {"name":"put","parameterTypes":["java.lang.Object","java.lang.Object"] }]
 },
 {
-  "name":"java.util.PropertyPermission"
-},
-{
-  "name":"java.util.Queue",
-  "queryAllDeclaredMethods":true
-},
-{
   "name":"java.util.RandomAccess",
   "queryAllDeclaredMethods":true
-},
-{
-  "name":"java.util.UUID",
-  "allDeclaredFields":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true
 },
 {
   "name":"java.util.concurrent.ConcurrentHashMap",
@@ -410,6 +355,10 @@
 {
   "name":"java.util.concurrent.ForkJoinTask",
   "fields":[{"name":"aux"}, {"name":"status"}]
+},
+{
+  "name":"java.util.concurrent.atomic.AtomicBoolean",
+  "fields":[{"name":"value"}]
 },
 {
   "name":"java.util.concurrent.atomic.AtomicReference",
@@ -426,9 +375,6 @@
 },
 {
   "name":"javax.servlet.ServletContext"
-},
-{
-  "name":"javax.smartcardio.CardPermission"
 },
 {
   "name":"org.apache.commons.lang3.StringUtils",
@@ -510,6 +456,18 @@
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
+  "name":"org.ini4j.spi.EscapeTool",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.ini4j.spi.IniBuilder",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.ini4j.spi.IniParser",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
   "name":"picocli.AutoComplete$GenerateCompletion",
   "allDeclaredFields":true,
   "queryAllDeclaredMethods":true,
@@ -572,10 +530,6 @@
 {
   "name":"sun.security.provider.SHA5$SHA512",
   "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"sun.security.provider.SecureRandom",
-  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"<init>","parameterTypes":["java.security.SecureRandomParameters"] }]
 },
 {
   "name":"sun.security.provider.X509Factory",
@@ -759,27 +713,6 @@
   "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setContent","parameterTypes":["java.lang.String"] }, {"name":"setFileName","parameterTypes":["java.lang.String"] }, {"name":"setIsMain","parameterTypes":["java.lang.Long"] }]
 },
 {
-  "name":"us.kbase.common.service.JsonServerServlet$RpcCallData",
-  "allDeclaredFields":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"getContext","parameterTypes":[] }, {"name":"getId","parameterTypes":[] }, {"name":"getMethod","parameterTypes":[] }, {"name":"getParams","parameterTypes":[] }, {"name":"getVersion","parameterTypes":[] }, {"name":"setContext","parameterTypes":["us.kbase.common.service.RpcContext"] }, {"name":"setId","parameterTypes":["java.lang.Object"] }, {"name":"setMethod","parameterTypes":["java.lang.String"] }, {"name":"setParams","parameterTypes":["java.util.List"] }, {"name":"setVersion","parameterTypes":["java.lang.Object"] }]
-},
-{
-  "name":"us.kbase.common.service.MethodCall",
-  "allDeclaredFields":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true,
-  "methods":[{"name":"getAdditionalProperties","parameterTypes":[] }, {"name":"getJobId","parameterTypes":[] }, {"name":"getMethod","parameterTypes":[] }, {"name":"getTime","parameterTypes":[] }]
-},
-{
-  "name":"us.kbase.common.service.RpcContext",
-  "allDeclaredFields":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"getAdditionalProperties","parameterTypes":[] }, {"name":"getCallStack","parameterTypes":[] }, {"name":"getProvenance","parameterTypes":[] }, {"name":"getRunId","parameterTypes":[] }, {"name":"setAdditionalProperties","parameterTypes":["java.lang.String","java.lang.Object"] }]
-},
-{
   "name":"us.kbase.common.service.UObject",
   "allDeclaredFields":true,
   "queryAllDeclaredMethods":true,
@@ -840,6 +773,12 @@
   "allDeclaredConstructors":true
 },
 {
+  "name":"us.kbase.narrativemethodstore.DynamicDropdownOptions",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
   "name":"us.kbase.narrativemethodstore.FixedMethodParameter",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
@@ -883,6 +822,12 @@
 },
 {
   "name":"us.kbase.narrativemethodstore.MethodParameter",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"us.kbase.narrativemethodstore.MethodParameterGroup",
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
   "allDeclaredConstructors":true
@@ -1023,6 +968,18 @@
   "queryAllDeclaredMethods":true
 },
 {
+  "name":"us.kbase.sdk.ModuleBuilder$InternalCommand",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"us.kbase.sdk.ModuleBuilder$PrepareDeployConfigCommand",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
   "name":"us.kbase.sdk.ModuleBuilder$RunCommand",
   "allDeclaredFields":true,
   "queryAllDeclaredMethods":true,
@@ -1032,6 +989,12 @@
   "name":"us.kbase.sdk.ModuleBuilder$RunInput",
   "allDeclaredFields":true,
   "queryAllDeclaredMethods":true
+},
+{
+  "name":"us.kbase.sdk.ModuleBuilder$SetDockerOutputWriteable",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
   "name":"us.kbase.sdk.ModuleBuilder$TagAndVerbose",

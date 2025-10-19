@@ -6,6 +6,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.concurrent.Callable;
 
@@ -23,6 +24,7 @@ import us.kbase.sdk.initializer.ModuleInitializer;
 import us.kbase.sdk.installer.ClientInstaller;
 import us.kbase.sdk.runner.ModuleRunner;
 import us.kbase.sdk.tester.ModuleTester;
+import us.kbase.sdk.util.DeployConfigGenerator;
 import us.kbase.sdk.util.ProcessHelper;
 import us.kbase.sdk.validator.ModuleValidator;
 
@@ -41,9 +43,10 @@ import us.kbase.sdk.validator.ModuleValidator;
 				ModuleBuilder.RunCommand.class,
 				GenerateCompletion.class,
 				ModuleBuilder.VersionCommand.class,
+				ModuleBuilder.InternalCommand.class,
 		}
 )
-public class ModuleBuilder implements Runnable{
+public class ModuleBuilder implements Runnable {
 
 	private static final String DEFAULT_PARENT_PACKAGE = "us.kbase";
 
@@ -694,6 +697,74 @@ public class ModuleBuilder implements Runnable{
 			System.out.println(VERSION_INFO);
 			return 0;
 		}
+	}
+	
+	@Command(
+			name = "_internal",
+			description = "Internal commands; not for general use. May change without warning",
+			hidden=true,
+			subcommands = {PrepareDeployConfigCommand.class, HelpCommand.class}
+	)
+	public static class InternalCommand implements Runnable {
+		
+		@Override
+		public void run() {
+			// fallback when no subcommand is used
+			CommandLine.usage(this, System.out);
+		}
+		
+	}
+	
+	@Command(
+			name = "prepare_deploy_cfg",
+			description = """
+					Prepare the module deploy.cfg file for an SDK module execution.
+					The deploy.cfg file is overwritten in place with a copy made to a *.bak file.
+					"""
+	)
+	public static class PrepareDeployConfigCommand extends Verbose implements Callable<Integer> {
+		
+		@Parameters(
+				index="0",
+				paramLabel = "<deploy_cfg_template_file>",
+				description = """
+						The path to the SDK modlue deploy.cfg template. This is a \
+						mustache style template file in the root of the SDK module.
+						""",
+				arity = "1"
+		)
+		Path deployCfg;
+		
+		@Parameters(
+				index="1",
+				paramLabel = "<config_ini_file>",
+				description = """
+						The path to the ini file with the values for the deploy.cfg template. \
+						This is an ini file with one section, "global", and the properties \
+						for the template all reside in that section.
+						""",
+				arity = "1"
+		)
+		Path configParams;
+
+		@Override
+		public Integer call() throws Exception {
+			try {
+				DeployConfigGenerator.generateDeployConfig(deployCfg, configParams);
+				return 0;
+			} catch (Exception e) {
+				String error = "Error while running method";
+				if (e instanceof NoSuchFileException) {
+					error = "File not found";
+				}
+				showError(error, e.getMessage());
+				if (verbose) {
+					e.printStackTrace();
+				}
+				return 1;
+			}
+		}
+		
 	}
 	
 	private static void showError(final String error, final String message) {

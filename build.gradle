@@ -203,7 +203,7 @@ CP="${classpath}"
 echo "Running application with native-image-agent output to: \$OUTDIR"
 echo
 
-echo "Running init command"
+echo "*** Running init command ***"
 java \$COMMON_OPTS/init -cp "\$CP" ${mainClass} init \\
 	-u userhere \\
 	-l java \\
@@ -215,7 +215,7 @@ cd testapp
 sed -i "s#^test_token=.*#test_token=\$TOKEN#" test_local/test.cfg
 sed -i "s#appdev\\.kbase\\.us*#ci\\.kbase\\.us#" test_local/test.cfg
 
-echo "Running compile command"
+echo "*** Running compile command ***"
 # py compilation runs different code paths so we do both 
 java \$COMMON_OPTS/compile -cp "\$CP" ${mainClass} compile \\
 	testapp.spec \\
@@ -228,15 +228,22 @@ java \$COMMON_OPTS/compile -cp "\$CP" ${mainClass} compile \\
 	--javasrv \\
 	--javapackage .
 
-echo "Running test command"
+echo
+echo "*** Running test command ***"
 java \$COMMON_OPTS/test -cp "\$CP" ${mainClass} test
+
+echo
+echo "*** Running prepare_deploy_cfg command ***"
+echo "[global]" > conf.props
+java \$COMMON_OPTS/prep -cp "\$CP" ${mainClass} _internal prepare_deploy_cfg deploy.cfg conf.props
 
 # comes with GraalVM 17
 native-image-configure generate \\
 	--output-dir=\$OUTDIR/merged \\
 	--input-dir=\$OUTDIR/init \\
 	--input-dir=\$OUTDIR/compile \\
-	--input-dir=\$OUTDIR/test
+	--input-dir=\$OUTDIR/test \\
+	--input-dir=\$OUTDIR/prep
 
 echo
 echo "Done. NOTE: Inspect the merged output carefully; the agent is better"
