@@ -370,6 +370,7 @@ dependencies {
 	// Note that the java SDK modules use syslog4j, so we'll need to figure something out
 	// there. I doubt any of the apps actually use the logging code that triggers it though
 	testImplementation('org.syslog4j:syslog4j:0.9.46')
+	testImplementation('uk.org.webcompere:system-stubs-jupiter:2.1.8')
 	
 	// isolate the sdk generated code dependencies from the standard dependencies
 	
