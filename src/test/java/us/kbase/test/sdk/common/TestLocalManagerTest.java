@@ -57,7 +57,6 @@ public class TestLocalManagerTest {
 			
 			# Next set of URLs correspond to core services. By default they
 			# are defined automatically based on 'kbase_endpoint':
-			#job_service_url=
 			#workspace_url=
 			#shock_url=
 			#handle_url=

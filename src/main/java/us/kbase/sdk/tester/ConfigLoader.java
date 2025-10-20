@@ -16,7 +16,6 @@ public class ConfigLoader {
     private final String authAllowInsecure;
     private final AuthToken token;
     private final String endPoint;
-    private final String jobSrvUrl;
     private final String wsUrl;
     private final String shockUrl;
     private final String handleUrl;
@@ -61,11 +60,11 @@ public class ConfigLoader {
             throw new IllegalStateException("Error: KBase services end-point is not set in " +
                     configPathInfo);
         }
-        jobSrvUrl = getConfigUrl(props, "job_service_url", endPoint, "userandjobstate");
         wsUrl = getConfigUrl(props, "workspace_url", endPoint, "ws");
         shockUrl = getConfigUrl(props, "shock_url", endPoint, "shock-api");
         handleUrl = getConfigUrl(props, "handle_url", endPoint, "handle_service");
         srvWizUrl = getConfigUrl(props, "srv_wiz_url", endPoint, "service_wizard");
+        // not sure if this is still used for the ee2 url or not
         njswUrl = getConfigUrl(props, "njsw_url", endPoint, "njs_wrapper");
         catalogUrl = getConfigUrl(props, "catalog_url", endPoint, "catalog");
         secureCfgParams = new TreeMap<String, String>();
@@ -102,10 +101,6 @@ public class ConfigLoader {
         return handleUrl;
     }
     
-    public String getJobSrvUrl() {
-        return jobSrvUrl;
-    }
-    
     public String getNjswUrl() {
         return njswUrl;
     }
@@ -127,7 +122,6 @@ public class ConfigLoader {
         try {
             pw.println("[global]");
             pw.println("kbase_endpoint = " + endPoint);
-            pw.println("job_service_url = " + jobSrvUrl);
             pw.println("workspace_url = " + wsUrl);
             pw.println("shock_url = " + shockUrl);
             pw.println("handle_url = " + handleUrl);
