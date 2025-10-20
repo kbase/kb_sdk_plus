@@ -5,20 +5,6 @@
   }, {
     "pattern":"\\Qorg/apache/velocity/runtime/defaults/velocity.properties\\E"
   }, {
-    "pattern":"\\Qorg/eclipse/jetty/http/useragents\\E"
-  }, {
-    "pattern":"\\Qorg/joda/time/tz/data/America/Chicago\\E"
-  }, {
-    "pattern":"\\Qorg/joda/time/tz/data/America/Denver\\E"
-  }, {
-    "pattern":"\\Qorg/joda/time/tz/data/America/Los_Angeles\\E"
-  }, {
-    "pattern":"\\Qorg/joda/time/tz/data/America/New_York\\E"
-  }, {
-    "pattern":"\\Qorg/joda/time/tz/data/ZoneInfoMap\\E"
-  }, {
-    "pattern":"\\Qorg/slf4j/impl/StaticLoggerBinder.class\\E"
-  }, {
     "pattern":"us/kbase/sdk/.*"
   }, {
     "pattern":"java.base:\\Qjdk/internal/icu/impl/data/icudt67b/nfkc.nrm\\E"
@@ -34,17 +20,5 @@
   }, {
      "pattern": ".*\\.pyo$"
   }]},
-  "bundles":[{
-    "name":"javax.servlet.LocalStrings",
-    "locales":["und"]
-  }, {
-    "name":"javax.servlet.http.LocalStrings",
-    "locales":["und"]
-  }, {
-    "name":"org/eclipse/jetty/http/encoding",
-    "locales":["und"]
-  }, {
-    "name":"org/eclipse/jetty/http/mime",
-    "locales":["und"]
-  }]
+  "bundles":[]
 }

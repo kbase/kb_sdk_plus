@@ -18,6 +18,10 @@ import java.util.regex.Pattern;
 /** Generates a deploy.cfg file for a KBase service or app */
 public class DeployConfigGenerator {
 	
+	/* I looked for alternate cli based solutions for a while, but baking this into the
+	 * SDK was the least clunky solution.
+	 */
+	
 	private static final Pattern MUSTACHE_ENTRY = Pattern.compile(
 			"\\{\\{\\s*([a-zA-Z0-9_]+)\\s*\\}\\}"
 	);
