@@ -729,7 +729,8 @@ public class ModuleBuilder implements Runnable {
 				paramLabel = "<deploy_cfg_template_file>",
 				description = """
 						The path to the SDK modlue deploy.cfg template. This is a \
-						mustache style template file in the root of the SDK module.
+						mustache style template file typically in the root directory of the \
+						SDK module.
 						""",
 				arity = "1"
 		)
