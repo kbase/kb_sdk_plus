@@ -321,7 +321,7 @@ dependencies {
 	implementation('com.fasterxml.jackson.core:jackson-databind:2.2.3')
 	implementation('com.google.guava:guava:18.0')
 	implementation('com.googlecode.jsonschema2pojo:jsonschema2pojo-core:0.3.6')
-	implementation('com.j2html:j2html:0.7') {
+	implementation('com.j2html:j2html:1.6.0') {
 		exclude group: 'junit', module: 'junit' // bro
 	}
 	implementation('commons-io:commons-io:2.4')
