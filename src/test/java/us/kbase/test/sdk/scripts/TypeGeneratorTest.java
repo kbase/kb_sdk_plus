@@ -326,7 +326,6 @@ public class TypeGeneratorTest {
 
 	@Test
 	public void testAsyncMethods() throws Exception {
-		// TODO TESTREINSTATEMENT see the comments in test12.spec.properties
 		int testNum = 12;
 		File workDir = prepareWorkDir(testNum);
 		System.out.println();
