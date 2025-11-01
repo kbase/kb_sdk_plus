@@ -317,8 +317,8 @@ dependencies {
 		exclude group: 'org.mongodb'
 		exclude group: 'org.eclipse.jetty.aggregate' // don't include in runtime path
 	}
-	implementation('com.fasterxml.jackson.core:jackson-annotations:2.2.3')
-	implementation('com.fasterxml.jackson.core:jackson-databind:2.2.3')
+	implementation('com.fasterxml.jackson.core:jackson-annotations:2.20.1')
+	implementation('com.fasterxml.jackson.core:jackson-databind:2.20.1')
 	implementation('com.google.guava:guava:18.0')
 	implementation('com.googlecode.jsonschema2pojo:jsonschema2pojo-core:0.3.6')
 	implementation('com.j2html:j2html:0.7') {
@@ -366,8 +366,8 @@ dependencies {
 	// isolate the sdk generated code dependencies from the standard dependencies
 	
 	generatedCodeClasspath('ch.qos.logback:logback-classic:1.1.2')
-	generatedCodeClasspath('com.fasterxml.jackson.core:jackson-annotations:2.2.3')
-	generatedCodeClasspath('com.fasterxml.jackson.core:jackson-databind:2.2.3')
+	generatedCodeClasspath('com.fasterxml.jackson.core:jackson-annotations:2.20.1')
+	generatedCodeClasspath('com.fasterxml.jackson.core:jackson-databind:2.20.1')
 	generatedCodeClasspath('com.github.kbase:auth2_client_java:0.5.0') {
 		exclude group: 'com.fasterxml.jackson.core'  // don't upgrade yet, breaks tests
 	}
