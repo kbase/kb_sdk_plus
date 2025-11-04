@@ -13,7 +13,7 @@ still needs to be done, shall we?
   * Docker desktop is banned, what do
 * Add Java tests where needed
   * Check code coverage
-  * ModuleBuilder and ModuleRunne have 0 tests
+  * ModuleBuilder and ModuleRunner have 0 tests
 * Add tests for the compiled kb-sdk binary
   * Tests reflection configs
   * Run on GHA builds - Mac too
