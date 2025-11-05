@@ -185,9 +185,7 @@ public class TemplateBasedGenerator {
             }
         }
 
-        if (client) {
-            copyResourceFile(relativePyPath, output, "baseclient.py");
-        } else {
+        if (!client) {
             copyResourceFile("biokbase/log.py", output, "log.py");
         }
     }

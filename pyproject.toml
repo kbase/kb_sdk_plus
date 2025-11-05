@@ -7,6 +7,7 @@ requires-python = "==3.12.10"
 dependencies = [
     "jsonrpcbase>=0.2.0",
     "kbase-auth-client==0.1.1",
+    "kbase-sdk-baseclient==0.1.0",
     "requests>=2.32.3",
 ]
 
