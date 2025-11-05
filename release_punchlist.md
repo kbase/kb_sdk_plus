@@ -7,7 +7,7 @@ still needs to be done, shall we?
   * No longer clone the entire jars repo
   * Security concerns
   * Allows dependabot to work
-* Test if the binary works on docker03
+* Test if the binary works on docker03 and dev1
   * Apparently issues with the current sdk there
 * Have Argonne staff try the SDK
   * Docker desktop is banned, what do
