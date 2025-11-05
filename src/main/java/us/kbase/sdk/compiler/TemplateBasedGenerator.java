@@ -1,7 +1,6 @@
 package us.kbase.sdk.compiler;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
 import java.nio.file.Path;
@@ -186,27 +185,13 @@ public class TemplateBasedGenerator {
         }
 
         if (!client) {
-            copyResourceFile("biokbase/log.py", output, "log.py");
-        }
-    }
-
-    private static void copyResourceFile(
-            final String relativePath,
-            final FileSaver output,
-            final String file)
-            throws IOException {
-        final Path filepath;
-        if (Paths.get(relativePath).getParent() == null) {
-            filepath = Paths.get(file);
-        } else {
-            filepath = Paths.get(relativePath).getParent()
-                    .resolve(file);
-        }
-        try (
-            final InputStream input = TemplateFormatter.getResource(file);
-            final Writer w = output.openWriter(filepath.toString())
-        ) {
-            IOUtils.copy(input, w);
+            final Path filepath = Paths.get("biokbase/log.py");
+            try (
+                final InputStream input = TemplateFormatter.getResource("log.py");
+                final Writer w = output.openWriter(filepath.toString())
+            ) {
+                IOUtils.copy(input, w);
+            }
         }
     }
 
