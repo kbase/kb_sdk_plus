@@ -37,7 +37,6 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.util.log.Logger;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -144,11 +143,6 @@ public class TypeGeneratorTest {
             public void debug(String arg0) {}
         });
     }
-	
-	@BeforeEach
-	public void beforeCleanup() {
-	    System.clearProperty("KB_JOB_CHECK_WAIT_TIME");
-	}
 	
 	@Test
 	public void testSimpleTypesAndStructures() throws Exception {
@@ -347,7 +341,6 @@ public class TypeGeneratorTest {
 			}
 			File serverOutDir = preparePyServerCode(testNum, workDir, false, true);
 			List<String> lines = null;
-			System.setProperty("KB_JOB_CHECK_WAIT_TIME", "100");
 			File cfgFile = prepareDeployCfg(workDir, getModuleName(parsingData));
 			//////////////////////////////////////// Python server ///////////////////////////////////////////
 			lines = new ArrayList<String>(Arrays.asList("#!/bin/bash"));
@@ -1107,14 +1100,11 @@ public class TypeGeneratorTest {
         List<String> lines = new ArrayList<String>(Arrays.asList("#!/bin/bash"));
         String pyName = "Python";
         String pyCmd = pyName.toLowerCase();
-        lines.addAll(Arrays.asList(
-                // TODO TESTCODE need a better way of referencing the test code, this is dumb
-                pyCmd + " ../../../../test_scripts/python/test_client.py -t " + configFile.getName() + 
-                " -e http://localhost:" + portNum +
-                " -o \"" + System.getProperty("test.token") + "\"" +
-                (System.getProperty("KB_JOB_CHECK_WAIT_TIME") == null ? "" :
-                    (" -a " + System.getProperty("KB_JOB_CHECK_WAIT_TIME")))
-                ));
+        final Path testCli = Paths.get("test_scripts/python/test_client.py").toAbsolutePath();
+        lines.add(String.format(
+                "%s %s -t %s -e http://localhost:%s -o \"%s\"",
+                pyCmd, testCli, configFile.getName(), portNum, System.getProperty("test.token")
+        ));
         TextUtils.writeFileLines(lines, shellFile);
         if (shellFile != null) {
             ProcessHelper ph = ProcessHelper.cmd("bash", shellFile.getCanonicalPath()).exec(outDir, null, true, true);

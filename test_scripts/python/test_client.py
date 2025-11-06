@@ -20,8 +20,8 @@ def main(argv):
     try:
         opts, args = getopt.getopt(
             argv,
-            "ht:e:o:a:",
-            ["help", "tests=", "endpoint=", "token=", "asyncchecktime="]
+            "ht:e:o:",
+            ["help", "tests=", "endpoint=", "token="]
         )
     except getopt.GetoptError:
         print('Please use "test_client.py -h" or "test_client.py --help" for help')
@@ -31,7 +31,7 @@ def main(argv):
             print((
                 "test_client.py --tests "
                 "<json_file> --endpoint <url> "
-                "[--token <kbase_token> [--asyncchecktime <ms>]]"
+                "[--token <kbase_token>]"
             ))
             sys.exit()
         elif opt in ("-t", "--tests"):
@@ -40,8 +40,6 @@ def main(argv):
             endpoint = arg
         elif opt in ("-o", "--token"):
             token = arg
-        elif opt in ("-a", "--asyncchecktime"):
-            async_job_check_time_ms = int(arg)
     fh = open(tests_filepath)
     tests_json = json.load(fh)
     module_file = tests_json['package']
@@ -51,16 +49,9 @@ def main(argv):
     for test in tests_json['tests']:
         client_instance = None
         if 'auth' in test and test['auth']:
-            if async_job_check_time_ms:
-                client_instance = client_class(
-                    url=endpoint,
-                    token=token,
-                    async_job_check_time_ms=async_job_check_time_ms
-                )
-            else:
-                client_instance = client_class(url=endpoint, token=token)
+            client_instance = client_class(url=endpoint, token=token)
         else:
-            client_instance = client_class(url=endpoint, ignore_authrc=True)
+            client_instance = client_class(url=endpoint)
         method_name = test['method']
         params = test['params']
         method_instance = getattr(client_instance, method_name)
@@ -69,7 +60,7 @@ def main(argv):
         ret = None
         error = None
         try:
-            ret = method_instance(*params, context={})
+            ret = method_instance(*params)
         except Exception as ex:
             error = ex
         if expected_status == 'pass' or expected_status == 'nomatch':

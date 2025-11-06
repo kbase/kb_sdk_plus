@@ -207,6 +207,7 @@ source = { virtual = "." }
 dependencies = [
     { name = "jsonrpcbase" },
     { name = "kbase-auth-client" },
+    { name = "kbase-sdk-baseclient" },
     { name = "requests" },
 ]
 
@@ -219,6 +220,7 @@ dev = [
 requires-dist = [
     { name = "jsonrpcbase", specifier = ">=0.2.0" },
     { name = "kbase-auth-client", specifier = "==0.1.1" },
+    { name = "kbase-sdk-baseclient", specifier = "==0.1.0" },
     { name = "requests", specifier = ">=2.32.3" },
 ]
 
@@ -236,6 +238,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/4b/85/f69c3ec300c249dca82953e6a13a379e715e3d1f6c99e275eecb8ea3902a/kbase_auth_client-0.1.1.tar.gz", hash = "sha256:f1b4a23455e7cf0df1db600654488066363dda481b7b4b874cc378e2e01acfa8", size = 37180, upload-time = "2025-10-21T16:14:09.841Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/1e/db/bd8bb80e01563016e127daba5b2b7a61b94890c69cbdbbae2ee96455f2a6/kbase_auth_client-0.1.1-py3-none-any.whl", hash = "sha256:62567956313ae9dca14f036e99cc6a4ae5adc65f5cda1d67a562d502a713a463", size = 10560, upload-time = "2025-10-21T16:14:08.527Z" },
+]
+
+[[package]]
+name = "kbase-sdk-baseclient"
+version = "0.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/19/04/d96ffaa5bc99680fa2dd38e2d9dd65a898085f14111d16ecf7be8446ad81/kbase_sdk_baseclient-0.1.0.tar.gz", hash = "sha256:5e1ec164411c7e04d2de0aa17c7e5fa5b80b462fe65863127eb93cd93a122be9", size = 29191, upload-time = "2025-11-05T22:20:35.04Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/49/77/3b1b1841a35abaf661c99556c447005262ad262e42a7677198677c1b25f1/kbase_sdk_baseclient-0.1.0-py3-none-any.whl", hash = "sha256:1378bdbcba2f5b449365b8a3bdd55a958085619a37f623dd712ae9ab63a73f60", size = 5331, upload-time = "2025-11-05T22:20:33.899Z" },
 ]
 
 [[package]]
@@ -321,7 +335,7 @@ wheels = [
 
 [[package]]
 name = "requests"
-version = "2.32.3"
+version = "2.32.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "certifi" },
@@ -329,9 +343,9 @@ dependencies = [
     { name = "idna" },
     { name = "urllib3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/63/70/2bf7780ad2d390a8d301ad0b550f1581eadbd9a20f896afe06353c2a2913/requests-2.32.3.tar.gz", hash = "sha256:55365417734eb18255590a9ff9eb97e9e1da868d4ccd6402399eaf68af20a760", size = 131218, upload-time = "2024-05-29T15:37:49.536Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c9/74/b3ff8e6c8446842c3f5c837e9c3dfcfe2018ea6ecef224c710c85ef728f4/requests-2.32.5.tar.gz", hash = "sha256:dbba0bac56e100853db0ea71b82b4dfd5fe2bf6d3754a8893c3af500cec7d7cf", size = 134517, upload-time = "2025-08-18T20:46:02.573Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f9/9b/335f9764261e915ed497fcdeb11df5dfd6f7bf257d4a6a2a686d80da4d54/requests-2.32.3-py3-none-any.whl", hash = "sha256:70761cfe03c773ceb22aa2f671b4757976145175cdfca038c02654d061d6dcc6", size = 64928, upload-time = "2024-05-29T15:37:47.027Z" },
+    { url = "https://files.pythonhosted.org/packages/1e/db/4254e3eabe8020b458f1a747140d32277ec7a271daf1d235b70dc0b4e6e3/requests-2.32.5-py3-none-any.whl", hash = "sha256:2462f94637a34fd532264295e186976db0f5d453d1cdd31473c85a6a161affb6", size = 64738, upload-time = "2025-08-18T20:46:00.542Z" },
 ]
 
 [[package]]

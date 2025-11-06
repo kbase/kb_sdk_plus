@@ -15,7 +15,6 @@ def main(argv):
     sys.path.append('./')
     endpoint = None
     token = None
-    async_job_check_time_ms = None
     module_file = None
     class_name = None
     method_name = None
@@ -25,12 +24,12 @@ def main(argv):
     try:
         opts, args = getopt.getopt(
             argv,
-            "he:t:a:g:c:m:i:o:r:",
-            ["help", "endpoint=", "token=", "asyncchecktime=", "package=", "class=", "method=",
+            "he:t:g:c:m:i:o:r:",
+            ["help", "endpoint=", "token=", "package=", "class=", "method=",
                 "input=", "output=", "error="]
         )
     except getopt.GetoptError:
-        print('Please use "test_client.py -h" or "test_client.py --help" for help')
+        print('Please use "run_client.py -h" or "run_client.py --help" for help')
         sys.exit(2)
 
     for opt, arg in opts:
@@ -44,8 +43,6 @@ def main(argv):
             endpoint = arg
         elif opt in ("-t", "--token"):
             token = arg
-        elif opt in ("-a", "--asyncchecktime"):
-            async_job_check_time_ms = int(arg)
         elif opt in ("-g", "--package"):
             module_file = arg
         elif opt in ("-c", "--class"):
@@ -65,19 +62,12 @@ def main(argv):
     client_class = getattr(module, class_name)
     client_instance = None
     if token is not None:
-        if async_job_check_time_ms:
-            client_instance = client_class(
-                url=endpoint,
-                token=token,
-                async_job_check_time_ms=async_job_check_time_ms
-            )
-        else:
-            client_instance = client_class(url=endpoint, token=token)
+        client_instance = client_class(url=endpoint, token=token)
     else:
-        client_instance = client_class(url=endpoint, ignore_authrc=True)
+        client_instance = client_class(url=endpoint)
     method_instance = getattr(client_instance, method_name)
     try:
-        ret = method_instance(*params, context={})
+        ret = method_instance(*params)
         with open(output_filepath, "w") as out_file:
             out_file.write(json.dumps(ret, sort_keys=True))
     except Exception as ex:
