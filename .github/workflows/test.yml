@@ -35,7 +35,7 @@ jobs:
         java-version: ${{matrix.java-version}}
     
     - name: Install uv
-      uses: astral-sh/setup-uv@v6
+      uses: astral-sh/setup-uv@v7
 
     - name: Install dependencies and set up test config
       shell: bash
