@@ -60,7 +60,7 @@ public class CallbackServerManager implements AutoCloseable {
 	 * @param workDirRoot the working directory for the callback server. This directory will
 	 * be mounted into the server. Any files outside of this directory will not be visible to
 	 * the server. The callback server will write output here.
-	 * @param kbaseBaseUrl the base URL for contacting kBase services,
+	 * @param kbaseBaseUrl the base URL for contacting KBase services,
 	 * e.g. "https://ci.kbase.us/services/"
 	 * @param token the user's KBase token for contacting KBase services.
 	 * @param prov initial provenance for the callback server.
