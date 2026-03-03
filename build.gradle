@@ -5,17 +5,11 @@ plugins {
 	id 'org.graalvm.buildtools.native' version '0.10.6'
 }
 
-// TODO BUILD look into GraalVM native compilation vs. dockerizing kb-sdk
-//             https://github.com/oracle/graal/issues/407#issuecomment-2573704305
-// TODO GENSCRIPT need to update genscript if we don't switch to GraalVM. Need to release to get
-//                a latest tag
 
 // TODO TEST DEPS TypeGeneratorTest has a hard coded list of jars it uses for tests
 //           Need to figure out a better way
 // TODO TEST add a test that starts the SDK in a docker container and checks some simple cmds
-// TODO DEPS make JitPack jars for catalog and NMS and use them
-
-// TODO CODE move all code under us.kbase.sdk
+//           EDIT - run against the kb-sdk+ binary
 
 group = 'us.kbase.sdk'
 
