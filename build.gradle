@@ -340,7 +340,6 @@ dependencies {
 		exclude group: 'com.fasterxml.jackson.core'  // don't upgrade yet, breaks tests
 		exclude group: 'net.java.dev.jna' // don't include in runtime path
 	}
-	testImplementation('joda-time:joda-time:2.2')
 	// needed for syslog4j. Used in java test modules and JsonServerServlet subclasses in tests
 	// but not in SDK code proper.
 	testImplementation('net.java.dev.jna:jna:3.4.0')
