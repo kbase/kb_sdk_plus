@@ -16,7 +16,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -25,12 +24,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+
 import org.apache.commons.io.FileUtils;
 import org.ini4j.InvalidFileFormatException;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.DateTimeFormatterBuilder;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -82,13 +83,15 @@ public class CallbackServerTest {
     
     private final static DateTimeFormatter DATE_PARSER =
             new DateTimeFormatterBuilder()
-                .append(DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss"))
-                .appendOptional(DateTimeFormat.forPattern(".SSS").getParser())
-                .append(DateTimeFormat.forPattern("Z"))
+                .appendPattern("yyyy-MM-dd'T'HH:mm:ss")
+                .optionalStart()
+                .appendPattern(".SSS")
+                .optionalEnd()
+                .appendPattern("XXX")
                 .toFormatter();
-    
+
     private final static DateTimeFormatter DATE_FORMATTER =
-            DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ssZ").withZoneUTC();
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX").withZone(ZoneOffset.UTC);
     
     @BeforeAll
     public static void beforeClass() throws Exception {
@@ -573,7 +576,7 @@ public class CallbackServerTest {
                 .withMethod("amethod")
                 .withService("aservice")
                 .withServiceVer("0.0.2-dev")
-                .withTime(DATE_FORMATTER.print(new DateTime()))
+                .withTime(DATE_FORMATTER.format(Instant.now()))
                 .withMethodParams(Arrays.asList(new UObject(param1), new UObject(param2)))
                 .withInputWsObjects(wsobjs);
             
@@ -740,8 +743,8 @@ public class CallbackServerTest {
         assertThat("number of provenance actions",
                 prov.size(), is(1));
         ProvenanceAction pa = prov.get(0);
-        long got = DATE_PARSER.parseDateTime(pa.getTime()).getMillis();
-        long now = new Date().getTime();
+        long got = OffsetDateTime.parse(pa.getTime(), DATE_PARSER).toInstant().toEpochMilli();
+        long now = Instant.now().toEpochMilli();
         assertTrue(got < now, "got prov time < now ");
         assertTrue(got > now - (5 * 60 * 1000), "got prov time > now - 5m");
         assertThat("correct service", pa.getService(), is(moduleName));
