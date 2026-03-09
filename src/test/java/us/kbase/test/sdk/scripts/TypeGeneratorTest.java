@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -27,6 +26,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -82,7 +82,9 @@ public class TypeGeneratorTest {
 	private static final String SERVICE_WIZARD = "ServiceWizard";
 	
 	// specified in the build.gradle file
-	private static final Path BUILD_LIB_DIR = Paths.get("build/generated-code-libs")
+	private static final Path BUILD_LIB_IMPL_DIR = Paths.get("build/generated-code-libs/impl")
+			.toAbsolutePath();
+	private static final Path BUILD_LIB_TEST_DIR = Paths.get("build/generated-code-libs/test")
 			.toAbsolutePath();
 
 	private static boolean debugClientTimes = false;
@@ -176,7 +178,7 @@ public class TypeGeneratorTest {
 		File binDir = new File(workDir, "bin");
 		JavaData parsingData = prepareJavaCode(testNum, workDir, testPackage, libDir, binDir, null, true);
 		javaServerCorrectionForTestCallback(srcDir, testPackage, parsingData, testPackage + ".Test" + testNum);
-		String classPath = prepareClassPath(libDir, new ArrayList<URL>());
+		String classPath = buildClassPath(libDir, new ArrayList<URL>());
     	runJavac(workDir, srcDir, classPath, binDir, "src/us/kbase/test5/syslogtest/SyslogTestServer.java");
         int portNum = findFreePort();
 		runJavaServerTest(testNum, true, workDir, testPackage, libDir, binDir, parsingData, null, portNum);
@@ -224,7 +226,7 @@ public class TypeGeneratorTest {
         serverJavaFile.createNewFile();
 		File libDir = new File(workDir, "lib");
         // Test for empty server file
-		setUpTestJars(new DiskFileSaver(libDir));
+		setUpJars(new DiskFileSaver(libDir));
 		try {
 			JavaTypeGenerator.processSpec(new File(workDir, testFileName),
 					srcDir, testPackage, true, null);
@@ -245,7 +247,7 @@ public class TypeGeneratorTest {
 				new File(workDir, testFileName), srcDir, testPackage, true, null
 		);
 		List<URL> cpUrls = new ArrayList<URL>();
-		String classPath = prepareClassPath(libDir, cpUrls);
+		String classPath = buildClassPath(libDir, cpUrls);
 		File binDir = new File(workDir, "bin");
         cpUrls.add(binDir.toURI().toURL());
 		compileModulesIntoBin(workDir, srcDir, testPackage, parsingData, classPath, binDir);
@@ -827,7 +829,7 @@ public class TypeGeneratorTest {
 		parsingData = processSpec(workDir, testPackage, libDir, testFileName,
 				srcDir, defaultUrl, isDynamic, isAsync);
 		List<URL> cpUrls = new ArrayList<URL>();
-		String classPath = prepareClassPath(libDir, cpUrls);
+		String classPath = buildClassPath(libDir, cpUrls);
 		cpUrls.add(binDir.toURI().toURL());
 		compileModulesIntoBin(workDir, srcDir, testPackage, parsingData, classPath, binDir);
 		String testJavaFileName = "Test" + testNum + ".java";
@@ -860,7 +862,7 @@ public class TypeGeneratorTest {
 			final boolean isDynamic,
 			final boolean isAsync
 			) throws Exception {
-		setUpTestJars(new DiskFileSaver(libDir));
+		setUpJars(new DiskFileSaver(libDir));
 		File specFile = new File(workDir, testFileName);
 		List<KbService> services = KidlParser.parseSpec(specFile, null);
 		JavaData parsingData = JavaTypeGenerator.processSpec(services, new DiskFileSaver(srcDir), 
@@ -869,32 +871,20 @@ public class TypeGeneratorTest {
 		return parsingData;
 	}
 	
-	private static void setUpTestJars(final FileSaver libOutDir) throws Exception {
-		// TODO TEST CLEANUP remove this method and figure out some other way of handling test deps
-		//                   maybe mark deps in gradle?
-		checkLib(libOutDir, "jackson-annotations-2.2.3");
-		checkLib(libOutDir, "jackson-core-2.2.3");
-		checkLib(libOutDir, "jackson-databind-2.2.3");
-		checkLib(libOutDir, "auth2_client_java-0.5.0");
-		checkLib(libOutDir, "java_common-0.3.1");
-		checkLib(libOutDir, "javax.annotation-api-1.3.2");
-		checkLib(libOutDir, "servlet-api-2.5");
-		checkLib(libOutDir, "jetty-all-7.0.0.v20091005");
-		checkLib(libOutDir, "ini4j-0.5.2");
-		checkLib(libOutDir, "syslog4j-0.9.46");
-		checkLib(libOutDir, "jna-3.4.0");
-		checkLib(libOutDir, "joda-time-2.2");
-		checkLib(libOutDir, "logback-core-1.1.2");
-		checkLib(libOutDir, "logback-classic-1.1.2");
-		checkLib(libOutDir, "slf4j-api-1.7.7");
+	private static void setUpJars(final FileSaver libOutDir) throws Exception {
+		copyJarsFromDir(BUILD_LIB_IMPL_DIR, libOutDir);
+		copyJarsFromDir(BUILD_LIB_TEST_DIR, libOutDir);
 	}
 
-	private static void checkLib(FileSaver libDir, String libName) throws Exception {
-		// TODO TEST CLEANUP try to eliminate this method entirely
-		final Path lib = BUILD_LIB_DIR.resolve(libName + ".jar");
-		InputStream is = new FileInputStream(lib.toFile());
-		OutputStream os = libDir.openStream(lib.getFileName().toString());
-		TextUtils.copyStreams(is, os);
+	private static void copyJarsFromDir(final Path srcDir, final FileSaver dest) throws Exception {
+		try (final Stream<Path> jars = Files.list(srcDir)) {
+			for (final Path jar: jars.filter(p -> p.getFileName().toString().endsWith(".jar"))
+					.toList()) {
+				final InputStream is = Files.newInputStream(jar);
+				final OutputStream os = dest.openStream(jar.getFileName().toString());
+				TextUtils.copyStreams(is, os);
+			}
+		}
 	}
 	
 	private static File findPythonServerScript(File dir) {
@@ -918,10 +908,8 @@ public class TypeGeneratorTest {
         }
 	}
 
-	private static String prepareClassPath(File libDir, List<URL> cpUrls)
+	private static String buildClassPath(File libDir, List<URL> cpUrls)
 			throws Exception {
-		checkLib(new DiskFileSaver(libDir), "junit-4.12");
-		checkLib(new DiskFileSaver(libDir), "hamcrest-core-1.3");
 		StringBuilder classPathSB = new StringBuilder();
 		for (File jarFile : libDir.listFiles()) {
 			if (!jarFile.getName().endsWith(".jar"))
@@ -943,7 +931,7 @@ public class TypeGeneratorTest {
 	private static URLClassLoader prepareUrlClassLoader(File libDir, File binDir)
 			throws Exception, MalformedURLException {
 		List<URL> cpUrls = new ArrayList<URL>();
-        prepareClassPath(libDir, cpUrls);
+        buildClassPath(libDir, cpUrls);
         cpUrls.add(binDir.toURI().toURL());
         URLClassLoader urlcl = URLClassLoader.newInstance(cpUrls.toArray(new URL[cpUrls.size()]));
 		return urlcl;
